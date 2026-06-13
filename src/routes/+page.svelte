@@ -177,6 +177,10 @@
 				> .intro-content {
 					max-width: unset;
 					padding: 1rem;
+
+					> footer {
+						white-space: nowrap;
+					}
 				}
 			}
 		}
@@ -226,6 +230,10 @@
 						color: #4d4d4d;
 						text-align: right;
 						font-size: 0.825rem;
+					}
+
+					> * {
+						white-space: nowrap;
 					}
 				}
 			}
