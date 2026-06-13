@@ -2,11 +2,11 @@
 	import gsap from 'gsap';
 	import { onMount } from 'svelte';
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
-
 	import Icon from '@iconify/svelte';
-
+		
 	import { m } from '$lib/paraglide/messages.js';
 	import Avatar from '$lib/components/Avatar.svelte';
+	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 
 	let width = $state(0);
 	let height = $state(0);
@@ -121,6 +121,8 @@
 					{/each}
 				</ul>
 				<p>
+					<LanguageSwitcher />
+					&middot;
 					<span>&copy; {new Date().getFullYear()} {m.noun_general_name()}</span>
 					&middot;
 					<a
@@ -215,6 +217,10 @@
 				padding: 0 1rem;
 
 				p {
+					display: flex;
+					gap: 0.25rem;
+					place-items: center;
+					
 					&,
 					> * {
 						color: #4d4d4d;
@@ -262,16 +268,15 @@
 			color: #fff;
 			padding: 0 0.4rem;
 			border-radius: 0.25rem;
-			opacity: 0;
 			transition: opacity 0.3s ease;
 			top: calc(100% + 0.4rem);
 			z-index: 1;
 			font-size: 0.8125rem;
 		}
 
-		&:hover {
+		&:not(:hover) {
 			> span {
-				opacity: 1;
+				display: none;
 			}
 		}
 	}
