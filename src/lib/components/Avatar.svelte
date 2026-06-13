@@ -42,7 +42,8 @@
 					cy: 320,
 					duration: 1,
 					ease: 'elastic.out(1, 0.9)'
-				}
+				},
+				'+=0.4'
 			)
 			.fromTo(
 				'#intro-in-decorate',

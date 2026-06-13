@@ -64,5 +64,13 @@
 	.viewport-container {
 		width: 100%;
 		min-height: 100vh;
+		opacity: 0;
+		animation: fadeIn 0.3s ease-out 0.1s forwards;
+	}
+
+	@keyframes fadeIn {
+		to {
+			opacity: 1;
+		}
 	}
 </style>

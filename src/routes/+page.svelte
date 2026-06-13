@@ -94,7 +94,7 @@
 		<div class="intro-avatar">
 			<Avatar {width} />
 		</div>
-		<div class="intro-content">
+		<div class="intro-content" style="opacity: 0">
 			<article>
 				<ParaglideMessage message={m.pages_home_profile_intro} inputs={{}}>
 					{#snippet strong({ children })}
