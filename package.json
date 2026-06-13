@@ -13,7 +13,7 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"gen": "wrangler types",
-		"deploy": "bun run build && wrangler deploy",
+		"deploy": "bun run gen && bun run build && wrangler deploy",
 		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts"
 	},
 	"devDependencies": {
