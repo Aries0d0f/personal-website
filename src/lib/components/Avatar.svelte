@@ -8,10 +8,11 @@
 	import avatarImgNoBg from '$lib/assets/avatar-nbg.png';
 	import avatarImg from '$lib/assets/avatar.jpg';
 
-	const BASE_IMG_WIDTH = 423;
+	let { width } = $props<{
+		width: number;
+	}>();
 
-	let width = $state(0);
-	let height = $state(0);
+	const BASE_IMG_WIDTH = 423;
 
 	const avatarImgWidth = $derived(width > BASE_IMG_WIDTH ? BASE_IMG_WIDTH : width);
 
@@ -169,8 +170,6 @@
 		startAnimation();
 	});
 </script>
-
-<svelte:window bind:innerWidth={width} bind:innerHeight={height} />
 
 {#snippet avatar()}
 	<svg
