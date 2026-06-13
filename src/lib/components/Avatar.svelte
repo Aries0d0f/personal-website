@@ -212,7 +212,7 @@
 					{m.components_avatar_slogan()}
 				</textPath>
 			</text>
-			<circle id="intro-in-decorate" cx="211.088" cy="320" r="10" fill="#000" />
+			<circle id="intro-in-decorate" cx="211.088" cy="320" r="10" fill="#000" opacity="0" />
 		</g>
 		<defs>
 			<mask
