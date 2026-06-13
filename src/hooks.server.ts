@@ -1,7 +1,6 @@
 import { redirect, type Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import {
-	baseLocale,
 	extractLocaleFromRequestWithStrategies,
 	extractLocaleFromUrl,
 	getTextDirection,
@@ -20,23 +19,24 @@ const handleWorker: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-// The `url` strategy treats an un-prefixed path as the base locale, so it never
-// redirects `/`. To welcome visitors in their own language we look past the URL:
-// if the path carries no locale prefix but the browser's Accept-Language points
-// elsewhere, redirect to the localized URL. Explicit /ja/ or /zh-tw/ links skip
-// this entirely and are always honored.
+// Every locale now carries a path prefix (/en, /ja, /zh-tw), so an un-prefixed
+// path matches no localized pattern — extractLocaleFromUrl returns undefined.
+// Redirect those requests to the canonical, prefixed URL for the visitor's
+// preferred locale (Accept-Language, falling back to the base locale). Explicit
+// /en, /ja and /zh-tw links already carry a locale and skip this entirely.
 const handleLocaleRedirect: Handle = ({ event, resolve }) => {
 	const wantsHtml = event.request.headers.get('accept')?.includes('text/html');
 
-	if (wantsHtml && extractLocaleFromUrl(event.url) === baseLocale) {
+	if (wantsHtml && extractLocaleFromUrl(event.url) === undefined) {
 		const preferred = extractLocaleFromRequestWithStrategies(event.request, [
 			'preferredLanguage',
 			'baseLocale'
 		]);
 
-		if (preferred !== baseLocale) {
-			redirect(307, localizeUrl(event.url, { locale: preferred }).pathname + event.url.search);
-		}
+		// localizeUrl("/") yields a trailing slash (e.g. "/en/"); strip it so the
+		// canonical target is "/en" and we avoid a second trailing-slash redirect.
+		const path = localizeUrl(event.url, { locale: preferred }).pathname.replace(/\/$/, '');
+		redirect(307, path + event.url.search);
 	}
 
 	return resolve(event);
