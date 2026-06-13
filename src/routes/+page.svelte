@@ -123,7 +123,7 @@
 				<p>
 					<LanguageSwitcher />
 					&middot;
-					<span>&copy; {new Date().getFullYear()} {m.noun_general_name()}</span>
+					<span>&copy; {new Date().getFullYear()} Aries Cs</span>
 					&middot;
 					<a
 						href="https://creativecommons.org/licenses/by-sa/4.0/"
