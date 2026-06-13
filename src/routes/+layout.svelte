@@ -1,5 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let { children } = $props();
 </script>
@@ -11,6 +12,13 @@
 		href="https://fonts.googleapis.com/css2?family=Zilla+Slab:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
 		rel="stylesheet"
 	/>
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<meta http-equiv="x-ua-compatible" content="ie=edge" />
+	<meta property="og:url" content="https://aries0d0f.me" />
+	<meta property="og:image" content="https://aries0d0f.me/avatar.gif" />
+	<meta property="og:description" content={m.og_description({ name: m.noun_general_name() })} />
+	<meta name="description" content={m.og_description({ name: m.noun_general_name() })} />
+	<title>{m.noun_general_name()}</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
