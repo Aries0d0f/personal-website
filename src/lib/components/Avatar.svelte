@@ -5,6 +5,7 @@
 
 	import { browser } from '$app/environment';
 	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime';
 	import avatarImgNoBg from '$lib/assets/avatar-nbg.png';
 	import avatarImg from '$lib/assets/avatar.jpg';
 
@@ -318,7 +319,7 @@
 
 {#snippet title(visualOnly = false)}
 	<svelte:element this={visualOnly ? 'div' : 'header'} class={visualOnly ? 'visual-only' : ''}>
-		<h1>
+		<h1 lang={getLocale()}>
 			<ParaglideMessage
 				message={m.components_avatar_title}
 				inputs={{
@@ -380,14 +381,19 @@
 				font-weight: 500;
 				text-align: left;
 				white-space: pre;
-				line-height: 1;
+				line-height: 0.8;
 				margin: 0;
 				bottom: 17.5%;
 				left: 4%;
 
+				&[lang='zh-tw'] {
+					line-height: 1;
+				}
+
 				> strong {
 					font-weight: 700;
 					font-size: 4rem;
+					margin-top: 0.25rem;
 				}
 			}
 		}
