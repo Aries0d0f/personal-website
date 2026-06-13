@@ -1,79 +1,274 @@
 <script lang="ts">
+	import gsap from 'gsap';
+	import { onMount } from 'svelte';
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
-	import { browser } from '$app/environment';
 
+	import { browser } from '$app/environment';
+	import { m } from '$lib/paraglide/messages.js';
 	import avatarImgNoBg from '$lib/assets/avatar-nbg.png';
 	import avatarImg from '$lib/assets/avatar.jpg';
-	import { m } from '$lib/paraglide/messages.js';
+
+	const BASE_IMG_WIDTH = 423;
+
+	let width = $state(0);
+	let height = $state(0);
+
+	const avatarImgWidth = $derived(width > BASE_IMG_WIDTH ? BASE_IMG_WIDTH : width);
+
+	function startAnimation() {
+		const tl = gsap.timeline();
+		tl.set('#mask-title-text-clipping-circle', {
+			r: 10
+		})
+			.set('#mask-top-hemisphere-circle', {
+				r: 10
+			})
+			.set('#mask-bottom-hemisphere-circle', {
+				r: 10
+			})
+			.set('#mask-whole-circle', {
+				r: 0
+			})
+			.fromTo(
+				'#intro-in-decorate',
+				{
+					opacity: 0,
+					cy: 0
+				},
+				{
+					opacity: 1,
+					cy: 320,
+					duration: 1,
+					ease: 'elastic.out(1, 0.9)'
+				}
+			)
+			.fromTo(
+				'#intro-in-decorate',
+				{
+					r: 10,
+					opacity: 1
+				},
+				{
+					r: 160,
+					opacity: 0,
+					duration: 0.5,
+					ease: 'elastic.out(1, 0.9)'
+				}
+			)
+			.fromTo(
+				'#mask-title-text-clipping-circle',
+				{
+					r: 10
+				},
+				{
+					r: 150,
+					duration: 0.5,
+					ease: 'elastic.out(1, 0.9)'
+				},
+				'<'
+			)
+			.fromTo(
+				'#mask-top-hemisphere-circle',
+				{
+					r: 10
+				},
+				{
+					r: 150,
+					duration: 0.5,
+					ease: 'elastic.out(1, 0.9)'
+				},
+				'<'
+			)
+			.fromTo(
+				'#mask-bottom-hemisphere-circle',
+				{
+					r: 10
+				},
+				{
+					r: 150,
+					duration: 0.5,
+					ease: 'elastic.out(1, 0.9)'
+				},
+				'<'
+			)
+			.fromTo(
+				'#mask-whole-circle',
+				{
+					r: 0
+				},
+				{
+					r: 150,
+					duration: 0.5,
+					ease: 'elastic.out(1, 0.9)'
+				},
+				'<'
+			)
+			.fromTo(
+				'#mask-title-text-clipping-circle',
+				{
+					r: 150
+				},
+				{
+					r: 160,
+					duration: 0.1,
+					ease: 'none'
+				},
+				'<+=0.5'
+			)
+			.fromTo(
+				'#mask-top-hemisphere-circle',
+				{
+					r: 150
+				},
+				{
+					r: 160,
+					duration: 0.1,
+					ease: 'none'
+				},
+				'<'
+			)
+			.fromTo(
+				'#mask-bottom-hemisphere-circle',
+				{
+					r: 150
+				},
+				{
+					r: 160,
+					duration: 0.1,
+					ease: 'none'
+				},
+				'<'
+			)
+			.fromTo(
+				'#mask-whole-circle',
+				{
+					r: 150
+				},
+				{
+					r: 160,
+					duration: 0.1,
+					ease: 'none'
+				},
+				'<'
+			)
+			.fromTo(
+				'#mask-whole-circle',
+				{
+					r: 160
+				},
+				{
+					r: 1000,
+					duration: 8,
+					ease: 'elastic.out(1, 0.7)'
+				},
+				'<+=0.1'
+			);
+	}
+
+	onMount(() => {
+		startAnimation();
+	});
 </script>
+
+<svelte:window bind:innerWidth={width} bind:innerHeight={height} />
 
 {#snippet avatar()}
 	<svg
 		class="avatar-instance"
-		width="423"
+		width={avatarImgWidth}
 		height="531"
-		viewBox="0 0 423 531"
+		viewBox="0 0 {avatarImgWidth} 531"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
 		xmlns:xlink="http://www.w3.org/1999/xlink"
 	>
-		<g mask="url(#mask-bottom-hemisphere)">
-			<g mask="url(#mask-top-hemishpere)">
-				<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-source)" />
+		<g transform="translate({(avatarImgWidth - BASE_IMG_WIDTH) / 2}, 0)">
+			<g mask="url(#mask-whole)">
+				<g mask="url(#mask-bottom-hemisphere)">
+					<g mask="url(#mask-top-hemisphere)">
+						<rect
+							x="51.0884"
+							y="4"
+							width="320"
+							height="479.766"
+							fill="url(#pattern-image-source)"
+						/>
+					</g>
+					<g filter="url(#filter-soften-boundary)" style="mix-blend-mode:darken">
+						<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-no-bg)" />
+					</g>
+					<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-no-bg)" />
+				</g>
 			</g>
-			<g filter="url(#filter-soften-boundary)" style="mix-blend-mode:darken">
-				<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-no-bg)" />
-			</g>
-			<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-no-bg)" />
+			<path id="avatar-slogan-text-path" fill="#none" d="M 26,320 A 185,185 0 0,0 396,320" />
+			<text>
+				<textPath
+					id="avatar-slogan-text"
+					href="#avatar-slogan-text-path"
+					startOffset={width >= 320 ? '49%' : '35%'}
+					text-anchor="left"
+				>
+					{m.components_avatar_slogan()}
+				</textPath>
+			</text>
+			<circle id="intro-in-decorate" cx="211.088" cy="320" r="10" fill="#000" />
 		</g>
-		<path
-			id="avatar-slogan-text-path"
-			fill="#none"
-			d="M 26,320 A 185,185 0 0,0 396,320"
-		/>
-		<text>
-			<textPath href="#avatar-slogan-text-path" startOffset="49%" text-anchor="left">
-				{m.components_avatar_slogan()}
-			</textPath>
-		</text>
 		<defs>
 			<mask
-				id="mask-top-hemishpere"
+				id="mask-whole"
 				style="mask-type:alpha"
 				maskUnits="userSpaceOnUse"
-				x="51"
-				y="160"
-				width="321"
-				height="320"
+				x="0"
+				y="0"
+				width="423"
+				height="531"
 			>
-				<circle cx="211.088" cy="320" r="160" fill="#000" />
+				<circle id="mask-whole-circle" cx="211.088" cy="320" r="10000" fill="#000" />
+			</mask>
+			<mask
+				id="mask-top-hemisphere"
+				style="mask-type:alpha"
+				maskUnits="userSpaceOnUse"
+				x="0"
+				y="0"
+				width="423"
+				height="531"
+			>
+				<circle id="mask-top-hemisphere-circle" cx="211.088" cy="320" r="160" fill="#000" />
 			</mask>
 			<mask
 				id="mask-bottom-hemisphere"
 				style="mask-type:alpha"
 				maskUnits="userSpaceOnUse"
-				x="51"
+				x="0"
 				y="0"
-				width="321"
-				height="480"
+				width="423"
+				height="531"
 			>
+				<circle id="mask-bottom-hemisphere-circle" cx="211.088" cy="320" r="160" fill="#000" />
 				<path
 					fill-rule="evenodd"
 					clip-rule="evenodd"
 					d="M51.0884 0H371.088V320C371.088 351.984 361.704 381.775 345.538 406.772L334.088 427L324.028 433.335C307.338 449.967 286.995 462.937 264.308 470.936L253.088 478L249.983 475.24C237.532 478.349 224.503 480 211.088 480C122.723 480 51.0884 408.366 51.0884 320V0Z"
-					fill="#000"
+					fill="#fff"
 				/>
 			</mask>
 			<mask
 				id="mask-title-text-clipping"
 				maskUnits="userSpaceOnUse"
 				style="mask-type:alpha"
-				x="51"
-				y="160"
-				width="321"
-				height="320"
+				x={(avatarImgWidth - BASE_IMG_WIDTH) / 2}
+				y="0"
+				width="423"
+				height="531"
 			>
-				<circle cx="211.088" cy="320" r="160" fill="#fff" />
+				<circle
+					id="mask-title-text-clipping-circle"
+					cx={211.088 + (avatarImgWidth - BASE_IMG_WIDTH) / 2}
+					cy="320"
+					r="160"
+					fill="#fff"
+				/>
 			</mask>
 			<pattern
 				id="pattern-image-source"
@@ -155,8 +350,12 @@
 		width: fit-content;
 		height: fit-content;
 		display: flex;
+		max-width: 100%;
 
 		> svg {
+			width: 100%;
+			height: 100%;
+
 			text {
 				font-size: 1.25rem;
 				font-weight: 500;
