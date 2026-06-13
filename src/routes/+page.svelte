@@ -126,7 +126,7 @@
 					<span>&copy; {new Date().getFullYear()} Aries Cs</span>
 					&middot;
 					<a
-						href="https://creativecommons.org/licenses/by-sa/4.0/"
+						href="https://github.com/Aries0d0f/personal-website/blob/main/LICENSE"
 						target="_blank"
 						rel="external noopener noreferrer"
 					>
