@@ -92,7 +92,7 @@
 <div class="viewport-wrapper">
 	<main class="intro-container">
 		<div class="intro-avatar">
-			<Avatar {width} />
+			<Avatar {width} {height} />
 		</div>
 		<div class="intro-content" style="opacity: 0">
 			<article>
