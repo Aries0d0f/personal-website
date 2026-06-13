@@ -1,5 +1,4 @@
 <script lang="ts">
-	import favicon from '$lib/assets/favicon.svg';
 	import { m } from '$lib/paraglide/messages.js';
 
 	let { children } = $props();
@@ -19,7 +18,7 @@
 	<meta property="og:description" content={m.og_description({ name: m.noun_general_name() })} />
 	<meta name="description" content={m.og_description({ name: m.noun_general_name() })} />
 	<title>{m.noun_general_name()}</title>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" type="image/gif" href="/avatar.gif" />
 </svelte:head>
 
 <div class="viewport-container">
