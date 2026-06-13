@@ -87,6 +87,7 @@
 		display: flex;
 		place-items: center;
 		place-content: center;
+		overflow: hidden;
 	}
 
 	.intro {
@@ -153,6 +154,7 @@
 				flex-direction: column;
 				place-items: end;
 				place-content: center;
+				padding: 0 1rem;
 
 				p {
 					&,
