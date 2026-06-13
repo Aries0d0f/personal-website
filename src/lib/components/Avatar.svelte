@@ -31,14 +31,20 @@
 			.set('#mask-whole-circle', {
 				r: 0
 			})
+			.set('#intro-in-circle', {
+				r: 0,
+				opacity: 0
+			})
 			.fromTo(
 				'#intro-in-decorate',
 				{
 					opacity: 0,
-					cy: 0
+					r: 0,
+					cy: -10
 				},
 				{
 					opacity: 1,
+					r: 10,
 					cy: 320,
 					duration: 1,
 					ease: 'elastic.out(1, 0.9)'
@@ -212,7 +218,7 @@
 					{m.components_avatar_slogan()}
 				</textPath>
 			</text>
-			<circle id="intro-in-decorate" cx="211.088" cy="320" r="10" fill="#000" opacity="0" />
+			<circle id="intro-in-decorate" cx="211.088" cy="320" r="0" fill="#000" opacity="0" />
 		</g>
 		<defs>
 			<mask
