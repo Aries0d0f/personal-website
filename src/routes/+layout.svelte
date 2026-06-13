@@ -1,10 +1,19 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { syncLocale } from '$lib/i18n.svelte';
 
 	let { children } = $props();
 
-	const currentLang = getLocale();
+	// Reactive: `getLocale()` is backed by a $state on the client (see
+	// $lib/i18n.svelte), so this re-evaluates when the locale changes.
+	const currentLang = $derived(getLocale());
+
+	// Keep the reactive locale aligned with the URL after client-side switches.
+	$effect(() => {
+		syncLocale(page.url);
+	});
 </script>
 
 <svelte:head>

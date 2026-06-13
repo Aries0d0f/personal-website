@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { getLocale, locales, setLocale, type Locale } from '$lib/paraglide/runtime';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import type { ResolvedPathname } from '$app/types';
+	import { getLocale, locales, localizeHref, type Locale } from '$lib/paraglide/runtime';
 
 	// Native display names so each option reads in its own language.
 	const labels: Record<Locale, string> = {
@@ -8,9 +11,19 @@
 		ja: '日'
 	};
 
-	// `getLocale()` reads from the URL on the server and the URL/cookie on the
-	// client. Switching triggers a full navigation, so reading it once is enough.
-	const current = getLocale();
+	// Reactive (getLocale() is $state-backed on the client), so the active button
+	// updates in place after a switch.
+	const current = $derived(getLocale());
+
+	// Client-side navigation to the localized URL — no full reload, so the page
+	// (and its intro animation) stays mounted and the text swaps in place.
+	// `localizeHref` already returns a final, locale-prefixed path, so it stands
+	// in for a `resolve()`d pathname (this app configures no `base`).
+	function switchTo(locale: Locale) {
+		if (locale === current) return;
+		const target = localizeHref(page.url.pathname + page.url.search, { locale }) as ResolvedPathname;
+		goto(target, { keepFocus: true, noScroll: true });
+	}
 </script>
 
 <nav class="language-switcher" aria-label="Language">
@@ -20,7 +33,7 @@
 			lang={locale}
 			aria-current={locale === current ? 'true' : undefined}
 			disabled={locale === current}
-			onclick={() => setLocale(locale)}
+			onclick={() => switchTo(locale)}
 		>
 			{labels[locale]}
 		</button>
