@@ -1,8 +1,4 @@
 <script lang="ts">
-	import type { Pathname } from '$app/types';
-	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
-	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import favicon from '$lib/assets/favicon.svg';
 
 	let { children } = $props();
@@ -17,12 +13,9 @@
 	/>
 	<link rel="icon" href={favicon} />
 </svelte:head>
-{@render children()}
 
-<div style="display:none">
-	{#each locales as locale (locale)}
-		<a href={resolve(localizeHref(page.url.pathname, { locale }) as Pathname)}>{locale}</a>
-	{/each}
+<div class="viewport-container">
+	{@render children()}
 </div>
 
 <style lang="scss">
@@ -34,8 +27,14 @@
 			margin: 0;
 			padding: 0;
 		}
+
 		:root {
 			font-family: 'Zilla Slab', sans-serif;
 		}
+	}
+
+	.viewport-container {
+		width: 100%;
+		min-height: 100vh;
 	}
 </style>
