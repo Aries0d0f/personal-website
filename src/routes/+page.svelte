@@ -66,7 +66,7 @@
 					duration: 1,
 					ease: 'power3.out'
 				},
-				'<+=2'
+				'<+=2.2'
 			)
 			.fromTo(
 				'.intro-content',

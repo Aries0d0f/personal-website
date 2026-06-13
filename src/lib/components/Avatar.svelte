@@ -49,7 +49,7 @@
 					duration: 1,
 					ease: 'elastic.out(1, 0.9)'
 				},
-				'+=0.4'
+				'+=0.6'
 			)
 			.fromTo(
 				'#intro-in-decorate',
