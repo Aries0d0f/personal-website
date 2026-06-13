@@ -7,6 +7,10 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 	import Avatar from '$lib/components/Avatar.svelte';
+	import { GSDevTools } from 'gsap/GSDevTools';
+
+	let width = $state(0);
+	let height = $state(0);
 
 	const contacts = [
 		{
@@ -35,12 +39,64 @@
 			icon: 'fa7-brands:linkedin-in'
 		}
 	];
+
+	function startAnimation() {
+		const tl = gsap.timeline();
+		tl.set('.intro-content', {
+			opacity: 0,
+			translateX: -200
+		})
+			.fromTo(
+				'.intro-content',
+				width > 700
+					? {
+							marginLeft: -320,
+							display: 'none',
+							translateX: -200
+						}
+					: {
+							marginTop: -240,
+							display: 'flex',
+							translateX: 0
+						},
+				{
+					marginLeft: 0,
+					marginTop: 0,
+					display: 'flex',
+					translateX: 0,
+					duration: 1,
+					ease: 'power3.out'
+				},
+				'<+=2'
+			)
+			.fromTo(
+				'.intro-content',
+				{
+					opacity: 0
+				},
+				{
+					opacity: 1,
+					duration: 0.5,
+					ease: 'power3.out'
+				},
+				'<+=0.3'
+			);
+		GSDevTools.create({ animation: tl });
+	}
+
+	onMount(() => {
+		gsap.registerPlugin(GSDevTools);
+		GSDevTools.create();
+		startAnimation();
+	});
 </script>
+
+<svelte:window bind:innerWidth={width} bind:innerHeight={height} />
 
 <div class="viewport-wrapper">
 	<main class="intro-container">
 		<div class="intro-avatar">
-			<Avatar />
+			<Avatar {width} />
 		</div>
 		<div class="intro-content">
 			<article>
@@ -70,8 +126,12 @@
 				</ul>
 				<p>
 					<span>&copy; {new Date().getFullYear()} {m.noun_general_name()}</span>
-					 &middot;
-					<a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="external noopener noreferrer">
+					&middot;
+					<a
+						href="https://creativecommons.org/licenses/by-sa/4.0/"
+						target="_blank"
+						rel="external noopener noreferrer"
+					>
 						<span>CC BY-SA 4.0</span>
 					</a>
 				</p>
@@ -101,8 +161,8 @@
 
 			@media (max-width: 700px) {
 				flex-direction: column;
-				gap: 2rem;
 				place-content: start;
+				gap: 2rem;
 
 				> .intro-content {
 					max-width: 80%;
@@ -113,7 +173,6 @@
 						place-items: center;
 					}
 				}
-
 			}
 
 			@media (max-width: 414px) {
@@ -131,6 +190,8 @@
 			@media ((max-height: 900px) and (orientation: portrait)) or (max-height: 500px) {
 				margin-top: 0;
 			}
+
+			z-index: 2;
 		}
 
 		&-content {
@@ -140,6 +201,7 @@
 			line-height: 1.6;
 			white-space: pre-wrap;
 			gap: 4rem;
+			z-index: 1;
 
 			> article {
 				font-size: 1rem;
