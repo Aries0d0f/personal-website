@@ -21,7 +21,9 @@
 	// in for a `resolve()`d pathname (this app configures no `base`).
 	function switchTo(locale: Locale) {
 		if (locale === current) return;
-		const target = localizeHref(page.url.pathname + page.url.search, { locale }) as ResolvedPathname;
+		const target = localizeHref(page.url.pathname + page.url.search, {
+			locale
+		}) as ResolvedPathname;
 		goto(target, { keepFocus: true, noScroll: true });
 	}
 </script>

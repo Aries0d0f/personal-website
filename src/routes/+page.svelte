@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 	import Icon from '@iconify/svelte';
-		
+
 	import { m } from '$lib/paraglide/messages.js';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
@@ -220,7 +220,7 @@
 					display: flex;
 					gap: 0.25rem;
 					place-items: center;
-					
+
 					&,
 					> * {
 						color: #4d4d4d;

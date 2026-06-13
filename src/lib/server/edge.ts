@@ -21,7 +21,8 @@ const SEPARATOR = '='.repeat(52);
 const DIVIDER = '-'.repeat(52);
 const NATIVE_UA =
 	/MSIE|WebKit|WKWebView|safari|edge|chrom(e|ium)|firefox|html|khtml|gecko|anthropic-ai|Slurp|spider|bot|crawler|facebook|meta|externalagent|WhatsApp/i;
-const CLI_UA = /xh|curl|wget|PowerShell|HTTPie|axios|got|python-requests|http-client|grpc-go|Unknown/i;
+const CLI_UA =
+	/xh|curl|wget|PowerShell|HTTPie|axios|got|python-requests|http-client|grpc-go|Unknown/i;
 
 const easterEggs: Record<string, { reg: RegExp; msg: string }> = {
 	WHY_POSTMAN: {
