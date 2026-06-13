@@ -208,6 +208,11 @@
 			> article {
 				font-size: 1rem;
 				color: #4d4d4d;
+
+				strong {
+					font-weight: 700;
+					color: #000;
+				}
 			}
 
 			> footer {

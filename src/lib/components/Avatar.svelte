@@ -16,6 +16,17 @@
 	const BASE_IMG_WIDTH = 423;
 
 	const avatarImgWidth = $derived(width > BASE_IMG_WIDTH ? BASE_IMG_WIDTH : width);
+	const currentLang = $derived(getLocale());
+	const introDecoFill = $derived.by(() => {
+		switch (currentLang) {
+			case 'zh-tw':
+				return '#FCA302';
+			case 'ja':
+				return '#BC002D';
+			default:
+				return '#F00';
+		}
+	});
 
 	function startAnimation() {
 		const tl = gsap.timeline();
@@ -218,7 +229,7 @@
 					{m.components_avatar_slogan()}
 				</textPath>
 			</text>
-			<circle id="intro-in-decorate" cx="211.088" cy="320" r="0" fill="#000" opacity="0" />
+			<circle id="intro-in-decorate" cx="211.088" cy="320" r="0" fill="{introDecoFill}" opacity="0" />
 		</g>
 		<defs>
 			<mask
@@ -326,7 +337,7 @@
 
 {#snippet title(visualOnly = false)}
 	<svelte:element this={visualOnly ? 'div' : 'header'} class={visualOnly ? 'visual-only' : ''}>
-		<h1 lang={getLocale()}>
+		<h1 lang={currentLang}>
 			<ParaglideMessage
 				message={m.components_avatar_title}
 				inputs={{
