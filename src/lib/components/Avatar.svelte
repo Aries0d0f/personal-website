@@ -205,7 +205,7 @@
 				<textPath
 					id="avatar-slogan-text"
 					href="#avatar-slogan-text-path"
-					startOffset={width >= 320 ? '49%' : '35%'}
+					startOffset={width >= 320 ? '49%' : '35.75%'}
 					text-anchor="left"
 				>
 					{m.components_avatar_slogan()}
