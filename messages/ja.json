@@ -1,4 +1,8 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from ja!"
+	"og_description": "こんにちは、{name}です。よろしくお願いします。",
+	"noun_general_name": "Aries",
+	"components_avatar_title": "{#strong}{name}{/strong}\nと申します",
+	"components_avatar_slogan": "In Front of the Web",
+	"pages_home_profile_intro": "台湾出身の情熱的な{#strong}Web開発者{/strong}で、\n長年にわたる{#strong}フロントエンド開発{/strong}の経験があります。\n\n{#strong}オープンソース{/strong}の推進者であり、根っからの{#strong}Linux愛好家{/strong}。{#strong}クラウドネイティブ{/strong}、{#strong}デザイン{/strong}、{#strong}ネットワーク{/strong}、{#strong}3DCG{/strong}といった技術をこよなく愛しています。"
 }

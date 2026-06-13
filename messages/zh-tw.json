@@ -1,4 +1,8 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from zh-tw!"
+	"og_description": "你好，我是 {name}，很高興認識你。",
+	"noun_general_name": "白羊",
+	"components_avatar_title": "這裡是\n{#strong}{name}{/strong}",
+	"components_avatar_slogan": "In Front of the Web",
+	"pages_home_profile_intro": "來自台灣、充滿熱情的 {#strong}Web 開發者{/strong}，\n擁有多年的{#strong}前端開發{/strong}經驗。\n\n身為{#strong}開源{/strong}推廣者與 {#strong}Linux 愛好者{/strong}，同時也熱衷於{#strong}雲端原生{/strong}、{#strong}設計{/strong}、{#strong}網路{/strong}與 {#strong}3DCG{/strong} 等技術。"
 }
