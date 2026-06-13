@@ -7,7 +7,6 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 	import Avatar from '$lib/components/Avatar.svelte';
-	import { GSDevTools } from 'gsap/GSDevTools';
 
 	let width = $state(0);
 	let height = $state(0);
@@ -81,12 +80,9 @@
 				},
 				'<+=0.3'
 			);
-		GSDevTools.create({ animation: tl });
 	}
 
 	onMount(() => {
-		gsap.registerPlugin(GSDevTools);
-		GSDevTools.create();
 		startAnimation();
 	});
 </script>
