@@ -1,5 +1,6 @@
 <script lang="ts">
 	import gsap from 'gsap';
+	import { Observer } from 'gsap/Observer';
 	import { onMount } from 'svelte';
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
@@ -9,8 +10,9 @@
 	import avatarImgNoBg from '$lib/assets/avatar-nbg.png';
 	import avatarImg from '$lib/assets/avatar.jpg';
 
-	let { width } = $props<{
+	let { width, height } = $props<{
 		width: number;
+		height: number;
 	}>();
 
 	const BASE_IMG_WIDTH = 423;
@@ -37,12 +39,12 @@
 				r: 10
 			})
 			.set('#mask-bottom-hemisphere-circle', {
-				r: 10
+				r: 0
 			})
 			.set('#mask-whole-circle', {
 				r: 0
 			})
-			.set('#intro-in-circle', {
+			.set('#intro-in-decorate', {
 				r: 0,
 				opacity: 0
 			})
@@ -90,7 +92,7 @@
 			.fromTo(
 				'#mask-top-hemisphere-circle',
 				{
-					r: 10
+					r: 0
 				},
 				{
 					r: 150,
@@ -102,7 +104,7 @@
 			.fromTo(
 				'#mask-bottom-hemisphere-circle',
 				{
-					r: 10
+					r: 0
 				},
 				{
 					r: 150,
@@ -112,12 +114,17 @@
 				'<'
 			)
 			.fromTo(
-				'#mask-whole-circle',
+				'#mask-bottom-hemisphere-rect',
 				{
-					r: 0
+					scale: 0,
+					y: 10,
+					rx: 100,
+					transformOrigin: 'bottom center'
 				},
 				{
-					r: 150,
+					scale: 150 / 160,
+					y: 0,
+					rx: 0,
 					duration: 0.5,
 					ease: 'elastic.out(1, 0.9)'
 				},
@@ -134,6 +141,18 @@
 					ease: 'none'
 				},
 				'<+=0.5'
+			)
+			.fromTo(
+				'#mask-bottom-hemisphere-group',
+				{
+					opacity: 0
+				},
+				{
+					opacity: 1,
+					duration: 0.1,
+					ease: 'none'
+				},
+				'<'
 			)
 			.fromTo(
 				'#mask-top-hemisphere-circle',
@@ -158,35 +177,25 @@
 					ease: 'none'
 				},
 				'<'
-			)
-			.fromTo(
-				'#mask-whole-circle',
-				{
-					r: 150
-				},
-				{
-					r: 160,
-					duration: 0.1,
-					ease: 'none'
-				},
-				'<'
-			)
-			.fromTo(
-				'#mask-whole-circle',
-				{
-					r: 160
-				},
-				{
-					r: 1000,
-					duration: 8,
-					ease: 'elastic.out(1, 0.7)'
-				},
-				'<+=0.1'
 			);
 	}
 
 	onMount(() => {
 		startAnimation();
+		gsap.registerPlugin(Observer);
+		Observer.create({
+			target: window,
+			type: 'pointer',
+			onMove: (pointer) => {
+				const { x, y } = pointer;
+				const offsetX = ((x ?? 0) - width / 2) / width;
+				const offsetY = ((y ?? 0) - height / 2) / height;
+				gsap.to(['#morphing-image', '#morphing-group', '#mask-bottom-hemisphere-group'], {
+					translateX: offsetX * 10,
+					translateY: offsetY * 10
+				});
+			}
+		});
 	});
 </script>
 
@@ -201,21 +210,38 @@
 		xmlns:xlink="http://www.w3.org/1999/xlink"
 	>
 		<g transform="translate({(avatarImgWidth - BASE_IMG_WIDTH) / 2}, 0)">
-			<g mask="url(#mask-whole)">
+			<g>
 				<g mask="url(#mask-bottom-hemisphere)">
 					<g mask="url(#mask-top-hemisphere)">
-						<rect
-							x="51.0884"
-							y="4"
-							width="320"
-							height="479.766"
-							fill="url(#pattern-image-source)"
-						/>
+						<g id="morphing-image">
+							<rect
+								x="46.0884"
+								y="-1"
+								width="330"
+								height="489.766"
+								fill="url(#pattern-image-source)"
+							/>
+							<rect
+								x="51.0884"
+								y="4"
+								width="320"
+								height="479.766"
+								fill="url(#pattern-image-source)"
+							/>
+						</g>
 					</g>
-					<g filter="url(#filter-soften-boundary)" style="mix-blend-mode:darken">
+					<g id="morphing-group" transform="translate(0, 0)" transform-origin="center">
+						<g filter="url(#filter-soften-boundary)" style="mix-blend-mode:darken">
+							<rect
+								x="51.0884"
+								y="4"
+								width="320"
+								height="479.766"
+								fill="url(#pattern-image-no-bg)"
+							/>
+						</g>
 						<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-no-bg)" />
 					</g>
-					<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-no-bg)" />
 				</g>
 			</g>
 			<path id="avatar-slogan-text-path" fill="#none" d="M 26,320 A 185,185 0 0,0 396,320" />
@@ -229,7 +255,7 @@
 					{m.components_avatar_slogan()}
 				</textPath>
 			</text>
-			<circle id="intro-in-decorate" cx="211.088" cy="320" r="0" fill="{introDecoFill}" opacity="0" />
+			<circle id="intro-in-decorate" cx="211.088" cy="320" r="0" fill={introDecoFill} opacity="0" />
 		</g>
 		<defs>
 			<mask
@@ -264,12 +290,20 @@
 				height="531"
 			>
 				<circle id="mask-bottom-hemisphere-circle" cx="211.088" cy="320" r="160" fill="#000" />
-				<path
-					fill-rule="evenodd"
-					clip-rule="evenodd"
-					d="M51.0884 0H371.088V320C371.088 351.984 361.704 381.775 345.538 406.772L334.088 427L324.028 433.335C307.338 449.967 286.995 462.937 264.308 470.936L253.088 478L249.983 475.24C237.532 478.349 224.503 480 211.088 480C122.723 480 51.0884 408.366 51.0884 320V0Z"
+				<rect
+					id="mask-bottom-hemisphere-rect"
+					x="51.088"
+					y="0"
+					width="320"
+					height="320"
 					fill="#fff"
 				/>
+				<g id="mask-bottom-hemisphere-group">
+					<path
+						d="M347.588 390L349.088 400.5L334.088 427L253.088 478L239.588 466L347.588 400Z"
+						fill="#fff"
+					/>
+				</g>
 			</mask>
 			<mask
 				id="mask-title-text-clipping"
