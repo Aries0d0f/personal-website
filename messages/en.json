@@ -2,7 +2,7 @@
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"og_description": "Hi, I'm {name}, nice to meet you",
 	"noun_general_name": "Aries Cs",
-	"components_avatar_title": "Here’s\n{#strong}{name}{/strong}",
+	"components_avatar_title": "{#span}Here’s{/span}\n{#strong}{name}{/strong}",
 	"components_avatar_slogan": "In Front of the Web",
 	"pages_home_profile_intro": "A passionate {#strong}Web Developer{/strong} from Taiwan, with years of {#strong}Frontend development{/strong} experience.\n\nAn {#strong}Open-Source{/strong} advocate, {#strong}Linux lover{/strong}, and someone who enjoys {#strong}Cloud-Native{/strong}, {#strong}Design{/strong}, {#strong}Networking{/strong}, and {#strong}3DCG{/strong} technologies.",
 	"pages_error_404_title": "Page Not Found",
