@@ -29,7 +29,7 @@
 		},
 		{
 			name: 'Medium',
-			url: 'https://medium.com/@aries0d0f',
+			url: 'https://aries0d0f.me/s/@medium',
 			icon: 'fa7-brands:medium'
 		},
 		{
