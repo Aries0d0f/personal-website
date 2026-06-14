@@ -90,8 +90,8 @@ function isIPLookup({ pathname, hostname }: URL, userAgent: string): boolean {
 // ─── Route Handlers ──────────────────────────────────────────────────────────
 
 function handleSocialRedirect({ pathname }: URL): Response {
-	const [, brand, tld = '.com', path = ''] = pathname.match(/^\/s\/(\w+)(\.\w+)?(\/\w+)?/)!;
-	return Response.redirect(`https://${brand}${tld}${path}/aries0d0f`, 301);
+	const [, atMark, brand, tld = '.com', path = ''] = pathname.match(/^\/s\/(@?)(\w+)(\.\w+)?(\/\w+)?/)!;
+	return Response.redirect(`https://${brand}${tld}${path}/${atMark ? '@' : ''}aries0d0f`, 301);
 }
 
 async function handleIPLookup(
