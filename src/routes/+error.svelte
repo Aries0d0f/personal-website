@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime';
 
+	const currentLang = $derived(getLocale());
 	const headTitle = $derived([page.status, page.error?.message].filter(Boolean).join(' '));
 	const title = $derived(
 		page.status === 404
@@ -33,7 +35,7 @@
 			<p>{description}</p>
 		</article>
 	</div>
-	<a href="/" rel="external">
+	<a href="/{currentLang}" rel="external">
 		<svg
 			class="deco-vertical"
 			width="10"
