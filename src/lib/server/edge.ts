@@ -79,7 +79,12 @@ function isSocialRedirect({ pathname }: URL): boolean {
 }
 
 function isIPLookup({ pathname, hostname }: URL, userAgent: string): boolean {
-	return pathname.startsWith('/ip') || hostname === 'ip.aries0d0f.me' || !NATIVE_UA.test(userAgent);
+	return (
+		pathname.startsWith('/ip') ||
+		hostname === 'ip.aries0d0f.me' ||
+		CLI_UA.test(userAgent) ||
+		(/^\/(whois|abuse)?.?(whois|abuse)?$/.test(pathname) && !NATIVE_UA.test(userAgent))
+	);
 }
 
 // ─── Route Handlers ──────────────────────────────────────────────────────────
