@@ -19,6 +19,24 @@ const handleWorker: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
+// Google indexed the previous BCP-47 casing of the Chinese locale (/zh-TW), but
+// Paraglide's routes are lowercase (/zh-tw). Permanently redirect the old casing
+// — and any path beneath it — to the canonical lowercase form so indexed links
+// keep working. Runs before handleLocaleRedirect, which would otherwise treat
+// /zh-TW as un-prefixed and send it to the visitor's preferred locale instead of
+// Chinese. Matched case-insensitively; the already-canonical form is skipped to
+// avoid a redirect loop, and the lookahead keeps /zh-tw from matching.
+const handleLegacyLocaleCasing: Handle = ({ event, resolve }) => {
+	const { pathname } = event.url;
+	const match = pathname.match(/^\/zh-tw(?=\/|$)/i);
+
+	if (match && match[0] !== '/zh-tw') {
+		redirect(301, '/zh-tw' + pathname.slice(match[0].length) + event.url.search);
+	}
+
+	return resolve(event);
+};
+
 // Every locale now carries a path prefix (/en, /ja, /zh-tw), so an un-prefixed
 // path matches no localized pattern — extractLocaleFromUrl returns undefined.
 // Redirect those requests to the canonical, prefixed URL for the visitor's
@@ -54,4 +72,9 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 		});
 	});
 
-export const handle: Handle = sequence(handleWorker, handleLocaleRedirect, handleParaglide);
+export const handle: Handle = sequence(
+	handleWorker,
+	handleLegacyLocaleCasing,
+	handleLocaleRedirect,
+	handleParaglide
+);
