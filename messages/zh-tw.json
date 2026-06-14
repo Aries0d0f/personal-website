@@ -4,5 +4,11 @@
 	"noun_general_name": "白羊",
 	"components_avatar_title": "這裡是\n{#strong}{name}{/strong}",
 	"components_avatar_slogan": "In Front of the Web",
-	"pages_home_profile_intro": "來自臺灣、充滿熱情的 {#strong}Web 開發者{/strong}，\n擁有多年的{#strong}前端開發{/strong}經驗。\n\n身為{#strong}開源{/strong}推廣者與 {#strong}Linux 愛好者{/strong}，同時也熱衷於{#strong}雲原生{/strong}、{#strong}設計{/strong}、{#strong}網路{/strong}與 {#strong}3DCG{/strong} 等技術。"
+	"pages_home_profile_intro": "來自臺灣、充滿熱情的 {#strong}Web 開發者{/strong}，\n擁有多年的{#strong}前端開發{/strong}經驗。\n\n身為{#strong}開源{/strong}推廣者與 {#strong}Linux 愛好者{/strong}，同時也熱衷於{#strong}雲原生{/strong}、{#strong}設計{/strong}、{#strong}網路{/strong}與 {#strong}3DCG{/strong} 等技術。",
+	"pages_error_404_title": "找不到頁面",
+	"pages_error_404_description": "你在找不存在的東西嗎？ | 你找到了一個什麼都沒有的地方。某種意義上很厲害。 | 尷尬了。這裡什麼都沒有。 | 這個頁面離家出走了。 | 你要找的頁面不在這裡。 | 不是你的問題，是頁面的問題。 | 這個頁面今天請假了。 | 糟糕！你好像迷路了！",
+	"pages_error_5xx_title": "伺服器錯誤",
+	"pages_error_general_title": "發生了一些問題",
+	"pages_error_general_description": "好吧，這有點尷尬。 | 糟糕！出了一點問題。 | 這也不是我預期的結果。 | 伺服器今天狀態不太好。",
+	"pages_error_back_to_home": "回到首頁"
 }

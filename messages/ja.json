@@ -4,5 +4,11 @@
 	"noun_general_name": "Aries",
 	"components_avatar_title": "{#strong}{name}{/strong}\nと申します",
 	"components_avatar_slogan": "In Front of the Web",
-	"pages_home_profile_intro": "台湾出身の情熱的な{#strong}Web開発者{/strong}で、\n長年にわたる{#strong}フロントエンド開発{/strong}の経験があります。\n\n{#strong}オープンソース{/strong}の推進者であり、根っからの{#strong}Linux愛好家{/strong}。{#strong}クラウドネイティブ{/strong}、{#strong}デザイン{/strong}、{#strong}ネットワーク{/strong}、{#strong}3DCG{/strong}といった技術をこよなく愛しています。"
+	"pages_home_profile_intro": "台湾出身の情熱的な{#strong}Web開発者{/strong}で、\n長年にわたる{#strong}フロントエンド開発{/strong}の経験があります。\n\n{#strong}オープンソース{/strong}の推進者であり、根っからの{#strong}Linux愛好家{/strong}。{#strong}クラウドネイティブ{/strong}、{#strong}デザイン{/strong}、{#strong}ネットワーク{/strong}、{#strong}3DCG{/strong}といった技術をこよなく愛しています。",
+	"pages_error_404_title": "ページが見つかりません",
+	"pages_error_404_description": "存在しないものを探してます？わかります。 | 何もない場所を見つけました。ある意味すごい。 | これは気まずいですね。ここには何もありません。 | このページ、荷物をまとめて旅に出ました。 | お探しのページはここにはありません。 | あなたのせいじゃありません。ページのせいです。 | このページはお休み中です。 | おっと！このページはどこかへ迷子になったようです。 | さっきまで何かあった気がするんですけどね。",
+	"pages_error_5xx_title": "サーバーエラー",
+	"pages_error_general_title": "問題が発生しました",
+	"pages_error_general_description": "いや、これはちょっと恥ずかしいですね。 | おっと！何か問題が発生しました。 | これは私も想定外です。 | サーバーの調子が悪いようです。",
+	"pages_error_back_to_home": "ホームへ戻る"
 }
