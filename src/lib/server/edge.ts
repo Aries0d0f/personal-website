@@ -75,7 +75,7 @@ export async function handleEdge(event: RequestEvent): Promise<Response | null> 
 // ─── Route Predicates ────────────────────────────────────────────────────────
 
 function isSocialRedirect({ pathname }: URL): boolean {
-	return /^\/s\/(\w+)(\.\w+)?/.test(pathname);
+	return /^\/s\/(@?)(\w+)(\.\w+)?(\/\w+)?/.test(pathname);
 }
 
 function isIPLookup({ pathname, hostname }: URL, userAgent: string): boolean {
