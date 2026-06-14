@@ -440,6 +440,11 @@
 
 				&[lang='zh-tw'] {
 					line-height: 1;
+					margin-bottom: -0.75rem;
+				}
+
+				&[lang='ja'] {
+					margin-bottom: -0.5rem;
 				}
 
 				> strong {

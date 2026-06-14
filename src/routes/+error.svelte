@@ -71,13 +71,19 @@
 </div>
 
 <style lang="scss">
+	:global {
+		body:has(.error-container) {
+			background-color: #000;
+		}
+	}
+
 	.error {
 		&-container {
 			display: flex;
 			place-items: center;
 			place-content: center;
 			width: 100%;
-			min-height: 100vh;
+			min-height: 100dvh;
 			background-color: #000;
 			color: #fff;
 			gap: 4rem;
@@ -132,7 +138,7 @@
 			}
 
 			@media (max-width: 375px) {
-				height: 100vh;
+				height: 100%;
 				overflow: hidden;
 			}
 		}
@@ -186,7 +192,12 @@
 					border: none;
 					padding: 0;
 
+					> h2 {
+						font-size: 1.8rem;
+					}
+
 					> p {
+						font-size: 0.9rem;
 						margin-bottom: 0;
 					}
 				}

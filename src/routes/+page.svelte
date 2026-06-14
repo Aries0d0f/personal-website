@@ -199,7 +199,7 @@
 		&-content {
 			display: flex;
 			flex-direction: column;
-			max-width: 320px;
+			max-width: 340px;
 			line-height: 1.6;
 			white-space: pre-wrap;
 			gap: 4rem;
@@ -221,9 +221,7 @@
 				gap: 1rem;
 				margin-bottom: -4.5rem;
 				flex-direction: column;
-				place-items: end;
 				place-content: center;
-				padding: 0 1rem;
 
 				p {
 					display: flex;
@@ -252,6 +250,7 @@
 			list-style: none;
 			place-content: center;
 			place-items: center;
+			width: fit-content;
 
 			@media (max-width: 300px) {
 				gap: 1rem;
