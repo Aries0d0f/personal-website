@@ -155,6 +155,11 @@
 				filter: brightness(150%);
 				height: 16rem;
 				width: 16rem;
+
+				&::selection {
+					background: none !important;
+					color: unset !important;
+				}
 			}
 
 			article {

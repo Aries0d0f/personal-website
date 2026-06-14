@@ -9,6 +9,16 @@
 	// Reactive: `getLocale()` is backed by a $state on the client (see
 	// $lib/i18n.svelte), so this re-evaluates when the locale changes.
 	const currentLang = $derived(getLocale());
+	const accentFill = $derived.by(() => {
+		switch (currentLang) {
+			case 'zh-tw':
+				return '#FCA302';
+			case 'ja':
+				return '#BC002D';
+			default:
+				return '#F00';
+		}
+	});
 
 	// Keep the reactive locale aligned with the URL after client-side switches.
 	$effect(() => {
@@ -42,7 +52,7 @@
 	<link rel="icon" type="image/gif" href="/avatar.gif" />
 </svelte:head>
 
-<div class="viewport-container">
+<div class="viewport-container" style="--accent-fill: {accentFill}">
 	{@render children()}
 </div>
 
@@ -57,7 +67,37 @@
 		}
 
 		:root {
-			font-family: 'Zilla Slab', 'Kosugi Maru', 'Huninn', sans-serif;
+			font-family:
+				'Zilla Slab',
+				'Kosugi Maru',
+				'Huninn',
+				-apple-system,
+				BlinkMacSystemFont,
+				'Segoe UI',
+				Roboto,
+				Oxygen,
+				Ubuntu,
+				Cantarell,
+				'Open Sans',
+				'Helvetica Neue',
+				sans-serif;
+		}
+
+		::selection {
+			background-color: color-mix(in srgb, var(--accent-fill), transparent 0%);
+		}
+
+		article,
+		article *,
+		p,
+		p *,
+		a,
+		text,
+		textPath {
+			&::selection {
+				color: #fff;
+				fill: #fff;
+			}
 		}
 	}
 

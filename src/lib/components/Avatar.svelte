@@ -19,16 +19,6 @@
 
 	const avatarImgWidth = $derived(width > BASE_IMG_WIDTH ? BASE_IMG_WIDTH : width);
 	const currentLang = $derived(getLocale());
-	const introDecoFill = $derived.by(() => {
-		switch (currentLang) {
-			case 'zh-tw':
-				return '#FCA302';
-			case 'ja':
-				return '#BC002D';
-			default:
-				return '#F00';
-		}
-	});
 
 	function startAnimation() {
 		const tl = gsap.timeline();
@@ -255,7 +245,14 @@
 					{m.components_avatar_slogan()}
 				</textPath>
 			</text>
-			<circle id="intro-in-decorate" cx="211.088" cy="320" r="0" fill={introDecoFill} opacity="0" />
+			<circle
+				id="intro-in-decorate"
+				cx="211.088"
+				cy="320"
+				r="0"
+				fill="var(--accent-fill)"
+				opacity="0"
+			/>
 		</g>
 		<defs>
 			<mask
@@ -378,6 +375,11 @@
 					name: m.noun_general_name()
 				}}
 			>
+				{#snippet span({ children })}
+					<span>
+						{@render children?.()}
+					</span>
+				{/snippet}
 				{#snippet strong({ children })}
 					<strong>
 						{@render children?.()}
@@ -444,7 +446,12 @@
 				}
 
 				&[lang='ja'] {
+					line-height: 1.1;
 					margin-bottom: -0.5rem;
+				}
+
+				> span {
+					z-index: 2;
 				}
 
 				> strong {
@@ -459,9 +466,12 @@
 			color: #fff;
 			mask-image: url('#mask-title-text-clipping');
 			pointer-events: none;
+			z-index: 3;
 
-			&::selection {
-				background: none;
+			::selection {
+				background: none !important;
+				fill: unset !important;
+				color: unset !important;
 			}
 		}
 	}

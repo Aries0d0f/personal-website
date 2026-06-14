@@ -282,8 +282,13 @@
 			border-radius: 0.25rem;
 			transition: opacity 0.3s ease;
 			top: calc(100% + 0.4rem);
-			z-index: 1;
+			z-index: 10;
 			font-size: 0.8125rem;
+
+			&::selection {
+				background: none !important;
+				color: unset !important;
+			}
 		}
 
 		&:not(:hover) {
