@@ -83,7 +83,7 @@ function isIPLookup({ pathname, hostname }: URL, userAgent: string): boolean {
 		pathname.startsWith('/ip') ||
 		hostname === 'ip.aries0d0f.me' ||
 		CLI_UA.test(userAgent) ||
-		(/^\/(whois|abuse)?.?(whois|abuse)?$/.test(pathname) && !NATIVE_UA.test(userAgent))
+		(/^\/(whois|abuse).?(whois|abuse)?$/.test(pathname) && !NATIVE_UA.test(userAgent))
 	);
 }
 
