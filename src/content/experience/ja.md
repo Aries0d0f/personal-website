@@ -1,5 +1,5 @@
 ---
-title: 経験
+title: 経歴
 layout: timeline
 ---
 
