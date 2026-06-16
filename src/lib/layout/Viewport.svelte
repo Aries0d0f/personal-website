@@ -117,7 +117,7 @@
 			margin-top: -5rem;
 			transition: margin-top 0.3s ease;
 
-			@media ((max-height: 900px) and (orientation: portrait)) or (max-height: 500px) {
+			@media ((max-height: 900px) and (orientation: portrait)) or (max-height: 500px) or (max-width: 800px) {
 				margin-top: 0;
 			}
 
