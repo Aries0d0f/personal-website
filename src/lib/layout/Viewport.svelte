@@ -92,7 +92,7 @@
 			width: fit-content;
 			height: fit-content;
 
-			@media (max-width: 700px) {
+			@media (max-width: 800px) {
 				flex-direction: column;
 				place-content: start;
 				gap: 2rem;
@@ -130,6 +130,10 @@
 			white-space: pre-wrap;
 			gap: 4rem;
 			z-index: 1;
+
+			@media (min-width: 800px) {
+				width: 340px;
+			}
 		}
 	}
 </style>
