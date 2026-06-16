@@ -15,7 +15,7 @@
 
 	gsap.registerPlugin(Observer);
 
-	const MOBILE_BREAKPOINT = 800;
+	const MOBILE_BREAKPOINT = 840;
 
 	let { children } = $props();
 
@@ -109,7 +109,7 @@
 			})
 			.fromTo(
 				'.intro-content',
-				width > 800
+				width > 840
 					? {
 							marginLeft: -320,
 							display: 'none',
@@ -329,7 +329,7 @@
 		place-content: center;
 		overflow: hidden;
 
-		@media (max-width: 800px) {
+		@media (max-width: 840px) {
 			place-items: start;
 			place-content: start;
 			overflow: visible;
@@ -345,7 +345,7 @@
 			width: fit-content;
 			height: fit-content;
 
-			@media (max-width: 800px) {
+			@media (max-width: 840px) {
 				flex-direction: column;
 				place-content: start;
 				gap: 2rem;
@@ -368,7 +368,7 @@
 			margin-top: -5rem;
 			transition: margin-top 0.3s ease;
 
-			@media ((max-height: 900px) and (orientation: portrait)) or (max-height: 500px) or (max-width: 800px) {
+			@media ((max-height: 900px) and (orientation: portrait)) or (max-height: 500px) or (max-width: 840px) {
 				margin-top: 0;
 			}
 
@@ -384,7 +384,7 @@
 			gap: 4rem;
 			z-index: 1;
 
-			@media (min-width: 800px) {
+			@media (min-width: 840px) {
 				width: 340px;
 			}
 		}

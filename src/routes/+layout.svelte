@@ -73,7 +73,7 @@
 
 		html,
 		body {
-			@media (width > 800px) {
+			@media (width > 840px) {
 				// Kill the macOS/iOS rubber-band overscroll bounce at the edges.
 				overscroll-behavior: none;
 			}

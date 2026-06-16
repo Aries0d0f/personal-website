@@ -31,7 +31,7 @@
 					flex: 1 100%;
 				}
 
-				@media (max-height: 720px) and (width > 800px) {
+				@media (max-height: 720px) and (width > 840px) {
 					padding: 0.1rem 0.3rem;
 					gap: 0.1rem;
 
@@ -134,7 +134,7 @@
 			flex-direction: column;
 			gap: 1rem;
 
-			@media (max-height: 720px) and (width > 800px) {
+			@media (max-height: 720px) and (width > 840px) {
 				gap: 0.75rem;
 			}
 
