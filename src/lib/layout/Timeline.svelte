@@ -2,7 +2,7 @@
 	let { data, children } = $props();
 </script>
 
-<div class="timeline-container">
+<article class="timeline-container">
 	<h1>{data.metadata?.title}</h1>
 	{@render children?.()}
 
@@ -86,7 +86,7 @@
 			}
 		}
 	</style>
-</div>
+</article>
 
 <style lang="scss">
 	.timeline-container {
@@ -97,6 +97,7 @@
 		> h1 {
 			font-size: 2rem;
 			font-weight: 600;
+            color: #000;
 		}
 	}
 </style>
