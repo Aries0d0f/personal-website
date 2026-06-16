@@ -9,7 +9,7 @@ layout: bento
 
 Vue, Svelte, Angular
 
-Pinia, SvelteKit, Nuxt, React, Redux, Web Worker, GASP, SASS, Tailwind, CSS-in-JS, D3.js, RxJS
+Pinia, SvelteKit, Nuxt, React, Redux, Web Worker, GASP, SASS, Tailwind, CSS-in-JS, RxJS, D3.js, p5.js, Three.js
 
 </section>
 
@@ -19,7 +19,7 @@ Pinia, SvelteKit, Nuxt, React, Redux, Web Worker, GASP, SASS, Tailwind, CSS-in-J
 
 Express, Koa, Iris
 
-RESTful API, GraphQL, gRPC, WebSocket, Server Polling, GORM, OpenAPI
+RESTful API, GraphQL, WebSocket, gRPC, Protobuf, GORM, OpenAPI, Nginx, Server Polling
 
 </section>
 
