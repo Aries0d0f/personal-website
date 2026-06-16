@@ -3,11 +3,10 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { syncLocale } from '$lib/i18n.svelte';
+	import Viewport from '$lib/layout/Viewport.svelte';
 
 	let { children } = $props();
 
-	// Reactive: `getLocale()` is backed by a $state on the client (see
-	// $lib/i18n.svelte), so this re-evaluates when the locale changes.
 	const currentLang = $derived(getLocale());
 	const accentFill = $derived.by(() => {
 		switch (currentLang) {
@@ -53,7 +52,13 @@
 </svelte:head>
 
 <div class="viewport-container" style="--accent-fill: {accentFill}">
-	{@render children()}
+	{#if page.status >= 400}
+		{@render children()}
+	{:else}
+		<Viewport>
+			{@render children()}
+		</Viewport>
+	{/if}
 </div>
 
 <style lang="scss">
