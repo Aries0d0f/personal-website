@@ -62,6 +62,7 @@
 			margin: 0;
 			padding: 0 0.5rem;
 			z-index: 10;
+			font-size: 1rem;
 
 			li {
 				color: #aaa;
@@ -76,6 +77,7 @@
 				}
 
 				a {
+					font-size: inherit;
 					color: inherit;
 					text-decoration: none;
 				}
@@ -83,6 +85,11 @@
 
 			@media (max-height: 860px) and (orientation: landscape) {
 				gap: 1.5rem;
+			}
+
+			@media (max-height: 600px) and (orientation: landscape) {
+				gap: 1rem;
+				font-size: 0.875rem;
 			}
 		}
 	}

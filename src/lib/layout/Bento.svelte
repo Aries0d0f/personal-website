@@ -54,7 +54,7 @@
 					width: 100%;
 					margin-bottom: 0.125rem;
 					line-height: 1.1;
-					color: #777;
+					color: #555;
 				}
 
 				> p {

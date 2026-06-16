@@ -38,7 +38,13 @@
 	<ul class="contact-container">
 		{#each contacts as contact (contact.name)}
 			<li>
-				<a href={contact.url} target="_blank" rel="external noopener noreferrer" class="contact">
+				<a
+					href={contact.url}
+					target="_blank"
+					rel="external noopener noreferrer"
+					class="contact"
+					aria-label={contact.name}
+				>
 					<span>{contact.name}</span>
 					<Icon class="icon" icon={contact.icon} />
 				</a>
@@ -60,6 +66,7 @@
 				href="https://github.com/Aries0d0f/personal-website/blob/main/LICENSE"
 				target="_blank"
 				rel="external noopener noreferrer"
+				aria-label="Creative Commons Attribution-ShareAlike 4.0 International License"
 			>
 				<span>CC BY-SA 4.0</span>
 			</a>

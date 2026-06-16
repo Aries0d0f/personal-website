@@ -70,6 +70,13 @@
 			cursor: pointer;
 			opacity: 0.6;
 			transition: opacity 0.15s ease;
+			width: 1.5rem;
+			height: 1.5rem;
+
+			@media (max-height: 600px) and (orientation: landscape) {
+				width: 1rem;
+				height: 1rem;
+			}
 
 			&:hover {
 				opacity: 1;
