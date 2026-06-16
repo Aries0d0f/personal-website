@@ -50,7 +50,7 @@
 			<LanguageSwitcher />
 		{/if}
 		{#if mobile}
-			<LanguageSwitcher />
+			<LanguageSwitcher mobile />
 			&middot;
 		{/if}
 		<span>&copy; {new Date().getFullYear()} Aries Cs</span>

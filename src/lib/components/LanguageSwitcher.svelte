@@ -3,8 +3,11 @@
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import type { ResolvedPathname } from '$app/types';
 	import { getLocale, locales, localizeHref, type Locale } from '$lib/paraglide/runtime';
+
+	import type { ResolvedPathname } from '$app/types';
+
+	let { mobile }: { mobile?: boolean } = $props();
 
 	const labels: Record<Locale, string> = {
 		en: 'EN',
@@ -16,13 +19,25 @@
 
 	async function switchTo(locale: Locale) {
 		if (locale === current) return;
-		const target = localizeHref(page.url.pathname + page.url.search, {
-			locale
-		}) as ResolvedPathname;
 
-		await gsap.to('menu', { opacity: 0, duration: 0.25, ease: 'power2.in' });
-		await goto(target, { keepFocus: true, noScroll: false });
-		gsap.to('menu', { opacity: 1, duration: 0.4, ease: 'power3.out' });
+		if (mobile) {
+			const target = localizeHref(
+				`${page.url.pathname.replace(/experience\/|community\//, '')}${page.url.search}`,
+				{
+					locale
+				}
+			) as ResolvedPathname;
+
+			await goto(target, { keepFocus: false, noScroll: false });
+		} else {
+			const target = localizeHref(`${page.url.pathname}${page.url.search}`, {
+				locale
+			}) as ResolvedPathname;
+
+			await gsap.to('menu', { opacity: 0, duration: 0.25, ease: 'power2.in' });
+			await goto(target, { keepFocus: true, noScroll: true });
+			gsap.to('menu', { opacity: 1, duration: 0.4, ease: 'power3.out' });
+		}
 	}
 </script>
 
