@@ -3,7 +3,7 @@
 	import { Observer } from 'gsap/Observer';
 	import { onMount, tick } from 'svelte';
 
-	import { afterNavigate, goto } from '$app/navigation';
+	import { afterNavigate, goto, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 
@@ -11,7 +11,7 @@
 	import Menu from '$lib/components/Menu.svelte';
 	import AllSections from '$lib/layout/AllSections.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { pageOrder, pageHref } from '$lib/pages';
+	import { pageOrder, pageHref, type PageKey } from '$lib/pages';
 
 	gsap.registerPlugin(Observer);
 
@@ -28,6 +28,10 @@
 
 	let observer: Observer | undefined;
 	let lastDirection: 1 | -1 = 1;
+
+	let sectionObserver: IntersectionObserver | undefined;
+	let sectionEls: HTMLElement[] = [];
+	let currentSectionKey: PageKey | null = null;
 
 	function resolveTarget(direction: 1 | -1) {
 		const hrefs = pageOrder.map((key) => pageHref(key, getLocale()));
@@ -137,9 +141,56 @@
 		return pageOrder.find((key) => pageHref(key, getLocale()) === pathname) ?? null;
 	}
 
+	function syncRouteToSection(key: PageKey) {
+		replaceState(resolve(pageHref(key, getLocale())), page.state);
+	}
+
+	function activeSectionKey(): PageKey | null {
+		if (!sectionEls.length) return null;
+
+		const line = window.innerHeight / 2;
+		let active = sectionEls[0];
+		for (const el of sectionEls) {
+			if (el.getBoundingClientRect().top <= line) active = el;
+			else break;
+		}
+
+		return active.id.replace('section-', '') as PageKey;
+	}
+
+	function handleSectionChange() {
+		const key = activeSectionKey();
+		if (!key || key === currentSectionKey) return;
+
+		currentSectionKey = key;
+		syncRouteToSection(key);
+	}
+
+	function setupSectionObserver() {
+		sectionObserver?.disconnect();
+
+		sectionEls = pageOrder
+			.map((key) => document.getElementById(`section-${key}`))
+			.filter((el): el is HTMLElement => el !== null);
+
+		if (!sectionEls.length) return;
+
+		// Collapse the root to a horizontal line at the viewport's vertical center so
+		// each section reports a crossing as it passes it; the active section is then
+		// recomputed from positions in `handleSectionChange`.
+		sectionObserver = new IntersectionObserver(handleSectionChange, {
+			rootMargin: '-50% 0px -50% 0px',
+			threshold: 0
+		});
+
+		sectionEls.forEach((el) => sectionObserver?.observe(el));
+	}
+
 	async function scrollToSection(pathname: string) {
 		const key = pageKeyFromPath(pathname);
 		if (!key) return;
+
+		currentSectionKey = key;
 
 		if (key === 'home') {
 			window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -191,6 +242,25 @@
 			didInitialScroll = true;
 			scrollToSection(page.url.pathname);
 		}
+	});
+
+	$effect(() => {
+		if (!showCombined) {
+			sectionObserver?.disconnect();
+			sectionObserver = undefined;
+			return;
+		}
+
+		currentSectionKey = pageKeyFromPath(page.url.pathname);
+
+		tick().then(() => {
+			if (showCombined) setupSectionObserver();
+		});
+
+		return () => {
+			sectionObserver?.disconnect();
+			sectionObserver = undefined;
+		};
 	});
 
 	onMount(() => {
