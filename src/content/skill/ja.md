@@ -9,7 +9,7 @@ layout: bento
 
 Vue, Svelte, Angular
 
-Pinia, SvelteKit, Nuxt, React, Redux, Web Worker, GASP, SASS, Tailwind, CSS-in-JS, RxJS, D3.js, p5.js, Three.js
+Pinia, SvelteKit, Nuxt, React, Redux, Web Worker, GSAP, SASS, Tailwind, CSS-in-JS, RxJS, D3.js, p5.js, Three.js
 
 </section>
 
