@@ -40,12 +40,14 @@
 			> hgroup {
 				display: flex;
 				flex-direction: column;
-				gap: 0rem;
+				gap: 0.4rem;
                 margin-top: -0.75rem;
+                line-height: 1.4;
 
 				h2 {
 					font-size: 1rem;
 					font-weight: 600;
+                    line-height: 1.2;
 				}
 
 				strong {
