@@ -10,6 +10,7 @@ layout: bento
 Vue, Svelte, Angular
 
 Pinia, SvelteKit, Nuxt, React, Redux, Web Worker, GASP, SASS, Tailwind, CSS-in-JS, D3.js, RxJS
+
 </section>
 
 <section>
@@ -19,6 +20,7 @@ Pinia, SvelteKit, Nuxt, React, Redux, Web Worker, GASP, SASS, Tailwind, CSS-in-J
 Express, Koa, Iris
 
 RESTful API, GraphQL, gRPC, WebSocket, Server Polling, GORM, OpenAPI
+
 </section>
 
 <section size="full">
@@ -28,6 +30,7 @@ RESTful API, GraphQL, gRPC, WebSocket, Server Polling, GORM, OpenAPI
 TypeScript, JavaScript, Golang
 
 Node.js, Python, Shell Scripting
+
 </section>
 
 <section>
@@ -37,14 +40,17 @@ Node.js, Python, Shell Scripting
 Kubernetes, Docker
 
 Helm, Terraform, Argo CD, GitHub Actions, Traefik, Istio, Jenkins
+
 </section>
 
 <section>
 
 ## テストと品質管理
+
 Vitest, Storybook
 
 Cypress, Playwright, Chromatic, Sentry
+
 </section>
 
 <section size="full">
@@ -54,6 +60,7 @@ Cypress, Playwright, Chromatic, Sentry
 Git, Linux, Google Cloud, Cloudflare Workers
 
 VMware ESXi, Proxmox VE, RouterOS, Figma
+
 </section>
 
 <section size="full">
@@ -64,4 +71,5 @@ VMware ESXi, Proxmox VE, RouterOS, Figma
 
 コンピュータハードウェアの修理、
 コンピュータ設備の調達と導入
+
 </section>

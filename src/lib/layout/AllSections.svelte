@@ -10,7 +10,7 @@
 	import General from './General.svelte';
 	import Timeline from './Timeline.svelte';
 	import Bento from './Bento.svelte';
-	
+
 	const layouts: Record<
 		string,
 		Component<{ data: { metadata?: Record<string, unknown> }; children: Snippet }>

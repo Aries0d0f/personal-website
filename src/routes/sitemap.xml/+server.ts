@@ -7,9 +7,7 @@ const ORIGIN = 'https://aries0d0f.me';
 // `community`). Deriving them from the same glob the page loader uses keeps the
 // sitemap in sync automatically when content is added or removed.
 const slugs = [
-	...new Set(
-		Object.keys(import.meta.glob('/src/content/*/*.md')).map((path) => path.split('/')[3])
-	)
+	...new Set(Object.keys(import.meta.glob('/src/content/*/*.md')).map((path) => path.split('/')[3]))
 ];
 
 // The un-prefixed routes Paraglide localizes. `''` is the index; the rest are
