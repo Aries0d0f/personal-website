@@ -19,7 +19,7 @@ layout: timeline
 
 ## HITCON 2020
 
-_Hacks in Taiwan Conference 2020_
+_Hacks in Taiwan Conference_
 
 </hgroup>
 

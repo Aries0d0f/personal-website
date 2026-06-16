@@ -19,7 +19,7 @@ layout: timeline
 
 ## HITCON 2020
 
-_臺灣駭客年會 2020_
+_臺灣駭客年會_
 
 </hgroup>
 
