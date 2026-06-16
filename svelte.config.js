@@ -13,7 +13,9 @@ const config = {
 		vitePreprocess({
 			style: true
 		}),
-		mdsvex({ extensions: ['.svx', '.md'] })
+		mdsvex({
+			extensions: ['.svx', '.md']
+		})
 	],
 	extensions: ['.svelte', '.svx', '.md']
 };

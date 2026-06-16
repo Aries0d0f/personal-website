@@ -3,6 +3,9 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+	// content/ lives at the project root (outside src), so Vite's dev server
+	// blocks dynamic imports into it by default. Whitelist it explicitly.
+	server: { fs: { allow: ['./content'] } },
 	plugins: [
 		sveltekit(),
 		paraglideVitePlugin({
