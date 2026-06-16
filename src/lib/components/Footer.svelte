@@ -110,6 +110,7 @@
 			gap: 1rem;
 			flex-direction: row;
 			position: absolute;
+			left: 0;
 			top: 0;
 			place-content: space-between;
 			place-items: center;

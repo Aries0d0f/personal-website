@@ -41,7 +41,7 @@
 		display: flex;
 		height: 100dvh;
 		top: 0;
-		right: 0;
+		left: calc(100dvw - 36px);
 		place-items: center;
 		place-content: center;
 		width: fit-content;
