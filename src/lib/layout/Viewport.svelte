@@ -175,9 +175,6 @@
 
 		if (!sectionEls.length) return;
 
-		// Collapse the root to a horizontal line at the viewport's vertical center so
-		// each section reports a crossing as it passes it; the active section is then
-		// recomputed from positions in `handleSectionChange`.
 		sectionObserver = new IntersectionObserver(handleSectionChange, {
 			rootMargin: '-50% 0px -50% 0px',
 			threshold: 0
@@ -300,13 +297,6 @@
 	{#if !showCombined}
 		<Menu />
 	{/if}
-
-	<style>
-		menu {
-			opacity: 0;
-			transform: translateX(100%);
-		}
-	</style>
 </div>
 
 <style lang="scss">
