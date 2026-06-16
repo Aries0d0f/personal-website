@@ -4,6 +4,7 @@
 
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import Menu from '$lib/components/Menu.svelte';
 
 	let { children } = $props();
 
@@ -71,6 +72,7 @@
 			<Footer />
 		</div>
 	</main>
+	<Menu />
 </div>
 
 <style lang="scss">
