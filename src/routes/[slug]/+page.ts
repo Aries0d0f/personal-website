@@ -1,11 +1,11 @@
 import { error } from '@sveltejs/kit';
-import { getLocale } from '$lib/paraglide/runtime';
+import { getLocaleForUrl } from '$lib/paraglide/runtime';
 
 import type { Component } from 'svelte';
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = async ({ params }) => {
-	const lang = getLocale();
+export const load: PageLoad = async ({ params, url }) => {
+	const lang = getLocaleForUrl(url.href);
 	const { slug } = params;
 
 	const modules = import.meta.glob('/src/content/**/*.md');
