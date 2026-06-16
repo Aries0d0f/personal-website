@@ -78,6 +78,10 @@
 						}
 					}
 				}
+
+				@media (max-height: 720px) and (orientation: landscape) {
+					line-height: 1;
+				}
 			}
 
 			> p {
@@ -98,6 +102,11 @@
 			font-size: 2rem;
 			font-weight: 600;
 			color: #000;
+
+			@media (max-height: 720px) and (orientation: landscape) {
+				line-height: 1.2;
+				font-size: 1.5rem;
+			}
 		}
 	}
 </style>
