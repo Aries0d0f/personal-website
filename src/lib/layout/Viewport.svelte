@@ -323,7 +323,7 @@
 <style lang="scss">
 	.viewport-wrapper {
 		width: 100%;
-		min-height: 100vh;
+		min-height: 100dvh;
 		display: flex;
 		place-items: center;
 		place-content: center;
