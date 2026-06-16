@@ -71,6 +71,12 @@
 			padding: 0;
 		}
 
+		html,
+		body {
+			// Kill the macOS/iOS rubber-band overscroll bounce at the edges.
+			overscroll-behavior: none;
+		}
+
 		:root {
 			font-family:
 				'Zilla Slab',
