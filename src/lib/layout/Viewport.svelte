@@ -61,6 +61,27 @@
 		});
 	}
 
+	function handleKeyNavigation(event: KeyboardEvent) {
+		if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+
+		switch (event.key) {
+			case 'ArrowDown':
+			case 'ArrowRight':
+			case 'Enter':
+			case ' ':
+			case 'PageDown':
+				event.preventDefault();
+				switchPage(1);
+				break;
+			case 'ArrowUp':
+			case 'ArrowLeft':
+			case 'PageUp':
+				event.preventDefault();
+				switchPage(-1);
+				break;
+		}
+	}
+
 	function animateIn() {
 		gsap.fromTo(
 			'.intro-content',
@@ -279,7 +300,7 @@
 	});
 </script>
 
-<svelte:window bind:innerWidth={width} bind:innerHeight={height} />
+<svelte:window bind:innerWidth={width} bind:innerHeight={height} onkeydown={handleKeyNavigation} />
 
 <div class="viewport-wrapper">
 	<main class="intro-container" class:combined={showCombined}>
