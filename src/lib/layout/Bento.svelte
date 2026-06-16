@@ -31,11 +31,29 @@
 					flex: 1 100%;
 				}
 
+				@media (max-height: 720px) and (width > 800px) {
+					padding: 0.1rem 0.3rem;
+					gap: 0.1rem;
+					
+					> h2 {
+						font-size: 0.7rem;
+						line-height: 1;
+					}
+
+					> p {
+						&:first-of-type,
+						&:only-of-type {
+							font-size: 0.9rem;
+						}
+					}
+				}
+
 				> h2 {
 					font-size: 0.9rem;
 					width: 100%;
 					margin-bottom: 0.125rem;
 					line-height: 1.1;
+					color: #777;
 				}
 
 				> p {
@@ -92,6 +110,10 @@
 			display: flex;
 			flex-direction: column;
 			gap: 1.5rem;
+
+			@media (max-height: 720px) and (width > 800px) {
+				gap: 0.75rem;
+			}
 
 			> h1 {
 				font-size: 2rem;

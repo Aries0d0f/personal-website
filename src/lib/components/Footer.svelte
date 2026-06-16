@@ -141,7 +141,7 @@
 					writing-mode: horizontal-tb;
 				}
 
-				@media (max-height: 680px) and (orientation: landscape) {
+				@media (max-height: 768px) and (orientation: landscape) {
 					display: none;
 				}
 			}

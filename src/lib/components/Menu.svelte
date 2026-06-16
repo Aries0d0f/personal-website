@@ -49,7 +49,7 @@
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
 
-		@media (max-height: 680px) and (orientation: landscape) {
+		@media (max-height: 768px) and (orientation: landscape) {
 			place-content: start;
 			padding: 1rem 0;
 		}
@@ -81,7 +81,7 @@
 				}
 			}
 
-			@media (max-height: 768px) and (orientation: landscape) {
+			@media (max-height: 860px) and (orientation: landscape) {
 				gap: 1.5rem;
 			}
 		}
