@@ -22,13 +22,13 @@
 
 		if (mobile) {
 			const target = localizeHref(
-				`${page.url.pathname.replace(/experience\/|community\//, '')}${page.url.search}`,
+				`${page.url.pathname.replace(/\/(experience|community)/, '')}${page.url.search}`,
 				{
 					locale
 				}
 			) as ResolvedPathname;
 
-			await goto(target, { keepFocus: false, noScroll: false });
+			window.location.href = target;
 		} else {
 			const target = localizeHref(`${page.url.pathname}${page.url.search}`, {
 				locale
