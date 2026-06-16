@@ -78,6 +78,10 @@
 			opacity: 0,
 			translateX: -200
 		})
+			.set('menu', {
+				opacity: 0,
+				translateX: '100%'
+			})
 			.fromTo(
 				'.intro-content',
 				width > 800
@@ -112,6 +116,20 @@
 					ease: 'power3.out'
 				},
 				'<+=0.3'
+			)
+			.fromTo(
+				'menu',
+				{
+					opacity: 0,
+					translateX: '100%'
+				},
+				{
+					opacity: 1,
+					translateX: '0%',
+					duration: 0.5,
+					ease: 'power3.out'
+				},
+				'<'
 			);
 	}
 
@@ -200,6 +218,13 @@
 	{#if !showCombined}
 		<Menu />
 	{/if}
+
+	<style>
+		menu {
+			opacity: 0;
+			transform: translateX(100%);
+		}
+	</style>
 </div>
 
 <style lang="scss">
