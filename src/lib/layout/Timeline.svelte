@@ -104,6 +104,28 @@
 					font-size: 0.8125rem;
 					color: #4d4d4d;
 				}
+
+				@for $i from 1 through 10 {
+					animation-delay: 0.5s;
+					animation: fadeInUp 0.5s ease forwards;
+					opacity: 0;
+					transform: translateY(10px);
+
+					&:nth-of-type(#{$i}) {
+						animation-delay: ($i - 1) * 0.05s;
+					}
+				}
+
+				@keyframes fadeInUp {
+					from {
+						opacity: 0;
+						transform: translateY(10px);
+					}
+					to {
+						opacity: 1;
+						transform: translateY(0);
+					}
+				}
 			}
 		}
 	</style>

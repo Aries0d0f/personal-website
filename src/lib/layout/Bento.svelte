@@ -34,7 +34,7 @@
 				@media (max-height: 720px) and (width > 800px) {
 					padding: 0.1rem 0.3rem;
 					gap: 0.1rem;
-					
+
 					> h2 {
 						font-size: 0.7rem;
 						line-height: 1;
@@ -78,6 +78,17 @@
 						color: #4d4d4d;
 					}
 				}
+
+				@for $i from 1 through 10 {
+					animation-delay: 0.5s;
+					animation: fadeInUp 0.5s ease forwards;
+					opacity: 0;
+					transform: translateY(10px);
+
+					&:nth-of-type(#{$i}) {
+						animation-delay: ($i - 1) * 0.05s;
+					}
+				}
 			}
 
 			&[lang='ja'] {
@@ -99,6 +110,17 @@
 							sans-serif;
 					}
 				}
+			}
+		}
+
+		@keyframes fadeInUp {
+			from {
+				opacity: 0;
+				transform: translateY(10px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
 			}
 		}
 	</style>
