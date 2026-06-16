@@ -9,10 +9,20 @@ import {
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { handleEdge } from '$lib/server/edge';
 
+// Routes that exist outside the i18n tree and must be served verbatim by
+// SvelteKit. They have no locale-prefixed variant, and they must bypass the
+// edge worker too: isIPLookup() matches any CLI/unknown User-Agent, so without
+// this guard `curl /sitemap.xml` (or a crawler sending no UA) would get the
+// IP-lookup response instead of the sitemap.
+const NON_LOCALIZED_PATHS = new Set(['/sitemap.xml', '/robots.txt']);
+
 // Ported Cloudflare Worker logic (social redirects + IP lookup). Runs first so
 // it can short-circuit the request before routing/i18n; falls through to
-// SvelteKit when it returns null.
+// SvelteKit when it returns null. Reserved paths skip the worker so they reach
+// their real handlers regardless of User-Agent.
 const handleWorker: Handle = async ({ event, resolve }) => {
+	if (NON_LOCALIZED_PATHS.has(event.url.pathname)) return resolve(event);
+
 	const response = await handleEdge(event);
 	if (response) return response;
 
@@ -45,7 +55,11 @@ const handleLegacyLocaleCasing: Handle = ({ event, resolve }) => {
 const handleLocaleRedirect: Handle = ({ event, resolve }) => {
 	const wantsHtml = event.request.headers.get('accept')?.includes('text/html');
 
-	if (wantsHtml && extractLocaleFromUrl(event.url) === undefined) {
+	if (
+		wantsHtml &&
+		!NON_LOCALIZED_PATHS.has(event.url.pathname) &&
+		extractLocaleFromUrl(event.url) === undefined
+	) {
 		const preferred = extractLocaleFromRequestWithStrategies(event.request, [
 			'preferredLanguage',
 			'baseLocale'
