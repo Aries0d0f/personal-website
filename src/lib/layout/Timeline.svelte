@@ -4,102 +4,106 @@
 
 <article class="timeline-container">
 	<h1>{data.metadata?.title}</h1>
-	{@render children?.()}
+	<div class="timeline-content">
+		{@render children?.()}
+	</div>
 
 	<style lang="scss">
-		section:not(.page-section) {
-			position: relative;
-			display: flex;
-			flex-direction: column;
-			gap: 0.5rem;
-			margin-top: 0.5rem;
-
-			@media (max-width: 414px) {
-				padding-left: 1rem;
-			}
-
-			&::before {
-				content: '';
-				display: block;
-				width: 2px;
-				height: calc(100% + 1.5rem);
-				background-color: #ccc;
-				position: absolute;
-				left: -1rem;
-				top: 0;
-
-				@media (max-width: 414px) {
-					left: 0;
-				}
-			}
-
-			&:last-of-type::before {
-				height: 100%;
-			}
-
-			> hgroup {
+		.timeline-content {
+			> section {
+				position: relative;
 				display: flex;
 				flex-direction: column;
-				gap: 0.1rem;
-				margin-top: -0.625rem;
-				line-height: 1.4;
+				gap: 0.5rem;
+				margin-top: 0.5rem;
 
-				&:has(:nth-child(3)) {
-					gap: 0.5rem;
-					margin-bottom: 0.5rem;
+				@media (max-width: 414px) {
+					padding-left: 1rem;
+				}
 
-					> :nth-child(3) {
-						margin-top: 0.2rem;
+				&::before {
+					content: '';
+					display: block;
+					width: 2px;
+					height: calc(100% + 1.5rem);
+					background-color: #ccc;
+					position: absolute;
+					left: -1rem;
+					top: 0;
+
+					@media (max-width: 414px) {
+						left: 0;
 					}
 				}
 
-				h2 {
-					font-size: 1rem;
-					font-weight: 600;
-					line-height: 1.2;
+				&:last-of-type::before {
+					height: 100%;
 				}
 
-				strong {
-					font-size: 0.875rem;
-					font-weight: 500;
-				}
+				> hgroup {
+					display: flex;
+					flex-direction: column;
+					gap: 0.1rem;
+					margin-top: -0.625rem;
+					line-height: 1.4;
 
-				em {
-					display: inline-flex;
-					font-size: 0.75rem;
-					place-items: center;
-				}
+					&:has(:nth-child(3)) {
+						gap: 0.5rem;
+						margin-bottom: 0.5rem;
 
-				p:has(:only-child) {
-					line-height: 1;
-				}
-
-				> :first-child {
-					&::before {
-						content: '';
-						display: block;
-						width: 8px;
-						height: 8px;
-						background-color: #ccc;
-						border-radius: 50%;
-						position: absolute;
-						left: calc(-1rem - 4px + 1px);
-						top: -4px;
-
-						@media (max-width: 414px) {
-							left: calc(-4px + 1px);
+						> :nth-child(3) {
+							margin-top: 0.2rem;
 						}
 					}
+
+					h2 {
+						font-size: 1rem;
+						font-weight: 600;
+						line-height: 1.2;
+					}
+
+					strong {
+						font-size: 0.875rem;
+						font-weight: 500;
+					}
+
+					em {
+						display: inline-flex;
+						font-size: 0.75rem;
+						place-items: center;
+					}
+
+					p:has(:only-child) {
+						line-height: 1;
+					}
+
+					> :first-child {
+						&::before {
+							content: '';
+							display: block;
+							width: 8px;
+							height: 8px;
+							background-color: #ccc;
+							border-radius: 50%;
+							position: absolute;
+							left: calc(-1rem - 4px + 1px);
+							top: -4px;
+
+							@media (max-width: 414px) {
+								left: calc(-4px + 1px);
+							}
+						}
+					}
+
+					@media (max-height: 720px) and (orientation: landscape) {
+						line-height: 1;
+					}
 				}
 
-				@media (max-height: 720px) and (orientation: landscape) {
-					line-height: 1;
+				> p {
+					font-size: 0.8125rem;
+					color: #4d4d4d;
 				}
-			}
-
-			> p {
-				font-size: 0.8125rem;
-				color: #4d4d4d;
 			}
 		}
 	</style>
