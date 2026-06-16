@@ -8,6 +8,7 @@
 		string,
 		() => Promise<{ default: Component<{ data: PageData; children: Snippet }> }>
 	> = {
+		bento: () => import('$lib/layout/Bento.svelte'),
 		timeline: () => import('$lib/layout/Timeline.svelte'),
 		default: () => import('$lib/layout/General.svelte')
 	};
