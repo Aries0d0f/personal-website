@@ -43,13 +43,14 @@
 					> p {
 						&:first-of-type,
 						&:only-of-type {
-							font-size: 0.9rem;
+							font-size: 0.8rem;
 						}
 					}
 				}
 
 				> h2 {
 					font-size: 0.9rem;
+					font-weight: 500;
 					width: 100%;
 					margin-bottom: 0.125rem;
 					line-height: 1.1;
@@ -61,8 +62,8 @@
 
 					&:first-of-type,
 					&:only-of-type {
-						font-size: 1rem;
-						font-weight: 500;
+						font-size: 0.9rem;
+						font-weight: 600;
 					}
 
 					&:last-of-type:not(:only-of-type) {
@@ -131,7 +132,7 @@
 		&-container {
 			display: flex;
 			flex-direction: column;
-			gap: 1.5rem;
+			gap: 1rem;
 
 			@media (max-height: 720px) and (width > 800px) {
 				gap: 0.75rem;
