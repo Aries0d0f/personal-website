@@ -118,6 +118,11 @@
 			width: 36px;
 			padding: 1rem 0;
 
+			// Safari hint, so the text fit the corners better
+			@supports (hanging-punctuation: first) {
+				padding: 0.5rem 0 2.5rem;
+			}
+
 			.contact {
 				&-container {
 					gap: 0.5rem;
