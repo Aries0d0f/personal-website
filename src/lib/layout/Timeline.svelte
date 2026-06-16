@@ -41,7 +41,7 @@
 				display: flex;
 				flex-direction: column;
 				gap: 0.1rem;
-				margin-top: -0.75rem;
+				margin-top: -0.625rem;
 				line-height: 1.4;
 
 				&:has(:nth-child(3)) {
