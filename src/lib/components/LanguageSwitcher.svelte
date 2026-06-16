@@ -1,30 +1,28 @@
 <script lang="ts">
+	import gsap from 'gsap';
+
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import type { ResolvedPathname } from '$app/types';
 	import { getLocale, locales, localizeHref, type Locale } from '$lib/paraglide/runtime';
 
-	// Native display names so each option reads in its own language.
 	const labels: Record<Locale, string> = {
 		en: 'EN',
 		'zh-tw': '漢',
 		ja: '日'
 	};
 
-	// Reactive (getLocale() is $state-backed on the client), so the active button
-	// updates in place after a switch.
 	const current = $derived(getLocale());
 
-	// Client-side navigation to the localized URL — no full reload, so the page
-	// (and its intro animation) stays mounted and the text swaps in place.
-	// `localizeHref` already returns a final, locale-prefixed path, so it stands
-	// in for a `resolve()`d pathname (this app configures no `base`).
-	function switchTo(locale: Locale) {
+	async function switchTo(locale: Locale) {
 		if (locale === current) return;
 		const target = localizeHref(page.url.pathname + page.url.search, {
 			locale
 		}) as ResolvedPathname;
-		goto(target, { keepFocus: true, noScroll: false });
+
+		await gsap.to('menu', { opacity: 0, duration: 0.25, ease: 'power2.in' });
+		await goto(target, { keepFocus: true, noScroll: false });
+		gsap.to('menu', { opacity: 1, duration: 0.4, ease: 'power3.out' });
 	}
 </script>
 
