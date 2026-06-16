@@ -41,6 +41,7 @@
 		position: fixed;
 		display: flex;
 		height: 100dvh;
+        top: 0;
 		right: 0;
 		place-items: center;
 		place-content: center;
