@@ -1,7 +1,7 @@
 <script lang="ts">
 	import gsap from 'gsap';
 	import { Observer } from 'gsap/Observer';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 
 	import { afterNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -9,22 +9,24 @@
 
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Menu from '$lib/components/Menu.svelte';
+	import AllSections from '$lib/layout/AllSections.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { pageOrder, pageHref } from '$lib/pages';
 
 	gsap.registerPlugin(Observer);
 
+	const MOBILE_BREAKPOINT = 800;
+
 	let { children } = $props();
 
 	let width = $state(0);
 	let height = $state(0);
+	let mounted = $state(false);
 
-	// Scroll / swipe driven page switching across the ordered pages.
-	// No lock state: while a transition runs we simply pause the Observer's
-	// input, then resume it the instant the in-animation finishes. The "ignore
-	// window" is therefore exactly the transition itself — so one flick (and all
-	// of its momentum events) can only ever produce a single switch.
-	let observer: Observer;
+	const isDesktop = $derived(width > MOBILE_BREAKPOINT);
+	const showCombined = $derived(mounted && !isDesktop);
+
+	let observer: Observer | undefined;
 	let lastDirection: 1 | -1 = 1;
 
 	function resolveTarget(direction: 1 | -1) {
@@ -44,9 +46,7 @@
 
 		lastDirection = direction;
 
-		// Stop listening for the duration of the transition; `animateIn` resumes
-		// it. Momentum events that arrive meanwhile are simply not observed.
-		observer.disable();
+		observer?.disable();
 
 		gsap.to('.intro-content', {
 			opacity: 0,
@@ -67,7 +67,6 @@
 				duration: 0.5,
 				ease: 'power3.out',
 				clearProps: 'transform',
-				// Transition finished — start listening for the next gesture again.
 				onComplete: () => observer?.enable()
 			}
 		);
@@ -116,40 +115,91 @@
 			);
 	}
 
+	function pageKeyFromPath(pathname: string) {
+		return pageOrder.find((key) => pageHref(key, getLocale()) === pathname) ?? null;
+	}
+
+	// Mobile: a "navigation" is really just a scroll to the matching section of
+	// the single combined page.
+	async function scrollToSection(pathname: string) {
+		const key = pageKeyFromPath(pathname);
+		if (!key) return;
+
+		if (key === 'home') {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+			return;
+		}
+
+		await tick();
+		document.getElementById(`section-${key}`)?.scrollIntoView({
+			behavior: 'smooth',
+			block: 'start'
+		});
+	}
+
 	afterNavigate(({ type }) => {
 		if (type === 'enter') return;
-		animateIn();
+
+		if (isDesktop) {
+			animateIn();
+		} else {
+			scrollToSection(page.url.pathname);
+		}
+	});
+
+	$effect(() => {
+		if (!mounted) return;
+
+		if (isDesktop) {
+			observer ??= Observer.create({
+				target: window,
+				type: 'wheel,touch',
+				wheelSpeed: -1,
+				tolerance: 10,
+				preventDefault: true,
+				onUp: () => switchPage(1),
+				onDown: () => switchPage(-1)
+			});
+		} else {
+			observer?.kill();
+			observer = undefined;
+		}
+	});
+
+	let didInitialScroll = false;
+	$effect(() => {
+		if (showCombined && !didInitialScroll) {
+			didInitialScroll = true;
+			scrollToSection(page.url.pathname);
+		}
 	});
 
 	onMount(() => {
+		mounted = true;
 		startAnimation();
 
-		observer = Observer.create({
-			target: window,
-			type: 'wheel,touch',
-			wheelSpeed: -1,
-			tolerance: 10,
-			preventDefault: true,
-			onUp: () => switchPage(1),
-			onDown: () => switchPage(-1)
-		});
-
-		return () => observer.kill();
+		return () => observer?.kill();
 	});
 </script>
 
 <svelte:window bind:innerWidth={width} bind:innerHeight={height} />
 
 <div class="viewport-wrapper">
-	<main class="intro-container">
+	<main class="intro-container" class:combined={showCombined}>
 		<div class="intro-avatar">
 			<Avatar {width} {height} />
 		</div>
 		<div class="intro-content" style="opacity: 0">
-			{@render children()}
+			{#if showCombined}
+				<AllSections />
+			{:else}
+				{@render children()}
+			{/if}
 		</div>
 	</main>
-	<Menu />
+	{#if !showCombined}
+		<Menu />
+	{/if}
 </div>
 
 <style lang="scss">
@@ -160,6 +210,12 @@
 		place-items: center;
 		place-content: center;
 		overflow: hidden;
+
+		@media (max-width: 800px) {
+			place-items: start;
+			place-content: start;
+			overflow: visible;
+		}
 	}
 
 	.intro {

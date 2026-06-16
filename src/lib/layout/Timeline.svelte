@@ -7,7 +7,7 @@
 	{@render children?.()}
 
 	<style lang="scss">
-		section {
+		section:not(.page-section) {
 			position: relative;
 			display: flex;
 			flex-direction: column;

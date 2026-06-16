@@ -3,7 +3,7 @@
 
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 
-	let { sideMode }: { sideMode?: boolean } = $props();
+	let { sideMode, mobile }: { sideMode?: boolean; mobile?: boolean } = $props();
 
 	const contacts = [
 		{
@@ -34,7 +34,7 @@
 	];
 </script>
 
-<footer class:side={sideMode}>
+<footer class:side={sideMode} class:mobile>
 	<ul class="contact-container">
 		{#each contacts as contact (contact.name)}
 			<li>
@@ -48,6 +48,10 @@
 	<p>
 		{#if sideMode}
 			<LanguageSwitcher />
+		{/if}
+		{#if mobile}
+			<LanguageSwitcher />
+			&middot;
 		{/if}
 		<span>&copy; {new Date().getFullYear()} Aries Cs</span>
 		{#if !sideMode}
@@ -71,6 +75,10 @@
 		margin-bottom: -4.5rem;
 		flex-direction: column;
 		place-content: center;
+
+		&.mobile {
+			padding-bottom: 2.5rem;
+		}
 
 		p {
 			display: flex;
