@@ -97,7 +97,7 @@
 		> h1 {
 			font-size: 2rem;
 			font-weight: 600;
-            color: #000;
+			color: #000;
 		}
 	}
 </style>
