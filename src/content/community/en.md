@@ -30,9 +30,7 @@ System Development Team Member
 <section>
 <hgroup>
 
-## SITCON
-
-**2019 - 2020**
+## SITCON 2019, 2020
 
 _Students’ Information Technology Conference_
 
