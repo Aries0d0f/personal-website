@@ -15,6 +15,7 @@ layout: timeline
 ## Senior Frontend Enginner - Leukocyte-Lab
 
 _<Icon class="icon" icon="fa7-solid:location-dot" /> Taipei, Taiwan_
+
 </hgroup>
 
 Built and led frontend work for cybersecurity products, turning complex security workflows into usable product experiences.
@@ -29,6 +30,7 @@ Built and led frontend work for cybersecurity products, turning complex security
 ## Volunteer - Li Mei-Shu Memorial Gallery
 
 _<Icon class="icon" icon="fa7-solid:location-dot" /> New Taipei, Taiwan_
+
 </hgroup>
 
 Supported a cultural NPO by building websites, internal tools, and practical IT infrastructure from the ground up.

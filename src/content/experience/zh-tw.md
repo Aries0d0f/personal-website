@@ -15,6 +15,7 @@ layout: timeline
 ## 資深前端工程師 - 盧氪賽忒股份有限公司
 
 _<Icon class="icon" icon="fa7-solid:location-dot" /> 台北，臺灣_
+
 </hgroup>
 
 為資安產品打造並主導前端開發，將複雜的資安流程轉化為易於使用的產品體驗。
@@ -29,6 +30,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 台北，臺灣_
 ## 資訊組志工 - 李梅樹紀念館
 
 _<Icon class="icon" icon="fa7-solid:location-dot" /> 新北，臺灣_
+
 </hgroup>
 
 協助文化型非營利組織從零建立網站、內部工具與實用的 IT 基礎設施。

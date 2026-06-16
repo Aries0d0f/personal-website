@@ -9,7 +9,8 @@ export const load: PageLoad = async ({ params }) => {
 	const { slug } = params;
 
 	const modules = import.meta.glob('/src/content/**/*.md');
-	const resolver = modules[`/src/content/${slug}/${lang}.md`] || modules[`/src/content/${slug}/en.md`];
+	const resolver =
+		modules[`/src/content/${slug}/${lang}.md`] || modules[`/src/content/${slug}/en.md`];
 	if (!resolver) throw error(404, 'Not found');
 
 	const post = (await resolver()) as {
