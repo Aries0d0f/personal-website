@@ -9,7 +9,8 @@
 	const titles: Record<PageKey, () => string> = {
 		home: m.pages_home_title,
 		experience: m.pages_experience_title,
-		community: m.pages_community_title
+		community: m.pages_community_title,
+		skill: m.pages_skills_title,
 	};
 
 	const currentLang = $derived(getLocale());
