@@ -3,6 +3,8 @@
 
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 
+	let { sideMode }: { sideMode?: boolean } = $props();
+
 	const contacts = [
 		{
 			name: 'Email',
@@ -32,7 +34,7 @@
 	];
 </script>
 
-<footer>
+<footer class:side={sideMode}>
 	<ul class="contact-container">
 		{#each contacts as contact (contact.name)}
 			<li>
@@ -44,17 +46,20 @@
 		{/each}
 	</ul>
 	<p>
-		<LanguageSwitcher />
-		&middot;
+		{#if sideMode}
+			<LanguageSwitcher />
+		{/if}
 		<span>&copy; {new Date().getFullYear()} Aries Cs</span>
-		&middot;
-		<a
-			href="https://github.com/Aries0d0f/personal-website/blob/main/LICENSE"
-			target="_blank"
-			rel="external noopener noreferrer"
-		>
-			<span>CC BY-SA 4.0</span>
-		</a>
+		{#if !sideMode}
+			&middot;
+			<a
+				href="https://github.com/Aries0d0f/personal-website/blob/main/LICENSE"
+				target="_blank"
+				rel="external noopener noreferrer"
+			>
+				<span>CC BY-SA 4.0</span>
+			</a>
+		{/if}
 	</p>
 </footer>
 
@@ -91,6 +96,41 @@
 
 		@media (max-width: 414px) {
 			white-space: nowrap;
+		}
+
+		&.side {
+			gap: 1rem;
+			flex-direction: row;
+			position: absolute;
+			top: 0;
+			place-content: space-between;
+			place-items: center;
+			height: 100%;
+			width: 36px;
+			padding: 1rem 0;
+
+			.contact {
+				&-container {
+					gap: 0.5rem;
+				}
+
+				font-size: 18px;
+				flex-direction: row-reverse;
+
+				&:not(:hover) {
+					color: #aaa;
+				}
+
+				> span {
+					top: unset;
+					right: calc(100% + 0.5rem);
+					writing-mode: horizontal-tb;
+				}
+
+				@media (max-height: 680px) and (orientation: landscape) {
+					display: none;
+				}
+			}
 		}
 	}
 

@@ -3,28 +3,27 @@
 	import { resolve } from '$app/paths';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { pageOrder, pageHref, type PageKey } from '$lib/pages';
+	import Footer from './Footer.svelte';
+
+	const titles: Record<PageKey, () => string> = {
+		home: m.pages_home_title,
+		experience: m.pages_experience_title,
+		community: m.pages_community_title
+	};
 
 	const currentLang = $derived(getLocale());
-	const menuItems = $derived([
-		{
-			name: 'Home',
-			title: m.pages_home_title(),
-			href: `/${currentLang}`
-		},
-		{
-			name: 'Experience',
-			title: m.pages_experience_title(),
-			href: `/${currentLang}/experience`
-		},
-		{
-			name: 'Community',
-			title: m.pages_community_title(),
-			href: `/${currentLang}/community`
-		}
-	] as const);
+	const menuItems = $derived(
+		pageOrder.map((key) => ({
+			name: key,
+			title: titles[key](),
+			href: pageHref(key, currentLang)
+		}))
+	);
 </script>
 
 <menu>
+	<Footer sideMode={true} />
 	<ul>
 		{#each menuItems as item (item.name)}
 			<li class:active={page.url.pathname === item.href}>
@@ -41,13 +40,18 @@
 		position: fixed;
 		display: flex;
 		height: 100dvh;
-        top: 0;
+		top: 0;
 		right: 0;
 		place-items: center;
 		place-content: center;
 		width: fit-content;
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
+
+		@media (max-height: 680px) and (orientation: landscape) {
+			place-content: start;
+			padding: 1rem 0;
+		}
 
 		ul {
 			display: flex;
@@ -56,6 +60,7 @@
 			list-style: none;
 			margin: 0;
 			padding: 0 0.5rem;
+			z-index: 10;
 
 			li {
 				color: #aaa;
@@ -73,6 +78,10 @@
 					color: inherit;
 					text-decoration: none;
 				}
+			}
+
+			@media (max-height: 768px) and (orientation: landscape) {
+				gap: 1.5rem;
 			}
 		}
 	}

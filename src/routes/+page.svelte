@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
-
 	import { m } from '$lib/paraglide/messages.js';
+
+	import Footer from '$lib/components/Footer.svelte';
 </script>
 
 <article>
@@ -13,6 +14,7 @@
 		{/snippet}
 	</ParaglideMessage>
 </article>
+<Footer />
 
 <style lang="scss">
 	article {
