@@ -24,7 +24,7 @@
 		const target = localizeHref(page.url.pathname + page.url.search, {
 			locale
 		}) as ResolvedPathname;
-		goto(target, { keepFocus: true, noScroll: true });
+		goto(target, { keepFocus: true, noScroll: false });
 	}
 </script>
 
