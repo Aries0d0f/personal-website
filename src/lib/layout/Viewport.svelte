@@ -137,8 +137,6 @@
 		return pageOrder.find((key) => pageHref(key, getLocale()) === pathname) ?? null;
 	}
 
-	// Mobile: a "navigation" is really just a scroll to the matching section of
-	// the single combined page.
 	async function scrollToSection(pathname: string) {
 		const key = pageKeyFromPath(pathname);
 		if (!key) return;
@@ -149,10 +147,13 @@
 		}
 
 		await tick();
-		document.getElementById(`section-${key}`)?.scrollIntoView({
-			behavior: 'smooth',
-			block: 'start'
-		});
+
+		setTimeout(() => {
+			document.getElementById(`section-${key}`)?.scrollIntoView({
+				behavior: 'smooth',
+				block: 'start'
+			});
+		}, 300);
 	}
 
 	afterNavigate(({ type }) => {
@@ -194,7 +195,18 @@
 
 	onMount(() => {
 		mounted = true;
-		startAnimation();
+
+		if (showCombined) {
+			if (pageKeyFromPath(page.url.pathname) === 'home') {
+				startAnimation();
+			} else {
+				gsap.set('.intro-content', { opacity: 1, display: 'flex', clearProps: 'transform' });
+				gsap.set('menu', { opacity: 1, translateX: '0%' });
+				scrollToSection(page.url.pathname);
+			}
+		} else {
+			startAnimation();
+		}
 
 		return () => observer?.kill();
 	});
