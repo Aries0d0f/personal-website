@@ -31,14 +31,13 @@
 
 	//#region Game Mode Only Logic
 	let gameStatus = $state(page.status);
-	const isStage1Clear = $derived(gameStatus === 200);
+	const isFirstStageClear = $derived(gameStatus === 200);
 
-	const { gameDescription, gameBackButton, stageClearTitle, stageClearDescription } = useGameScript(
-		{
-			isStageClear: () => isStage1Clear,
-			onStageClear: nextGameStage
-		}
-	);
+	const { gameDescription, gameBackButton, firstStageClearTitle, firstStageClearDescription } =
+		useGameScript({
+			isFirstStageClear: () => isFirstStageClear,
+			onFirstStageClear: nextGameStage
+		});
 
 	function handleGameButtonClick() {
 		if (gameDescription.isTyping) {
@@ -71,10 +70,10 @@
 	<div class="error-wrapper" data-game-mode={$isGameMode}>
 		<img src="/avatar.gif" alt="Avatar" />
 		<article>
-			{#if isStage1Clear}
+			{#if isFirstStageClear}
 				<h1>200</h1>
-				<h2>{stageClearTitle.current}</h2>
-				<p>{stageClearDescription.current}</p>
+				<h2>{firstStageClearTitle.current}</h2>
+				<p>{firstStageClearDescription.current}</p>
 			{:else}
 				{#if $isGameMode}
 					<input bind:value={gameStatus} type="number" />
