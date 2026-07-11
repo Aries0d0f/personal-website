@@ -15,6 +15,7 @@ export const useGameScript = () => {
 		[4, m.game_mode_description_script_after_back_to_game_4()],
 		[5, m.game_mode_description_script_after_back_to_game_5()],
 		[6, m.game_mode_description_script_after_back_to_game_6()],
+		[7, m.game_mode_description_script_after_back_to_game_7()],
 		[10, m.game_mode_description_script_after_back_to_game_10()],
 		[100, m.game_mode_description_script_after_back_to_game_100()],
 		[999, m.game_mode_description_script_after_back_to_game_999()]
@@ -53,12 +54,17 @@ export const useGameScript = () => {
 		}
 	});
 
-	const gameBackButton = derived(backButtonClickedTimes, ($backButtonClickedTimes) =>
+	const gameBackButtonText = derived(backButtonClickedTimes, ($backButtonClickedTimes) =>
 		$backButtonClickedTimes >= 1 ? m.game_back_to_game() : m.pages_error_back_to_home()
 	);
 
-	const message = fromStore(gameDescriptionMessage);
-	const gameDescription = useTypewriter(() => message.current);
+	const gameDescription = useTypewriter(() => fromStore(gameDescriptionMessage).current);
+	const gameBackButton = useTypewriter(() => fromStore(gameBackButtonText).current, {
+		startAt: 12,
+		startDelay: 5000,
+		baseInterval: 150,
+		skipFirst: true
+	});
 
 	return {
 		gameDescription,

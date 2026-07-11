@@ -32,7 +32,11 @@
 
 	function handleGameButtonClick() {
 		if (gameDescription.isTyping) {
-			gameDescription.skip();
+			// Only skip the typing effect if the user has clicked the back button 3 or more times
+			// (Stage performing necessary)
+			if ($backButtonClickedTimes >= 3) {
+				gameDescription.skip();
+			}
 			return;
 		} else {
 			backButtonClickedTimes.update((n) => n + 1);
@@ -94,7 +98,7 @@
 				/>
 			</svg>
 
-			{$gameBackButton}
+			{gameBackButton.current}
 		</button>
 	{:else}
 		<a href="/{currentLang}" rel="external">
