@@ -58,7 +58,7 @@ export const useGameStore = () => {
 		isGameMode: derived(state.active, ($active) => $active),
 		gameStartAt: derived(state.gameStartAt, ($gameStartAt) => $gameStartAt),
 		gameStartSeconds: derived([state.gameStartAt, timer], timeSecDeltaCalc),
-		lastMessageUpdateSeconds: derived([state.lastMessageUpdatedAt, timer], timeSecDeltaCalc),
+		lastMessageUpdateSeconds: derived([state.lastMessageUpdatedAt, timer], timeSecDeltaCalc)
 	};
 
 	const actions = {
