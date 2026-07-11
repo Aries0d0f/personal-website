@@ -10,6 +10,7 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Menu from '$lib/components/Menu.svelte';
 	import AllSections from '$lib/layout/AllSections.svelte';
+	import { useCRT } from '$lib/helpers/crt.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { pageOrder, pageHref, type PageKey } from '$lib/pages';
 
@@ -17,7 +18,22 @@
 
 	const MOBILE_BREAKPOINT = 840;
 
+	const KONAMI_CODE = [
+		'ArrowUp',
+		'ArrowUp',
+		'ArrowDown',
+		'ArrowDown',
+		'ArrowLeft',
+		'ArrowRight',
+		'ArrowLeft',
+		'ArrowRight',
+		'b',
+		'a'
+	];
+
 	let { children } = $props();
+
+	const { powerCycle } = useCRT();
 
 	let width = $state(0);
 	let height = $state(0);
@@ -63,8 +79,41 @@
 		});
 	}
 
+	const isPrefix = (keys: string[]) => keys.every((key, i) => key === KONAMI_CODE[i]);
+
+	// True once the key belongs to the konami code rather than to page navigation,
+	// so the arrows stop paging the site out from under the sequence.
+	function konamiConsumes(event: KeyboardEvent) {
+		const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+
+		const next = [...sequence, key];
+		while (next.length && !isPrefix(next)) next.shift();
+		sequence = next;
+
+		if (konamiTimer) clearTimeout(konamiTimer);
+		konamiTimer = setTimeout(() => {
+			sequence = [];
+		}, 1500);
+
+		if (sequence.length === KONAMI_CODE.length) {
+			clearTimeout(konamiTimer);
+			sequence = [];
+			startGameMode();
+			return true;
+		}
+
+		return sequence.length >= 3;
+	}
+
 	function handleKeyNavigation(event: KeyboardEvent) {
-		if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+		if (event.altKey || event.ctrlKey || event.metaKey) return;
+
+		if (konamiConsumes(event)) {
+			event.preventDefault();
+			return;
+		}
+
+		if (event.shiftKey) return;
 
 		switch (event.key) {
 			case 'ArrowDown':
@@ -84,34 +133,11 @@
 		}
 	}
 
-	function handleKonamiCode(event: KeyboardEvent) {
-		const konamiCode = [
-			'ArrowUp',
-			'ArrowUp',
-			'ArrowDown',
-			'ArrowDown',
-			'ArrowLeft',
-			'ArrowRight',
-			'ArrowLeft',
-			'ArrowRight',
-			'b',
-			'a'
-		];
-		sequence.push(event.key);
-
-		if (konamiTimer) clearTimeout(konamiTimer);
-		konamiTimer = setTimeout(() => {
-			sequence = [];
-		}, 1000);
-
-		if (sequence.join('').includes(konamiCode.join(''))) {
-			startGameMode();
-		}
-	}
-
 	function startGameMode() {
-		console.log('Konami code activated! Starting game mode...');
-		goto(resolve('/game'));
+		observer?.disable();
+		gsap.killTweensOf('.intro-content');
+
+		void powerCycle(() => goto(resolve(`/${getLocale()}/game`)));
 	}
 
 	function animateIn() {
@@ -332,12 +358,7 @@
 	});
 </script>
 
-<svelte:window
-	bind:innerWidth={width}
-	bind:innerHeight={height}
-	onkeydown={handleKeyNavigation}
-	onkeyup={handleKonamiCode}
-/>
+<svelte:window bind:innerWidth={width} bind:innerHeight={height} onkeydown={handleKeyNavigation} />
 
 <div class="viewport-wrapper">
 	<main class="intro-container" class:combined={showCombined}>

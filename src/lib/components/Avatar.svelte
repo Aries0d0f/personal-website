@@ -7,13 +7,18 @@
 	import { browser } from '$app/environment';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { useGameStore } from '$lib/store/game';
+	import { useCRT } from '$lib/helpers/crt.svelte';
 	import avatarImgNoBg from '$lib/assets/avatar-nbg.png';
+	import avatarImgGameMode from '$lib/assets/avatar-nbg-gamemode.png';
 	import avatarImg from '$lib/assets/avatar.jpg';
 
 	let { width, height } = $props<{
 		width: number;
 		height: number;
 	}>();
+
+	const { isGameMode } = useGameStore();
 
 	const BASE_IMG_WIDTH = 423;
 
@@ -169,6 +174,24 @@
 				'<'
 			);
 	}
+
+	function switchGameModeAvatar() {
+		setTimeout(() => {
+			gsap.to('#image-source-no-bg', {
+				attr: { 'xlink:href': avatarImgGameMode },
+				duration: 0.5,
+				ease: 'power3.out'
+			});
+		}, 1000);
+	}
+
+	const crt = useCRT();
+
+	$effect(() => {
+		if (crt.isRunning) {
+			switchGameModeAvatar();
+		}
+	});
 
 	onMount(() => {
 		startAnimation();
@@ -360,7 +383,7 @@
 				width="2732"
 				height="4096"
 				preserveAspectRatio="none"
-				xlink:href={avatarImgNoBg}
+				xlink:href={$isGameMode ? avatarImgGameMode : avatarImgNoBg}
 			/>
 		</defs>
 	</svg>

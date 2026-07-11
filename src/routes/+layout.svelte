@@ -4,9 +4,14 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { syncLocale } from '$lib/i18n.svelte';
 	import Viewport from '$lib/layout/Viewport.svelte';
+	import CrtScreen from '$lib/components/CrtScreen.svelte';
+	import { useGameStore } from '$lib/store/game';
 
 	let { children } = $props();
 
+	let screenEl = $state<HTMLDivElement>();
+
+	const { isGameMode } = useGameStore();
 	const currentLang = $derived(getLocale());
 	const accentFill = $derived.by(() => {
 		switch (currentLang) {
@@ -51,7 +56,7 @@
 	<link rel="icon" type="image/gif" href="/avatar.gif" />
 </svelte:head>
 
-<div class="viewport-container" style="--accent-fill: {accentFill}">
+<div class="viewport-container" bind:this={screenEl} style="--accent-fill: {accentFill}">
 	{#if page.status >= 400}
 		{@render children()}
 	{:else}
@@ -60,6 +65,9 @@
 		</Viewport>
 	{/if}
 </div>
+
+<!-- Sibling, not child, so the overlay skips the collapse transform. -->
+<CrtScreen screen={screenEl} active={$isGameMode} />
 
 <style lang="scss">
 	:global {
