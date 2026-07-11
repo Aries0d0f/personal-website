@@ -20,6 +20,15 @@ declare global {
 		// interface PageData {}
 		// interface PageState {}
 	}
+
+	// Dev-only handle for scrubbing the CRT power cycle in GSDevTools.
+	interface Window {
+		crt?: {
+			debug: () => Promise<void>;
+			close: () => void;
+			preview: (callback: () => void) => void;
+		};
+	}
 }
 
 export {};
