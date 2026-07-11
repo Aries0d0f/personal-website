@@ -1,5 +1,5 @@
 import { getContext, hasContext, setContext } from 'svelte';
-import { writable, derived, readable } from 'svelte/store';
+import { writable, derived, readable, get } from 'svelte/store';
 
 import type { Page } from '@sveltejs/kit';
 import type { Writable } from 'svelte/store';
@@ -63,7 +63,12 @@ export const useGameStore = () => {
 
 	const actions = {
 		detectGameMode: (page: Page) => {
-			state.active.set(page.params.slug === 'game' && page.status === 404);
+			// Keep on once the game mode is activated, even if the user navigates to another page.
+			if (get(state.active)) {
+				return;
+			}
+
+			state.active.set(page.params.slug === 'game');
 			state.gameStartAt.set(page.params.slug === 'game' ? new Date() : null);
 		}
 	};
