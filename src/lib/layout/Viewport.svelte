@@ -10,6 +10,7 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Menu from '$lib/components/Menu.svelte';
 	import AllSections from '$lib/layout/AllSections.svelte';
+	import { useGameStore } from '$lib/store/game';
 	import { useCRT } from '$lib/helpers/crt.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { pageOrder, pageHref, type PageKey } from '$lib/pages';
@@ -33,6 +34,7 @@
 
 	let { children } = $props();
 
+	const { isGameMode } = useGameStore();
 	const { powerCycle } = useCRT();
 
 	let width = $state(0);
@@ -373,7 +375,7 @@
 			{/if}
 		</div>
 	</main>
-	{#if !showCombined}
+	{#if !showCombined && !$isGameMode}
 		<Menu />
 	{/if}
 </div>

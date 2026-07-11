@@ -182,7 +182,7 @@
 				duration: 0.5,
 				ease: 'power3.out'
 			});
-		}, 1000);
+		}, 360);
 	}
 
 	const crt = useCRT();
