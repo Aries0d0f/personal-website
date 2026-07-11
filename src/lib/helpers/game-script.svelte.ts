@@ -93,7 +93,8 @@ export const useGameScript = (options: Options = {}) => {
 		() => fromStore(gameDescriptionMessageWithFallbackHint).current
 	);
 	const gameBackButton = useTypewriter(() => fromStore(gameBackButtonText).current, {
-		startAt: 12,
+		// Keep the "back to home" label on screen and only rewrite the tail of it.
+		startAt: m.pages_error_back_to_home().length,
 		startDelay: 7500,
 		baseInterval: 150,
 		skipFirst: true
@@ -113,7 +114,8 @@ export const useGameScript = (options: Options = {}) => {
 			delayMap: {
 				' ': 10,
 				'\b': 30,
-				'!': 100
+				'!': 100,
+				'！': 100
 			}
 		}
 	);
@@ -125,7 +127,10 @@ export const useGameScript = (options: Options = {}) => {
 			delayMap: {
 				' ': 10,
 				'\n': 100,
-				'!': 100
+				'!': 100,
+				'！': 100,
+				'、': 100,
+				'，': 100
 			}
 		}
 	);
