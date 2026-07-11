@@ -3,6 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { syncLocale } from '$lib/i18n.svelte';
+	import { useNavigationLock } from '$lib/helpers/navigation-lock.svelte';
 	import Viewport from '$lib/layout/Viewport.svelte';
 	import CrtScreen from '$lib/components/CrtScreen.svelte';
 	import { useGameStore } from '$lib/store/game';
@@ -12,6 +13,9 @@
 	let screenEl = $state<HTMLDivElement>();
 
 	const { isGameMode } = useGameStore();
+
+	// No escaping the game through the browser chrome.
+	useNavigationLock(() => $isGameMode);
 	const currentLang = $derived(getLocale());
 	const accentFill = $derived.by(() => {
 		switch (currentLang) {
