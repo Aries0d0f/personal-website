@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { useGameScript } from '$lib/helpers/game-script.svelte';
@@ -28,7 +30,15 @@
 	});
 
 	//#region Game Mode Only Logic
-	const { gameDescription, gameBackButton } = useGameScript();
+	let gameStatus = $state(page.status);
+	const isStage1Clear = $derived(gameStatus === 200);
+
+	const { gameDescription, gameBackButton, stageClearTitle, stageClearDescription } = useGameScript(
+		{
+			isStageClear: () => isStage1Clear,
+			onStageClear: nextGameStage
+		}
+	);
 
 	function handleGameButtonClick() {
 		if (gameDescription.isTyping) {
@@ -41,6 +51,10 @@
 		} else {
 			backButtonClickedTimes.update((n) => n + 1);
 		}
+	}
+
+	function nextGameStage() {
+		goto(resolve(`/${currentLang}`));
 	}
 	//#endregion
 
@@ -57,12 +71,22 @@
 	<div class="error-wrapper" data-game-mode={$isGameMode}>
 		<img src="/avatar.gif" alt="Avatar" />
 		<article>
-			<h1>{page.status}</h1>
-			<h2>{title}</h2>
-			{#if $isGameMode}
-				<p>{gameDescription.current}</p>
+			{#if isStage1Clear}
+				<h1>200</h1>
+				<h2>{stageClearTitle.current}</h2>
+				<p>{stageClearDescription.current}</p>
 			{:else}
-				<p>{description}</p>
+				{#if $isGameMode}
+					<input bind:value={gameStatus} type="number" />
+				{:else}
+					<h1>{page.status}</h1>
+				{/if}
+				<h2>{title}</h2>
+				{#if $isGameMode}
+					<p>{gameDescription.current}</p>
+				{:else}
+					<p>{description}</p>
+				{/if}
 			{/if}
 		</article>
 	</div>
@@ -230,6 +254,13 @@
 			padding: 2rem;
 
 			&[data-game-mode='true'] {
+				background-color: #000;
+				border-radius: 100rem;
+
+				> img {
+					border-radius: 100rem;
+				}
+
 				> article {
 					width: 40rem;
 					max-width: 100%;
@@ -261,10 +292,27 @@
 				border-left: 1px solid rgba(255, 255, 255, 0.2);
 				padding: 0 4rem;
 
-				h1 {
+				h1,
+				input {
 					font-size: 8rem;
 					font-weight: 500;
 					font-variant-numeric: tabular-nums;
+				}
+
+				input {
+					appearance: none;
+					background: none;
+					border: none;
+					padding: 0;
+					margin: 0;
+					outline: none;
+					color: inherit;
+					font-family: inherit;
+					&::-webkit-outer-spin-button,
+					&::-webkit-inner-spin-button {
+						-webkit-appearance: none;
+						margin: 0;
+					}
 				}
 
 				h2 {

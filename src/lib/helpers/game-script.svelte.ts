@@ -1,12 +1,24 @@
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { derived, fromStore } from 'svelte/store';
 
+import { useCRT } from '$lib/helpers/crt.svelte';
+import { useGlitch } from '$lib/helpers/glitch.svelte';
 import { useTypewriter } from '$lib/helpers/typewriter.svelte';
 import { m } from '$lib/paraglide/messages.js';
 import { useGameStore } from '$lib/store/game';
 
-export const useGameScript = () => {
+interface Options {
+	/** Whether the player has cleared stage 1 (i.e. forced the status code to 200). */
+	isStageClear?: () => boolean;
+	/** Fires once the stage clear text has fully melted down, to hand over to the next stage. */
+	onStageClear?: () => void;
+}
+
+export const useGameScript = (options: Options = {}) => {
+	const { isStageClear = () => false, onStageClear } = options;
+
 	const { lastMessageUpdatedAt, lastMessageUpdateSeconds, backButtonClickedTimes } = useGameStore();
+	const { interference, burnOut } = useCRT();
 
 	const gameButtonClickedTimesMessageMap = new SvelteMap([
 		[1, m.game_mode_description_script_after_back_to_game_1()],
@@ -92,8 +104,49 @@ export const useGameScript = () => {
 		lastMessageUpdatedAt.set(new Date());
 	});
 
+	const stageClearTitleText = useTypewriter(
+		() => (isStageClear() ? m.game_mode_stage_1_clear_title() : ''),
+		{
+			// Keep the shared prefix of the 404 title on screen and only rewrite the tail of it.
+			startAt: m.pages_error_404_title().length,
+			baseInterval: 30,
+			delayMap: {
+				' ': 10,
+				'\b': 30,
+				'!': 100
+			}
+		}
+	);
+	const stageClearDescriptionText = useTypewriter(
+		() => (isStageClear() ? m.game_mode_description_script_stage_1_clear() : ''),
+		{
+			baseInterval: 10,
+			startDelay: 1000,
+			delayMap: {
+				' ': 10,
+				'\n': 100,
+				'!': 100
+			}
+		}
+	);
+
+	// The whole page takes the hit the moment the status flips, the same way it did on
+	// the way into game mode. The text keeps corrupting from there.
+	$effect(() => {
+		if (isStageClear()) void interference();
+	});
+
+	const stageClearTitle = useGlitch(() => stageClearTitleText.current, isStageClear);
+	const stageClearDescription = useGlitch(() => stageClearDescriptionText.current, isStageClear, {
+		// Once the text is gone, the tube overloads: brighter and brighter under the
+		// static until it whites out, and the way home is hidden inside the blowout.
+		onComplete: () => void burnOut(() => onStageClear?.())
+	});
+
 	return {
 		gameDescription,
-		gameBackButton
+		gameBackButton,
+		stageClearTitle,
+		stageClearDescription
 	};
 };
