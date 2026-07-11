@@ -21,12 +21,14 @@ declare global {
 		// interface PageState {}
 	}
 
-	// Dev-only handle for scrubbing the CRT power cycle in GSDevTools.
+	// Dev-only handle for scrubbing the CRT cycles in GSDevTools.
 	interface Window {
 		crt?: {
-			debug: () => Promise<void>;
+			debug: (cycle?: 'power' | 'burn') => Promise<void>;
 			close: () => void;
 			preview: (callback: () => void) => void;
+			glitch: () => Promise<void>;
+			burn: (callback: () => void) => Promise<void>;
 		};
 	}
 }
