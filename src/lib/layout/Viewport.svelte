@@ -22,6 +22,8 @@
 	let width = $state(0);
 	let height = $state(0);
 	let mounted = $state(false);
+	let sequence: string[] = $state([]);
+	let konamiTimer = $state<ReturnType<typeof setTimeout>>();
 
 	const isDesktop = $derived(width > MOBILE_BREAKPOINT);
 	const showCombined = $derived(mounted && !isDesktop);
@@ -80,6 +82,36 @@
 				switchPage(-1);
 				break;
 		}
+	}
+
+	function handleKonamiCode(event: KeyboardEvent) {
+		const konamiCode = [
+			'ArrowUp',
+			'ArrowUp',
+			'ArrowDown',
+			'ArrowDown',
+			'ArrowLeft',
+			'ArrowRight',
+			'ArrowLeft',
+			'ArrowRight',
+			'b',
+			'a'
+		];
+		sequence.push(event.key);
+
+		if (konamiTimer) clearTimeout(konamiTimer);
+		konamiTimer = setTimeout(() => {
+			sequence = [];
+		}, 1000);
+
+		if (sequence.join('').includes(konamiCode.join(''))) {
+			startGameMode();
+		}
+	}
+
+	function startGameMode() {
+		console.log('Konami code activated! Starting game mode...');
+		goto(resolve('/game'));
 	}
 
 	function animateIn() {
@@ -300,7 +332,12 @@
 	});
 </script>
 
-<svelte:window bind:innerWidth={width} bind:innerHeight={height} onkeydown={handleKeyNavigation} />
+<svelte:window
+	bind:innerWidth={width}
+	bind:innerHeight={height}
+	onkeydown={handleKeyNavigation}
+	onkeyup={handleKonamiCode}
+/>
 
 <div class="viewport-wrapper">
 	<main class="intro-container" class:combined={showCombined}>
