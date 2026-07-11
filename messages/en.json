@@ -14,5 +14,18 @@
 	"pages_error_5xx_title": "Server Error",
 	"pages_error_general_title": "Something Went Wrong",
 	"pages_error_general_description": "Well, this is embarrassing. | Oops! Something went wrong. | This is not what I expected either. | The server is having a bad day.",
-	"pages_error_back_to_home": "Back to Home"
+	"pages_error_back_to_home": "Back to Home",
+	"game_mode_title": "You want to play a game?",
+	"game_mode_description_default": "Maybe you should find the way out...?",
+	"game_mode_description_hint_1": "Look around.\nI'm sure you can find something useful.",
+	"game_back_to_game": "Back to Game",
+	"game_mode_description_script_after_back_to_game_1": "Oops! I forgot to change that!\nSince I'm a game, here's my home.\n\nSo, welcome back!",
+	"game_mode_description_script_after_back_to_game_2": "That didn't work, did it?\nI guess you need to find another way out.\nGood luck!",
+	"game_mode_description_script_after_back_to_game_3": "I told you that didn't work.",
+	"game_mode_description_script_after_back_to_game_4": "Human never learn from history,\ndo they?",
+	"game_mode_description_script_after_back_to_game_5": "You really want to get out, huh?\nI guess you need to find another way out.",
+	"game_mode_description_script_after_back_to_game_6": "You really enjoyed clicking that button,\ndidn't you?",
+	"game_mode_description_script_after_back_to_game_10": "I think that's enough.\nYou can stop clicking that button now.",
+	"game_mode_description_script_after_back_to_game_100": "100 clicks on useless buttons? Claps to you!",
+	"game_mode_description_script_after_back_to_game_999": "Wow, 999 clicks!\nYou really enjoyed clicking that button, didn't you?\nThat deserves a reward.Here's a hint: the way out is not through that button."
 }
