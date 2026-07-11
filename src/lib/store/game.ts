@@ -8,7 +8,7 @@ interface Model {
 	active: Writable<boolean>;
 	gameStartAt: Writable<Date | null>;
 	backButtonClickedTimes: Writable<number>;
-	lastBackButtonClickedAt: Writable<Date | null>;
+	lastMessageUpdatedAt: Writable<Date | null>;
 }
 
 const STORE_KEY = Symbol.for('GAME_STORE');
@@ -17,7 +17,7 @@ const createGameStore = () => {
 	return setContext<Model>(STORE_KEY, {
 		active: writable(false),
 		gameStartAt: writable(null),
-		lastBackButtonClickedAt: writable(null),
+		lastMessageUpdatedAt: writable(null),
 		backButtonClickedTimes: writable(0)
 	});
 };
@@ -50,6 +50,7 @@ export const useGameStore = () => {
 
 	const sharedState = {
 		timer,
+		lastMessageUpdatedAt: state.lastMessageUpdatedAt,
 		backButtonClickedTimes: state.backButtonClickedTimes
 	};
 
@@ -57,7 +58,7 @@ export const useGameStore = () => {
 		isGameMode: derived(state.active, ($active) => $active),
 		gameStartAt: derived(state.gameStartAt, ($gameStartAt) => $gameStartAt),
 		gameStartSeconds: derived([state.gameStartAt, timer], timeSecDeltaCalc),
-		lastBackButtonClickedSeconds: derived([state.lastBackButtonClickedAt, timer], timeSecDeltaCalc)
+		lastMessageUpdateSeconds: derived([state.lastMessageUpdatedAt, timer], timeSecDeltaCalc),
 	};
 
 	const actions = {
@@ -66,15 +67,6 @@ export const useGameStore = () => {
 			state.gameStartAt.set(page.params.slug === 'game' ? new Date() : null);
 		}
 	};
-
-	state.backButtonClickedTimes.subscribe(
-		() => {
-			state.lastBackButtonClickedAt.set(new Date());
-		},
-		() => {
-			state.lastBackButtonClickedAt.set(null);
-		}
-	);
 
 	return {
 		...sharedState,

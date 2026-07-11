@@ -6,7 +6,7 @@ import { m } from '$lib/paraglide/messages.js';
 import { useGameStore } from '$lib/store/game';
 
 export const useGameScript = () => {
-	const { gameStartSeconds, backButtonClickedTimes } = useGameStore();
+	const { lastMessageUpdatedAt, lastMessageUpdateSeconds, backButtonClickedTimes } = useGameStore();
 
 	const gameButtonClickedTimesMessageMap = new SvelteMap([
 		[1, m.game_mode_description_script_after_back_to_game_1()],
@@ -24,16 +24,16 @@ export const useGameScript = () => {
 	const gameButtonClickedTimesMessageRandomSet = new SvelteSet<string>([]);
 
 	const gameDescriptionMessage = derived(backButtonClickedTimes, ($backButtonClickedTimes) => {
+		console.log('clicked', $backButtonClickedTimes);
 		if ($backButtonClickedTimes === 0) {
-			return fromStore(gameStartSeconds).current > 10
-				? m.game_mode_description_hint_1()
-				: m.game_mode_description_default();
+			return m.game_mode_description_default();
 		} else {
 			for (const [times, message] of gameButtonClickedTimesMessageMap) {
 				if ($backButtonClickedTimes === times) {
 					if ($backButtonClickedTimes >= 3 && $backButtonClickedTimes <= 10) {
 						gameButtonClickedTimesMessageRandomSet.add(message);
 					}
+
 					return message;
 				}
 			}
@@ -53,17 +53,44 @@ export const useGameScript = () => {
 			return candidate;
 		}
 	});
-
 	const gameBackButtonText = derived(backButtonClickedTimes, ($backButtonClickedTimes) =>
 		$backButtonClickedTimes >= 1 ? m.game_back_to_game() : m.pages_error_back_to_home()
 	);
-
-	const gameDescription = useTypewriter(() => fromStore(gameDescriptionMessage).current);
+	const fallbackIndicator = derived(lastMessageUpdateSeconds, ($lastMessageUpdateSeconds) =>
+		Math.floor($lastMessageUpdateSeconds / 15)
+	);
+	const gameDescriptionMessageWithFallbackHint = derived(
+		[gameDescriptionMessage, backButtonClickedTimes, fallbackIndicator],
+		([$gameDescriptionMessage, $backButtonClickedTimes, $fallbackIndicator]) =>
+			$fallbackIndicator > 1
+				? $backButtonClickedTimes > 5
+					? [
+							m.game_mode_description_hint_4(),
+							m.game_mode_description_hint_3(),
+							m.game_mode_description_hint_2()
+						][Math.floor(Math.random() * 3)]
+					: $backButtonClickedTimes > 3
+						? [m.game_mode_description_hint_3(), m.game_mode_description_hint_2()][
+								Math.floor(Math.random() * 2)
+							]
+						: $backButtonClickedTimes > 2
+							? m.game_mode_description_hint_2()
+							: m.game_mode_description_hint_1()
+				: $gameDescriptionMessage
+	);
+	const gameDescription = useTypewriter(
+		() => fromStore(gameDescriptionMessageWithFallbackHint).current
+	);
 	const gameBackButton = useTypewriter(() => fromStore(gameBackButtonText).current, {
 		startAt: 12,
-		startDelay: 5000,
+		startDelay: 7500,
 		baseInterval: 150,
 		skipFirst: true
+	});
+
+	gameDescriptionMessage.subscribe(() => {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
+		lastMessageUpdatedAt.set(new Date());
 	});
 
 	return {
