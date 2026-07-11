@@ -24,7 +24,6 @@ export const useGameScript = () => {
 	const gameButtonClickedTimesMessageRandomSet = new SvelteSet<string>([]);
 
 	const gameDescriptionMessage = derived(backButtonClickedTimes, ($backButtonClickedTimes) => {
-		console.log('clicked', $backButtonClickedTimes);
 		if ($backButtonClickedTimes === 0) {
 			return m.game_mode_description_default();
 		} else {
