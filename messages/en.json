@@ -31,5 +31,7 @@
 	"game_mode_description_script_after_back_to_game_7": "You really enjoyed clicking that button,\ndidn't you?",
 	"game_mode_description_script_after_back_to_game_10": "I think that's enough.\nYou can stop clicking that button now.",
 	"game_mode_description_script_after_back_to_game_100": "100 clicks on a useless button? Hats off to you!",
-	"game_mode_description_script_after_back_to_game_999": "Wow, 999 clicks!\nYou really enjoyed clicking that button, didn't you?\nThat deserves a reward. Here's a hint: the way out is not through that button."
+	"game_mode_description_script_after_back_to_game_999": "Wow, 999 clicks!\nYou really enjoyed clicking that button, didn't you?\nThat deserves a reward. Here's a hint: the way out is not through that button.",
+	"game_mode_stage_1_clear_title": "Page Not Found\b\b\b\b\b\b\b\b\bFound",
+	"game_mode_description_script_stage_1_clear": "Wait, wait!, wait!!\nThat's not the way out!\nThat will break me!!!"
 }
