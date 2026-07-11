@@ -62,7 +62,7 @@ export const useGameStore = () => {
 
 	const actions = {
 		detectGameMode: (page: Page) => {
-			state.active.set(page.params.slug === 'game');
+			state.active.set(page.params.slug === 'game' && page.status === 404);
 			state.gameStartAt.set(page.params.slug === 'game' ? new Date() : null);
 		}
 	};

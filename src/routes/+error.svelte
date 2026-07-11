@@ -2,9 +2,15 @@
 	import { page } from '$app/state';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { useGameScript } from '$lib/helpers/game-script.svelte';
+	import { useGameStore } from '$lib/store/game';
+
+	const { isGameMode, backButtonClickedTimes, detectGameMode } = useGameStore();
 
 	const currentLang = $derived(getLocale());
-	const headTitle = $derived([page.status, page.error?.message].filter(Boolean).join(' '));
+	const headTitle = $derived(
+		$isGameMode ? m.game_mode_title() : [page.status, page.error?.message].filter(Boolean).join(' ')
+	);
 	const title = $derived(
 		page.status === 404
 			? m.pages_error_404_title()
@@ -20,6 +26,23 @@
 			.map((s) => s.trim());
 		return messages[Math.floor(Math.random() * messages.length)];
 	});
+
+	//#region Game Mode Only Logic
+	const { gameDescription, gameBackButton } = useGameScript();
+
+	function handleGameButtonClick() {
+		if (gameDescription.isTyping) {
+			gameDescription.skip();
+			return;
+		} else {
+			backButtonClickedTimes.update((n) => n + 1);
+		}
+	}
+	//#endregion
+
+	$effect(() => {
+		detectGameMode(page);
+	});
 </script>
 
 <svelte:head>
@@ -27,47 +50,87 @@
 </svelte:head>
 
 <div class="error-container">
-	<div class="error-wrapper">
+	<div class="error-wrapper" data-game-mode={$isGameMode}>
 		<img src="/avatar.gif" alt="Avatar" />
 		<article>
 			<h1>{page.status}</h1>
 			<h2>{title}</h2>
-			<p>{description}</p>
+			{#if $isGameMode}
+				<p>{gameDescription.current}</p>
+			{:else}
+				<p>{description}</p>
+			{/if}
 		</article>
 	</div>
-	<a href="/{currentLang}" rel="external">
-		<svg
-			class="deco-vertical"
-			width="10"
-			height="147"
-			viewBox="0 0 10 147"
-			fill="none"
-			xmlns="http://www.w3.org/2000/svg"
-		>
-			<path
-				d="M0.5 145.629V144.629M0.5 135.629L0.500488 0.129395L9.47679 33.6294"
-				stroke="white"
-				stroke-linecap="round"
-			/>
-		</svg>
+	{#if $isGameMode}
+		<button class="link" onclick={handleGameButtonClick}>
+			<svg
+				class="deco-vertical"
+				width="10"
+				height="147"
+				viewBox="0 0 10 147"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M0.5 145.629V144.629M0.5 135.629L0.500488 0.129395L9.47679 33.6294"
+					stroke="white"
+					stroke-linecap="round"
+				/>
+			</svg>
 
-		<svg
-			class="deco-horizontal"
-			width="93"
-			height="10"
-			viewBox="0 0 93 10"
-			fill="none"
-			xmlns="http://www.w3.org/2000/svg"
-		>
-			<path
-				d="M92.3911 9.47656L91.3911 9.47656M82.3911 9.47656L0.129395 9.47654L33.6294 0.50024"
-				stroke="white"
-				stroke-linecap="round"
-			/>
-		</svg>
+			<svg
+				class="deco-horizontal"
+				width="93"
+				height="10"
+				viewBox="0 0 93 10"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M92.3911 9.47656L91.3911 9.47656M82.3911 9.47656L0.129395 9.47654L33.6294 0.50024"
+					stroke="white"
+					stroke-linecap="round"
+				/>
+			</svg>
 
-		{m.pages_error_back_to_home()}
-	</a>
+			{$gameBackButton}
+		</button>
+	{:else}
+		<a href="/{currentLang}" rel="external">
+			<svg
+				class="deco-vertical"
+				width="10"
+				height="147"
+				viewBox="0 0 10 147"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M0.5 145.629V144.629M0.5 135.629L0.500488 0.129395L9.47679 33.6294"
+					stroke="white"
+					stroke-linecap="round"
+				/>
+			</svg>
+
+			<svg
+				class="deco-horizontal"
+				width="93"
+				height="10"
+				viewBox="0 0 93 10"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M92.3911 9.47656L91.3911 9.47656M82.3911 9.47656L0.129395 9.47654L33.6294 0.50024"
+					stroke="white"
+					stroke-linecap="round"
+				/>
+			</svg>
+
+			{m.pages_error_back_to_home()}
+		</a>
+	{/if}
 </div>
 
 <style lang="scss">
@@ -88,7 +151,8 @@
 			color: #fff;
 			gap: 4rem;
 
-			> a {
+			> a,
+			> button {
 				display: flex;
 				flex-direction: row;
 				place-items: center;
@@ -118,11 +182,21 @@
 				}
 			}
 
+			> button {
+				appearance: none;
+				font-family: inherit;
+				cursor: pointer;
+				margin: 0;
+				background: none;
+				border: none;
+			}
+
 			@media (max-width: 700px) {
 				flex-direction: column;
 				gap: 0rem;
 
-				> a {
+				> a,
+				> button {
 					writing-mode: horizontal-tb;
 					text-orientation: initial;
 					position: relative;
@@ -150,6 +224,19 @@
 			place-content: center;
 			gap: 2rem;
 			padding: 2rem;
+
+			&[data-game-mode='true'] {
+				> article {
+					width: 40rem;
+					max-width: 100%;
+
+					> p {
+						font-family: 'Courier New', Courier, monospace;
+						white-space: pre-wrap;
+						height: 1rem;
+					}
+				}
+			}
 
 			> img {
 				filter: brightness(150%);
