@@ -35,11 +35,19 @@ RESTful API, GraphQL, WebSocket, gRPC, Protobuf, GORM, OpenAPI, Nginx, Server Po
 
 TypeScript, JavaScript, Golang
 
+{#if currentAbnormality === Abnormality.AN10}
+
+TlhIngan Hol, Galactic Basic
+
+{:else}
+
 Node.js, Python, Shell Scripting
+
+{/if}
 
 </section>
 
-<section>
+<section size="{currentAbnormality === Abnormality.AN12 ? 'full' : undefined}">
 
 ## DevOps & Cloud Native
 
@@ -48,6 +56,8 @@ Kubernetes, Docker
 Helm, Terraform, Argo CD, GitHub Actions, Traefik, Istio, Jenkins
 
 </section>
+
+{#if currentAbnormality !== Abnormality.AN12}
 
 <section>
 
@@ -59,13 +69,25 @@ Cypress, Playwright, Chromatic, Sentry
 
 </section>
 
+{/if}
+
 <section size="full">
 
 ## Platform & Tools
 
+{#if currentAbnormality === Abnormality.AN13}
+
+Gobstone, Gargoyle, Pensieve, Elder Wands
+
+Pensieve, Nimbus 2000, Model Dragon, Howler
+
+{:else}
+
 Git, Linux, Google Cloud, Cloudflare Workers
 
 VMware ESXi, Proxmox VE, RouterOS, Figma
+
+{/if}
 
 </section>
 
