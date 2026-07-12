@@ -737,7 +737,7 @@
 				// sliding through them. `steps` is what sells it — an interpolated
 				// travel this short would read as a hum, not a flick.
 				&.flicking {
-					animation: crt-roll-flicking 0.06s steps(2, jump-none) infinite alternate;
+					animation: crt-roll-flicking 0.03s steps(2, jump-none) infinite alternate;
 				}
 			}
 
