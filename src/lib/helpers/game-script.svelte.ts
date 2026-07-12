@@ -33,6 +33,7 @@ export const useGameScript = (options: Options = {}) => {
 	const { interference, burnOut } = useCRT();
 
 	const caughtCheating = writable<boolean>(get(isCaught));
+	const immediateMessageQueue = writable<SvelteSet<ScriptLine>>(new SvelteSet<ScriptLine>([]));
 
 	isCaught.subscribe(($isCaught) => {
 		if ($isCaught) caughtCheating.set(true);
@@ -65,7 +66,7 @@ export const useGameScript = (options: Options = {}) => {
 	const RETURNING_SUPPRESSES = [1, 2];
 	const isReturningClicker = get(hasClicked);
 
-	const gameDescriptionMessage = derived<Readable<number>, ScriptLine>(
+	const gameDescriptionMessageFromButton = derived<Readable<number>, ScriptLine>(
 		backButtonClickedTimes,
 		($backButtonClickedTimes) => {
 			if ($backButtonClickedTimes === 0) {
@@ -114,13 +115,17 @@ export const useGameScript = (options: Options = {}) => {
 	const fallbackIndicator = derived(lastMessageUpdateSeconds, ($lastMessageUpdateSeconds) =>
 		Math.floor($lastMessageUpdateSeconds / 15)
 	);
-	const fallbackHintInputs: [Readable<ScriptLine>, Readable<number>, Readable<number>] = [
-		gameDescriptionMessage,
-		backButtonClickedTimes,
-		fallbackIndicator
-	];
-	const gameDescriptionMessageWithFallbackHint = derived<typeof fallbackHintInputs, ScriptLine>(
-		fallbackHintInputs,
+	const gameDescriptionMessageWithCheating: Readable<ScriptLine> = derived(
+		[gameDescriptionMessageFromButton, caughtCheating],
+		([$message, $caughtCheating]) => ($caughtCheating ? m.game_mode_description_cheating : $message)
+	);
+	const gameDescriptionMessage: Readable<ScriptLine> = derived(
+		[gameDescriptionMessageWithCheating, immediateMessageQueue],
+		([$message, $immediateMessages]) =>
+			$immediateMessages.size ? $immediateMessages.values().next().value : $message
+	);
+	const gameDescriptionMessageWithFallbackHint: Readable<ScriptLine> = derived(
+		[gameDescriptionMessage, backButtonClickedTimes, fallbackIndicator],
 		([$gameDescriptionMessage, $backButtonClickedTimes, $fallbackIndicator]) =>
 			$fallbackIndicator > 1
 				? $backButtonClickedTimes > 5
@@ -139,34 +144,9 @@ export const useGameScript = (options: Options = {}) => {
 				: $gameDescriptionMessage
 	);
 
-	// Outranks the hints: being caught is the more interesting thing that just happened,
-	// and a hint about looking around would be a strange thing to say to someone who was
-	// just dragged back through the door.
-	const cheatingInputs: [Readable<ScriptLine>, Readable<boolean>] = [
-		gameDescriptionMessageWithFallbackHint,
-		caughtCheating
-	];
-	const gameDescriptionMessageWithCheating = derived<typeof cheatingInputs, ScriptLine>(
-		cheatingInputs,
-		([$message, $caughtCheating]) => ($caughtCheating ? m.game_mode_description_cheating : $message)
-	);
-
-	const descriptionLine = fromStore(gameDescriptionMessageWithCheating);
+	const descriptionLine = fromStore(gameDescriptionMessageWithFallbackHint);
 	const backButtonLine = fromStore(gameBackButtonText);
 
-	// Resolved to text here, and *deliberately* through `$derived`, which is what stops
-	// the typewriter re-animating a line it is already showing.
-	//
-	// These stores carry `m.*` functions rather than strings, so that a locale switch
-	// re-resolves them. But a Svelte store treats every function value as changed (that
-	// is what `safe_not_equal` does with a function), and `fromStore` invalidates on
-	// every notification without comparing. So each click re-notified with the identical
-	// message, the typewriter's effect re-ran, and the back button re-played its
-	// "Back to Home" → "Back to Game" edit every single time.
-	//
-	// `$derived` compares its own value: same string, no invalidation, no re-run. The
-	// animation now fires when the words actually change, and locale switches still get
-	// through because a new locale yields a different string.
 	const descriptionText = $derived(descriptionLine.current());
 	const backButtonText = $derived(backButtonLine.current());
 
@@ -178,9 +158,18 @@ export const useGameScript = (options: Options = {}) => {
 		skipFirst: true
 	});
 
-	gameDescriptionMessage.subscribe(() => {
+	gameDescriptionMessage.subscribe((message) => {
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		lastMessageUpdatedAt.set(new Date());
+
+		if (message === get(immediateMessageQueue).values().next().value) {
+			setTimeout(() => {
+				immediateMessageQueue.update((queue) => {
+					queue.delete(message);
+					return queue;
+				});
+			}, 5000);
+		}
 	});
 
 	const firstStageClearTitleText = useTypewriter(
@@ -212,6 +201,23 @@ export const useGameScript = (options: Options = {}) => {
 		}
 	);
 
+	const firstStageClearTitle = useGlitch(() => firstStageClearTitleText.current, isFirstStageClear);
+	const firstStageClearDescription = useGlitch(
+		() => firstStageClearDescriptionText.current,
+		isFirstStageClear,
+		{
+			onComplete: () => void burnOut(() => onFirstStageClear?.())
+		}
+	);
+
+	const immediateFireMessage = (message: ScriptLine) => {
+		console.log('Immediate message fired:', message());
+		immediateMessageQueue.update((queue) => {
+			queue.add(message);
+			return queue;
+		});
+	};
+
 	$effect(() => {
 		if (isFirstStageClear()) {
 			setTimeout(() => {
@@ -229,16 +235,8 @@ export const useGameScript = (options: Options = {}) => {
 		}
 	});
 
-	const firstStageClearTitle = useGlitch(() => firstStageClearTitleText.current, isFirstStageClear);
-	const firstStageClearDescription = useGlitch(
-		() => firstStageClearDescriptionText.current,
-		isFirstStageClear,
-		{
-			onComplete: () => void burnOut(() => onFirstStageClear?.())
-		}
-	);
-
 	return {
+		immediateFireMessage,
 		gameDescription,
 		gameBackButton,
 		firstStageClearTitle,
