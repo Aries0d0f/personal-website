@@ -3,8 +3,11 @@ title: Experience
 layout: timeline
 ---
 
-<script>
+<script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { Abnormality } from '$lib/game/abnoramlity';
+
+  	let { currentAbnormality }: { currentAbnormality: Abnormality } = $props();
 </script>
 
 <section>

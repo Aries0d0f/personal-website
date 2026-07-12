@@ -3,6 +3,12 @@ title: Contribution & Community Attendance
 layout: timeline
 ---
 
+<script lang="ts">
+  import { Abnormality } from '$lib/game/abnoramlity';
+
+  let { currentAbnormality }: { currentAbnormality: Abnormality } = $props();
+</script>
+
 <section>
 <hgroup>
 

@@ -2,6 +2,10 @@
 	import type { Component, Snippet } from 'svelte';
 	import type { PageData } from './$types';
 
+	import { useGameStore } from '$lib/store/game';
+
+	const { abnormality } = useGameStore();
+
 	let { data }: { data: PageData & { metadata?: { layout?: string } } } = $props();
 
 	const viewport: Record<
@@ -21,12 +25,14 @@
 
 	// mdsvex's default export is a Svelte component — render it directly.
 	const Content = $derived(data.content);
+	const currentAbnormality = $derived($abnormality);
 </script>
 
 {#if ViewportLayout}
 	{#await ViewportLayout then { default: Layout }}
 		<Layout {data}>
-			<Content />
+			{currentAbnormality}
+			<Content {currentAbnormality} />
 		</Layout>
 	{/await}
 {/if}

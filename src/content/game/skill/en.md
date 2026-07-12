@@ -3,6 +3,12 @@ title: Skills
 layout: bento
 ---
 
+<script lang="ts">
+  import { Abnormality } from '$lib/game/abnoramlity';
+
+  let { currentAbnormality }: { currentAbnormality: Abnormality } = $props();
+</script>
+
 <section>
 
 ## Frontend
