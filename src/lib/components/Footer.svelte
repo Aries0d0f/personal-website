@@ -2,9 +2,11 @@
 	import Icon from '@iconify/svelte';
 
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
+	import { useGameStore } from '$lib/store/game';
 
 	let { sideMode, mobile }: { sideMode?: boolean; mobile?: boolean } = $props();
 
+	const { isGameMode } = useGameStore();
 	const contacts = [
 		{
 			name: 'Email',
@@ -50,6 +52,14 @@
 				</a>
 			</li>
 		{/each}
+		{#if $isGameMode}
+			<li>
+				<a href="https://aries0d0f.me/" rel="external" class="contact" aria-label="Exit">
+					<span>Exit</span>
+					<Icon class="icon" icon="fa7-solid:door-open" />
+				</a>
+			</li>
+		{/if}
 	</ul>
 	<p>
 		{#if sideMode}

@@ -287,7 +287,7 @@
 					startOffset={width >= 320 ? '49%' : '35.75%'}
 					text-anchor="left"
 				>
-					{m.components_avatar_slogan()}
+					{$isGameMode ? m.game_components_avatar_slogan() : m.components_avatar_slogan()}
 				</textPath>
 			</text>
 			<circle
@@ -415,7 +415,7 @@
 	<svelte:element this={visualOnly ? 'div' : 'header'} class={visualOnly ? 'visual-only' : ''}>
 		<h1 lang={currentLang}>
 			<ParaglideMessage
-				message={m.components_avatar_title}
+				message={$isGameMode ? m.game_components_avatar_title : m.components_avatar_title}
 				inputs={{
 					name: m.noun_general_name()
 				}}
