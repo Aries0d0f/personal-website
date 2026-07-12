@@ -128,6 +128,19 @@ export async function signGameToken(
 }
 
 /**
+ * SHA-256 hex digest of a signed token, safe to hand to the client: it is one-way, so
+ * it cannot be turned back into the token or the key that signed it. The client uses it
+ * as the seed for its next stage-clear proof (see `$lib/game/proof`).
+ */
+export async function hashGameToken(token: string): Promise<string> {
+	const digest = await crypto.subtle.digest('SHA-256', bytes(token));
+
+	return Array.from(new Uint8Array(digest))
+		.map((byte) => byte.toString(16).padStart(2, '0'))
+		.join('');
+}
+
+/**
  * Verify and decode a token.
  *
  * Three ways to fail, and the distinction matters because one of them gets the player

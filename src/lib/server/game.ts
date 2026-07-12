@@ -10,7 +10,12 @@ import {
 	IDLE_GAME_STATE,
 	type GameState
 } from '$lib/game/state';
-import { getGameSecret, signGameToken, verifyGameToken } from '$lib/server/game-token';
+import {
+	getGameSecret,
+	hashGameToken,
+	signGameToken,
+	verifyGameToken
+} from '$lib/server/game-token';
 
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
 
@@ -67,7 +72,8 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 			stage: result.claims.stage,
 			caught,
 			clicked: result.claims.c === true,
-			startedAt: result.claims.iat * 1000
+			startedAt: result.claims.iat * 1000,
+			proofSeed: await hashGameToken(token)
 		};
 	}
 
@@ -88,19 +94,24 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 		stage: 0,
 		caught: true,
 		clicked: false,
-		startedAt: Date.now()
+		startedAt: Date.now(),
+		proofSeed: null
 	};
-	await writeGameState(event.cookies, event.platform, reset);
+	reset.proofSeed = await writeGameState(event.cookies, event.platform, reset);
 
 	return reset;
 }
 
-/** Sign `state` into the cookie. The only path by which progress is recorded. */
+/**
+ * Sign `state` into the cookie. The only path by which progress is recorded. Returns the
+ * SHA-256 digest of the token just signed, for the caller to hand the client as its next
+ * `proofSeed`.
+ */
 export async function writeGameState(
 	cookies: Cookies,
 	platform: Readonly<App.Platform> | undefined,
 	state: GameState
-): Promise<void> {
+): Promise<string> {
 	const token = await signGameToken(
 		{
 			stage: state.stage,
@@ -111,6 +122,8 @@ export async function writeGameState(
 	);
 
 	cookies.set(GAME_COOKIE, token, COOKIE_OPTIONS);
+
+	return hashGameToken(token);
 }
 
 /** Giving up: the token goes, and with it every trace of the run. */

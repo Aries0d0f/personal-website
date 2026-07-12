@@ -11,6 +11,7 @@
 import { error, json } from '@sveltejs/kit';
 
 import { MAX_STAGE, type GameState } from '$lib/game/state';
+import { computeStageProof } from '$lib/game/proof';
 import { clearGameState, writeGameState } from '$lib/server/game';
 
 import type { RequestHandler } from './$types';
@@ -18,6 +19,8 @@ import type { RequestHandler } from './$types';
 interface ClearStageRequest {
 	intent: 'clear-stage';
 	stage: number;
+	/** Proof code derived client-side from the current `proofSeed` (see `$lib/game/proof`). */
+	token: string;
 }
 
 interface GiveUpRequest {
@@ -46,7 +49,8 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 			stage: 0,
 			caught: false,
 			clicked: false,
-			startedAt: null
+			startedAt: null,
+			proofSeed: null
 		} satisfies GameState);
 	}
 
@@ -63,7 +67,7 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 		}
 
 		const next: GameState = { ...locals.game, clicked: true, caught: false };
-		await writeGameState(cookies, platform, next);
+		next.proofSeed = await writeGameState(cookies, platform, next);
 
 		return json(next satisfies GameState);
 	}
@@ -77,7 +81,7 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 		error(403, 'Not playing');
 	}
 
-	const { stage } = body;
+	const { stage, token } = body;
 	if (!Number.isInteger(stage) || stage < 1 || stage > MAX_STAGE) {
 		error(400, 'No such stage');
 	}
@@ -97,8 +101,20 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 		return json({ ...current, caught: true } satisfies GameState);
 	}
 
+	// The client derives its proof from the `proofSeed` we handed out with `current` — a
+	// digest of the token it cannot forge. A request that does not carry the matching
+	// code did not come from that derivation, whatever else it got right about ordering.
+	const expected =
+		current.proofSeed && current.startedAt
+			? computeStageProof(current.proofSeed, stage, current.startedAt)
+			: null;
+
+	if (!expected || typeof token !== 'string' || token !== expected) {
+		return json({ ...current, caught: true } satisfies GameState);
+	}
+
 	const next: GameState = { ...current, stage, caught: false };
-	await writeGameState(cookies, platform, next);
+	next.proofSeed = await writeGameState(cookies, platform, next);
 
 	return json(next satisfies GameState);
 };

@@ -1,6 +1,7 @@
 import { getContext, hasContext, setContext } from 'svelte';
 import { writable, derived, readable, get } from 'svelte/store';
 
+import { computeStageProof } from '$lib/game/proof';
 import { IDLE_GAME_STATE, type GameState } from '$lib/game/state';
 
 import type { Writable } from 'svelte/store';
@@ -11,6 +12,7 @@ interface Model {
 	caught: Writable<boolean>;
 	clicked: Writable<boolean>;
 	gameStartAt: Writable<Date | null>;
+	proofSeed: Writable<string | null>;
 	backButtonClickedTimes: Writable<number>;
 	lastMessageUpdatedAt: Writable<Date | null>;
 }
@@ -24,6 +26,7 @@ const createGameStore = () => {
 		caught: writable(false),
 		clicked: writable(false),
 		gameStartAt: writable(null),
+		proofSeed: writable(null),
 		lastMessageUpdatedAt: writable(null),
 		backButtonClickedTimes: writable(0)
 	});
@@ -90,6 +93,7 @@ export const useGameStore = () => {
 		state.caught.set(server.caught);
 		state.clicked.set(server.clicked);
 		state.gameStartAt.set(server.startedAt ? new Date(server.startedAt) : null);
+		state.proofSeed.set(server.proofSeed);
 	};
 
 	const actions = {
@@ -110,9 +114,16 @@ export const useGameStore = () => {
 			adopt(server);
 		},
 
-		/** Bank a cleared stage. The server re-signs; a skipped stage is refused. */
+		/**
+		 * Bank a cleared stage. The server re-signs; a skipped stage is refused, and so is
+		 * one submitted without the proof code derived from the current `proofSeed`.
+		 */
 		clearStage: async (stage: number) => {
-			const next = await post({ intent: 'clear-stage', stage });
+			const seed = get(state.proofSeed);
+			const startedAt = get(state.gameStartAt);
+			const token = seed && startedAt ? computeStageProof(seed, stage, startedAt.getTime()) : null;
+
+			const next = await post({ intent: 'clear-stage', stage, token });
 			if (next) adopt(next);
 		},
 

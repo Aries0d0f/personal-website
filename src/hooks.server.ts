@@ -108,9 +108,14 @@ const handleGame: Handle = async ({ event, resolve }) => {
 			stage: 0,
 			caught: false,
 			clicked: false,
-			startedAt: Date.now()
+			startedAt: Date.now(),
+			proofSeed: null
 		};
-		await writeGameState(event.cookies, event.platform, event.locals.game);
+		event.locals.game.proofSeed = await writeGameState(
+			event.cookies,
+			event.platform,
+			event.locals.game
+		);
 
 		return resolve(event);
 	}
