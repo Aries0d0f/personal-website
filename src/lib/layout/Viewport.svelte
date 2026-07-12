@@ -14,6 +14,7 @@
 	import { useCRT } from '$lib/helpers/crt.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { pageOrder, pageHref, type PageKey } from '$lib/pages';
+	import ScrollIndicator from '$lib/components/ScrollIndicator.svelte';
 
 	gsap.registerPlugin(Observer);
 
@@ -387,7 +388,9 @@
 			{/if}
 		</div>
 	</main>
-	{#if !showCombined && !$isGameMode}
+	{#if $isGameMode && isDesktop}
+		<ScrollIndicator />
+	{:else if !showCombined}
 		<Menu />
 	{/if}
 </div>
