@@ -7,7 +7,7 @@
 	import { useGameScript } from '$lib/helpers/game-script.svelte';
 	import { useGameStore } from '$lib/store/game';
 
-	const { isGameMode, backButtonClickedTimes, detectGameMode } = useGameStore();
+	const { isGameMode, backButtonClickedTimes } = useGameStore();
 
 	const currentLang = $derived(getLocale());
 	const headTitle = $derived(
@@ -56,10 +56,6 @@
 		goto(resolve(`/${currentLang}?game`), { replaceState: true });
 	}
 	//#endregion
-
-	$effect(() => {
-		detectGameMode(page);
-	});
 </script>
 
 <svelte:head>

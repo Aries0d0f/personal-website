@@ -68,8 +68,10 @@ export const useGameStore = () => {
 				return;
 			}
 
-			state.active.set(page.params.slug === 'game');
-			state.gameStartAt.set(page.params.slug === 'game' ? new Date() : null);
+			const isGameMode = page.params.slug === 'game' || page.url.searchParams.has('game');
+
+			state.active.set(isGameMode);
+			state.gameStartAt.set(isGameMode ? new Date() : null);
 		}
 	};
 

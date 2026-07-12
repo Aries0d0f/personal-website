@@ -12,7 +12,7 @@
 
 	let screenEl = $state<HTMLDivElement>();
 
-	const { isGameMode } = useGameStore();
+	const { isGameMode, detectGameMode } = useGameStore();
 
 	// No escaping the game through the browser chrome.
 	useNavigationLock(() => $isGameMode);
@@ -31,6 +31,7 @@
 	// Keep the reactive locale aligned with the URL after client-side switches.
 	$effect(() => {
 		syncLocale(page.url);
+		detectGameMode(page);
 	});
 </script>
 

@@ -175,7 +175,14 @@
 			);
 	}
 
-	function switchGameModeAvatar() {
+	function switchGameModeAvatar(skipTransition = false) {
+		if (skipTransition) {
+			gsap.set('#image-source-no-bg', {
+				attr: { 'xlink:href': avatarImgGameMode }
+			});
+			return;
+		}
+
 		const tl = gsap.timeline();
 		tl.to('#image-source-no-bg', {
 			attr: { 'xlink:href': avatarImgGameMode },
@@ -201,6 +208,10 @@
 	$effect(() => {
 		if (crt.isRunning) {
 			switchGameModeAvatar();
+		}
+
+		if ($isGameMode) {
+			switchGameModeAvatar(true);
 		}
 	});
 
