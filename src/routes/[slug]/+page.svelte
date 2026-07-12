@@ -31,7 +31,7 @@
 		if (currentAbnormality === Abnormality.AN04) {
 			return await fetch('/ip+abuse', {
 				headers: {
-					'Accept': 'application/json'
+					Accept: 'application/json'
 				}
 			})
 				.then((res) => res.json())
