@@ -13,8 +13,10 @@ import { error, json } from '@sveltejs/kit';
 import { MAX_STAGE, type GameState } from '$lib/game/state';
 import { computeStageProof } from '$lib/game/proof';
 import { clearGameState, writeGameState } from '$lib/server/game';
+import { abnormalityCodeSet } from '$lib/game/abnoramlity';
 
 import type { RequestHandler } from './$types';
+import type { AbnormalityCode } from '$lib/game/abnoramlity';
 
 interface ClearStageRequest {
 	intent: 'clear-stage';
@@ -33,6 +35,29 @@ interface ButtonClickedRequest {
 
 type GameRequest = ClearStageRequest | GiveUpRequest | ButtonClickedRequest;
 
+const randomFromSet = <T>(set: Set<T>): T | null => {
+	const arr = Array.from(set);
+	if (arr.length === 0) return null;
+
+	const randomIndex = Math.floor(Math.random() * arr.length);
+	return arr[randomIndex];
+}
+
+const abnormalityLottery = (discovered: AbnormalityCode[]): AbnormalityCode | null => {
+	const discoveredSet = new Set(discovered);
+	const undiscovered = abnormalityCodeSet.difference(discoveredSet);
+
+	const randomSeed = Math.random();
+
+	if (randomSeed < 0.3) {
+		return null;
+	} else if (randomSeed < 0.8) {
+		return randomFromSet(undiscovered);
+	} else {
+		return randomFromSet(discoveredSet);
+	}
+};
+
 export const POST: RequestHandler = async ({ request, cookies, platform, locals }) => {
 	let body: GameRequest;
 	try {
@@ -50,7 +75,9 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 			caught: false,
 			clicked: false,
 			startedAt: null,
-			proofSeed: null
+			proofSeed: null,
+			currentAbnormality: null,
+			discoveredAbnormalities: []
 		} satisfies GameState);
 	}
 
@@ -82,28 +109,17 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 	}
 
 	const { stage, token } = body;
-	if (!Number.isInteger(stage) || stage < 1 || stage > MAX_STAGE) {
+	if (!Number.isInteger(stage) || stage < 0 || stage > MAX_STAGE) {
 		error(400, 'No such stage');
 	}
 
 	const current = locals.game;
 
-	// Re-clearing a stage already banked. A double-submit, a replayed animation,
-	// a back button — honest, and idempotent.
-	if (stage <= current.stage) {
-		return json(current satisfies GameState);
-	}
-
-	// Cleared a stage they were never standing in front of. Progress does not move, and
-	// the client is told it was noticed — for this answer only. The token stays clean,
-	// so a reload gets on with the game instead of replaying the accusation.
+	// Anti-cheat
 	if (stage > current.stage + 1) {
 		return json({ ...current, caught: true } satisfies GameState);
 	}
 
-	// The client derives its proof from the `proofSeed` we handed out with `current` — a
-	// digest of the token it cannot forge. A request that does not carry the matching
-	// code did not come from that derivation, whatever else it got right about ordering.
 	const expected =
 		current.proofSeed && current.startedAt
 			? computeStageProof(current.proofSeed, stage, current.startedAt)
@@ -113,7 +129,20 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 		return json({ ...current, caught: true } satisfies GameState);
 	}
 
-	const next: GameState = { ...current, stage, caught: false };
+	const abnormals: Pick<GameState, 'currentAbnormality' | 'discoveredAbnormalities'> =
+		stage > 1
+			? {
+					currentAbnormality: abnormalityLottery(current.discoveredAbnormalities ?? []),
+					discoveredAbnormalities: current.currentAbnormality
+						? [...(current.discoveredAbnormalities ?? []), current.currentAbnormality]
+						: current.discoveredAbnormalities ?? []
+				}
+			: {
+					currentAbnormality: null,
+					discoveredAbnormalities: current.discoveredAbnormalities ?? []
+				};
+
+	const next: GameState = { ...current, ...abnormals, stage, caught: false };
 	next.proofSeed = await writeGameState(cookies, platform, next);
 
 	return json(next satisfies GameState);
