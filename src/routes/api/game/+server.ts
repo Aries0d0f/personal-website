@@ -134,7 +134,7 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 			? {
 					currentAbnormality: abnormalityLottery(current.discoveredAbnormalities ?? []),
 					discoveredAbnormalities: current.currentAbnormality
-						? [...(current.discoveredAbnormalities ?? []), current.currentAbnormality]
+						? Array.from(new Set(current.discoveredAbnormalities).add(current.currentAbnormality))
 						: (current.discoveredAbnormalities ?? [])
 				}
 			: {
