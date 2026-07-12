@@ -127,19 +127,14 @@
 </dialog>
 
 <style lang="scss">
-	// Classic Macintosh chrome is 1-bit: everything is a hairline of pure black on pure
-	// white, and the only "colour" the toolbox ever had was a 50% dither of the two.
 	$ink: #000;
 	$paper: #fff;
 
-	// The Mac never anti-aliased its greys — it alternated pixels. Anything that reads as
-	// grey here (a dimmed desktop, a latched control) is really this checkerboard.
 	@mixin dither($a: $ink, $b: transparent, $size: 2px) {
 		background-image: repeating-conic-gradient($a 0% 25%, $b 0% 50%);
 		background-size: $size $size;
 	}
 
-	// Windows sat on the desktop with a hard 1px shadow — an offset copy, never a blur.
 	@mixin plate($radius: 0) {
 		border: 1px solid $ink;
 		border-radius: $radius;
@@ -147,8 +142,6 @@
 		box-shadow: 1px 1px 0 $ink;
 	}
 
-	// Rounded rect, black hairline, label in Chicago. Pressing it inverts the whole
-	// button rather than moving it — there was no bevel to ride down.
 	@mixin push-button {
 		@include plate(6px);
 
@@ -164,9 +157,8 @@
 			color: $paper;
 		}
 
-		// Focus is the same dotted frame the Finder drew, kept inside the hairline.
 		&:focus-visible {
-			outline: 1px dotted $ink;
+			outline: 2px dotted $ink;
 			outline-offset: -4px;
 		}
 	}
@@ -178,7 +170,6 @@
 			border: none;
 			outline: none;
 
-			// The UA hides a closed dialog; a plain `display: flex` here would outrank it.
 			&[open] {
 				height: 100dvh;
 				width: 100dvw;
@@ -214,8 +205,6 @@
 				> button {
 					@include push-button;
 
-					// The default button wore a second, thicker ring — the Return key made
-					// visible. Drawn outward so the button keeps its own 1px hairline.
 					&.is-default {
 						box-shadow:
 							1px 1px 0 $ink,
@@ -239,8 +228,6 @@
 			}
 		}
 
-		// Six hairlines running the width of the bar: the Mac's grip texture, and the only
-		// thing that told you a window was frontmost.
 		&-title-bar {
 			position: relative;
 			display: flex;
@@ -255,8 +242,6 @@
 			background-repeat: no-repeat;
 
 			> h1 {
-				// Centred over the stripes, in the bar's own width — not in what the close
-				// box leaves behind, or the title would sit off-centre by half a close box.
 				position: absolute;
 				left: 50%;
 				transform: translateX(-50%);
@@ -335,11 +320,6 @@
 		outline: none;
 	}
 
-	// The switcher belongs to the menu, where each locale is a bare 1.5rem glyph, dimmed
-	// until hovered. In here it has to read as a row of push buttons instead, so those
-	// rules have to be beaten inside the child's own scope. Selected two classes deep on
-	// purpose: a bare `:global(.language-switcher button)` ties the switcher's own scoped
-	// rule on specificity and would win or lose on source order alone.
 	.game-dialog-body .game-dialog-field {
 		:global(.language-switcher) {
 			display: flex;
@@ -360,7 +340,7 @@
 		}
 
 		:global(.language-switcher button:focus-visible) {
-			outline: 1px dotted $ink;
+			outline: 2px dotted $ink;
 			outline-offset: -4px;
 		}
 
