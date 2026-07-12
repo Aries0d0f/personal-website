@@ -5,6 +5,11 @@ import { computeStageProof } from '$lib/game/proof';
 import { IDLE_GAME_STATE, type GameState } from '$lib/game/state';
 
 import type { Writable } from 'svelte/store';
+import {
+	castAbnormalityCodeToEnum,
+	type Abnormality,
+	type AbnormalityCode
+} from '$lib/game/abnoramlity';
 
 interface Model {
 	active: Writable<boolean>;
@@ -15,6 +20,8 @@ interface Model {
 	proofSeed: Writable<string | null>;
 	backButtonClickedTimes: Writable<number>;
 	lastMessageUpdatedAt: Writable<Date | null>;
+	abnormality: Writable<Abnormality | false>;
+	discoveredAbnormalities: Writable<Set<AbnormalityCode>>;
 }
 
 const STORE_KEY = Symbol.for('GAME_STORE');
@@ -28,7 +35,9 @@ const createGameStore = () => {
 		gameStartAt: writable(null),
 		proofSeed: writable(null),
 		lastMessageUpdatedAt: writable(null),
-		backButtonClickedTimes: writable(0)
+		backButtonClickedTimes: writable(0),
+		abnormality: writable(false),
+		discoveredAbnormalities: writable(new Set<AbnormalityCode>())
 	});
 };
 
@@ -84,7 +93,8 @@ export const useGameStore = () => {
 		hasClicked: derived(state.clicked, ($clicked) => $clicked),
 		gameStartAt: derived(state.gameStartAt, ($gameStartAt) => $gameStartAt),
 		gameStartSeconds: derived([state.gameStartAt, timer], timeSecDeltaCalc),
-		lastMessageUpdateSeconds: derived([state.lastMessageUpdatedAt, timer], timeSecDeltaCalc)
+		lastMessageUpdateSeconds: derived([state.lastMessageUpdatedAt, timer], timeSecDeltaCalc),
+		abnormality: derived(state.abnormality, ($abnormality) => $abnormality)
 	};
 
 	const adopt = (server: GameState) => {
@@ -94,47 +104,45 @@ export const useGameStore = () => {
 		state.clicked.set(server.clicked);
 		state.gameStartAt.set(server.startedAt ? new Date(server.startedAt) : null);
 		state.proofSeed.set(server.proofSeed);
+		state.abnormality.set(
+			server.currentAbnormality ? castAbnormalityCodeToEnum(server.currentAbnormality) : false
+		);
+		state.discoveredAbnormalities.set(new Set(server.discoveredAbnormalities));
 	};
 
 	const actions = {
-		/**
-		 * Take the state the server decoded out of the signed cookie. Called from the
-		 * root layout on every navigation, so the URL no longer has any say in this.
-		 */
 		syncFromServer: (server: GameState | undefined) => {
-			// A route with no match renders the error page without running layout loads,
-			// so there is no server state to sync. Sit tight rather than reading the
-			// absence as "the game is over" and dropping the player out mid-run.
 			if (!server) return;
 
-			// Nor does a stale load get to end the game. Only giving up does that, and
-			// it says so directly.
 			if (!server.active && get(state.active)) return;
 
 			adopt(server);
 		},
 
-		/**
-		 * Bank a cleared stage. The server re-signs; a skipped stage is refused, and so is
-		 * one submitted without the proof code derived from the current `proofSeed`.
-		 */
 		clearStage: async (stage: number) => {
 			const seed = get(state.proofSeed);
 			const startedAt = get(state.gameStartAt);
 			const token = seed && startedAt ? computeStageProof(seed, stage, startedAt.getTime()) : null;
 
 			const next = await post({ intent: 'clear-stage', stage, token });
-			if (next) adopt(next);
+			if (next) {
+				adopt(next);
+			}
 		},
 
-		/**
-		 * Record that the decoy home button has been clicked, so the reveal it triggers is
-		 * never replayed on a later visit.
-		 *
-		 * The local flag is set first and the server is told in the background: this fires
-		 * on a click in the middle of a typing animation, and nothing on screen should wait
-		 * on a round trip. Losing the request costs the player nothing but a repeated line.
-		 */
+		challengeStage: async (direction: 1 | -1) => {
+			if (
+				(direction === 1 && !get(state.abnormality)) ||
+				(direction === -1 && get(state.abnormality))
+			) {
+				// Passing challenge, go to next stage.
+				actions.clearStage(get(state.stage) + 1);
+			} else {
+				// Failing challenge, go back to stage 1.
+				actions.clearStage(1);
+			}
+		},
+
 		markClicked: () => {
 			if (get(state.clicked)) return;
 
@@ -142,18 +150,14 @@ export const useGameStore = () => {
 			void post({ intent: 'button-clicked' });
 		},
 
-		/**
-		 * Give up: the server drops the cookie, and the run is gone — progress, timers,
-		 * the lot. The caller is expected to follow this with a full document load, so
-		 * the CRT overlay and the navigation lock die with the page rather than
-		 * lingering over a site that is supposed to look untouched.
-		 */
 		giveUp: async () => {
 			await post({ intent: 'give-up' });
 
 			adopt(IDLE_GAME_STATE);
 			state.backButtonClickedTimes.set(0);
 			state.lastMessageUpdatedAt.set(null);
+			state.abnormality.set(false);
+			state.discoveredAbnormalities.set(new Set());
 		}
 	};
 

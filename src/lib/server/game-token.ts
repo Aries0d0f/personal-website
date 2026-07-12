@@ -8,10 +8,15 @@
 // HS256 over Web Crypto rather than a JWT library — Workers ships SubtleCrypto,
 // and the alternative is a dependency for ~40 lines of base64url.
 
+import * as semver from 'semver';
+
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 
 import { GAME_TOKEN_VERSION, GAME_MAX_AGE_SECONDS } from '$lib/game/state';
+import { abnormalityCodeSet } from '$lib/game/abnoramlity';
+
+import type { AbnormalityCode } from '$lib/game/abnoramlity';
 
 const encoder = new TextEncoder();
 
@@ -23,15 +28,23 @@ const encoder = new TextEncoder();
  * back to false to re-watch the one-time reveal it suppresses. Omitted while false, to
  * keep the token short.
  *
+ * `a` (current abnormality) and `d` (discovered abnormalities) drive the challenge
+ * stages the same way `stage` does — the client could otherwise reroll its own
+ * abnormality by editing a plain cookie, so they are signed in rather than kept
+ * alongside the token. Both omitted while empty, to keep the token short.
+ *
  * Getting caught cheating is deliberately *not* a claim. It is an event, not a property
  * of the player, and signing it in would make it survive every reload — pinning them to
  * the same accusation for the rest of the run. It lives in a one-shot cookie instead
  * (GAME_CAUGHT_COOKIE).
  */
 export interface GameClaims {
-	v: number;
+	/** Semver string, e.g. `"1.0.0"`. See GAME_TOKEN_VERSION. */
+	v: string;
 	stage: number;
 	c?: boolean;
+	a?: AbnormalityCode;
+	d?: AbnormalityCode[];
 	iat: number;
 	exp: number;
 }
@@ -109,7 +122,13 @@ function getKey(secret: string): Promise<CryptoKey> {
 
 /** Mint a token recording the player's progress. */
 export async function signGameToken(
-	input: { stage: number; clicked?: boolean; issuedAt?: number },
+	input: {
+		stage: number;
+		clicked?: boolean;
+		currentAbnormality?: AbnormalityCode | null;
+		discoveredAbnormalities?: AbnormalityCode[];
+		issuedAt?: number;
+	},
 	secret: string
 ): Promise<string> {
 	const iat = input.issuedAt ?? Math.floor(Date.now() / 1000);
@@ -117,6 +136,8 @@ export async function signGameToken(
 		v: GAME_TOKEN_VERSION,
 		stage: input.stage,
 		...(input.clicked ? { c: true } : {}),
+		...(input.currentAbnormality ? { a: input.currentAbnormality } : {}),
+		...(input.discoveredAbnormalities?.length ? { d: input.discoveredAbnormalities } : {}),
 		iat,
 		exp: iat + GAME_MAX_AGE_SECONDS
 	};
@@ -180,13 +201,28 @@ export async function verifyGameToken(token: string, secret: string): Promise<Ve
 		return { ok: false, reason: 'forged' };
 	}
 
-	// The signature already proved we minted this, so a version we no longer speak is our
-	// doing, not theirs.
-	if (claims?.v !== GAME_TOKEN_VERSION) {
+	// Only the major half is enforced. A mismatched major is a shape we no longer speak —
+	// the signature already proved we minted this, so that is our doing, not theirs. The
+	// minor half is reserved for a future migration to key off; it is not compared here.
+	if (
+		!semver.valid(claims?.v) ||
+		semver.major(claims.v) !== semver.major(GAME_TOKEN_VERSION)
+	) {
 		return { ok: false, reason: 'stale' };
 	}
 
 	if (!Number.isInteger(claims.stage) || claims.stage < 0) {
+		return { ok: false, reason: 'forged' };
+	}
+
+	if (claims.a !== undefined && !abnormalityCodeSet.has(claims.a)) {
+		return { ok: false, reason: 'forged' };
+	}
+
+	if (
+		claims.d !== undefined &&
+		(!Array.isArray(claims.d) || !claims.d.every((code) => abnormalityCodeSet.has(code)))
+	) {
 		return { ok: false, reason: 'forged' };
 	}
 

@@ -1,6 +1,8 @@
 // The game's shared vocabulary — imported by both the client store and the
 // server that signs the token, so it must stay free of any server-only import.
 
+import type { AbnormalityCode } from "./abnoramlity";
+
 /** Name of the cookie carrying the signed game token. */
 export const GAME_COOKIE = 'game';
 
@@ -17,13 +19,15 @@ export const GAME_COOKIE = 'game';
 export const GAME_CAUGHT_COOKIE = 'game_caught';
 
 /**
- * Bumped whenever the claim shape changes. Older tokens are then retired rather than
- * rejected — a version we no longer speak is our fault, not the player's, so it ends
- * the run quietly instead of accusing them of forgery. See verifyGameToken.
- *
- * v2 added `c` (the decoy button has been clicked).
+ * The claim shape's version, a semver string checked with the `semver` package. Only
+ * the major half is enforced — a token whose major we no longer speak is retired
+ * rather than rejected, quietly ending the run instead of accusing the player of
+ * forgery (see verifyGameToken). The minor half is carried but not yet checked against
+ * anything; it exists so a future migration can distinguish "old but compatible"
+ * tokens from "old and needs upgrading" without another round of retiring everyone's
+ * progress. Patch is unused and always 0.
  */
-export const GAME_TOKEN_VERSION = 2;
+export const GAME_TOKEN_VERSION = '1.0.0';
 
 /** A game session outlives the browser session, but not by much. */
 export const GAME_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
@@ -33,7 +37,7 @@ export const GAME_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
  * stage 1 is the 404 page whose status code the player rewrites to 200. Raise
  * this as stages are added — the server refuses to record anything beyond it.
  */
-export const MAX_STAGE = 1;
+export const MAX_STAGE = 7;
 
 export interface GameState {
 	/** Whether the player is inside the game. Only giving up turns this off. */
@@ -63,6 +67,8 @@ export interface GameState {
 	 * One-way, so publishing it cannot leak the token or the key that signed it.
 	 */
 	proofSeed: string | null;
+	currentAbnormality: AbnormalityCode | null;
+	discoveredAbnormalities: AbnormalityCode[];
 }
 
 export const IDLE_GAME_STATE: GameState = {
@@ -71,5 +77,7 @@ export const IDLE_GAME_STATE: GameState = {
 	caught: false,
 	clicked: false,
 	startedAt: null,
-	proofSeed: null
+	proofSeed: null,
+	currentAbnormality: null,
+	discoveredAbnormalities: []
 };
