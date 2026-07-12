@@ -4,9 +4,10 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { syncLocale } from '$lib/i18n.svelte';
 	import { useNavigationLock } from '$lib/helpers/navigation-lock.svelte';
+	import { useGameStore } from '$lib/store/game';
 	import Viewport from '$lib/layout/Viewport.svelte';
 	import CrtScreen from '$lib/components/CrtScreen.svelte';
-	import { useGameStore } from '$lib/store/game';
+	import GameOptions from '$lib/components/GameOptions.svelte';
 
 	let { children } = $props();
 
@@ -68,6 +69,9 @@
 		<Viewport>
 			{@render children()}
 		</Viewport>
+	{/if}
+	{#if $isGameMode}
+		<GameOptions />
 	{/if}
 </div>
 

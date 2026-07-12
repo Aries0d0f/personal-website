@@ -72,7 +72,7 @@
 				<p>{firstStageClearDescription.current}</p>
 			{:else}
 				{#if $isGameMode}
-					<input bind:value={gameStatus} type="number" />
+					<input bind:value={gameStatus} type="number" step="1" />
 				{:else}
 					<h1>{page.status}</h1>
 				{/if}
@@ -303,9 +303,11 @@
 					outline: none;
 					color: inherit;
 					font-family: inherit;
+					-moz-appearance: textfield;
+
 					&::-webkit-outer-spin-button,
 					&::-webkit-inner-spin-button {
-						-webkit-appearance: none;
+						appearance: none;
 						margin: 0;
 					}
 				}
