@@ -13,8 +13,10 @@
 	import { useGameStore } from '$lib/store/game';
 	import { useCRT } from '$lib/helpers/crt.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { pageOrder, pageHref, type PageKey } from '$lib/pages';
+	import { pageOrder, pageHref } from '$lib/pages';
 	import ScrollIndicator from '$lib/components/ScrollIndicator.svelte';
+
+	import type { PageKey } from '$lib/pages';
 
 	gsap.registerPlugin(Observer);
 
@@ -35,7 +37,7 @@
 
 	let { children } = $props();
 
-	const { isGameMode } = useGameStore();
+	const { isGameMode, challengeStage } = useGameStore();
 	const { powerCycle } = useCRT();
 
 	let width = $state(0);
@@ -55,7 +57,9 @@
 	let currentSectionKey: PageKey | null = null;
 
 	function resolveTarget(direction: 1 | -1) {
-		const hrefs = pageOrder.map((key) => pageHref(key, getLocale()));
+		const hrefs = pageOrder
+			.filter((key) => $isGameMode || key !== 'blank')
+			.map((key) => pageHref(key, getLocale()));
 		const currentIndex = hrefs.findIndex((href) => href === page.url.pathname);
 		if (currentIndex === -1) return null;
 
@@ -67,8 +71,30 @@
 
 	function switchPage(direction: 1 | -1) {
 		const href = resolveTarget(direction);
-		if (!href) return;
+		if ($isGameMode) {
+			if (href && !href.includes('blank')) {
+				performPageSwitch(direction, href);
+			} else {
+				handleGameStageSwitch(direction, () => {
+					if (direction === 1) {
+						performPageSwitch(direction, `/${getLocale()}`);
+					} else {
+						setTimeout(() => {
+							performPageSwitch(direction, `/${getLocale()}`);
+						}, 400);
+					}
+				});
+			}
+		} else {
+			if (!href) {
+				return;
+			}
 
+			performPageSwitch(direction, href);
+		}
+	}
+
+	function performPageSwitch(direction: 1 | -1, href: `/${string}`) {
 		lastDirection = direction;
 
 		observer?.disable();
@@ -80,6 +106,18 @@
 			ease: 'power2.in',
 			onComplete: () => goto(resolve(href))
 		});
+	}
+
+	async function handleGameStageSwitch(direction: 1 | -1, onFinish: () => void) {
+		if (direction === -1) {
+			observer?.disable();
+			performPageSwitch(direction, `/${getLocale()}/blank`);
+			observer?.disable();
+			// sleep for 400ms to allow the page transition to complete before challenging the stage
+			await new Promise((resolve) => setTimeout(resolve, 400));
+		}
+		await challengeStage(direction);
+		onFinish();
 	}
 
 	const isPrefix = (keys: string[]) => keys.every((key, i) => key === KONAMI_CODE[i]);
@@ -316,7 +354,7 @@
 				target: window,
 				type: 'wheel,touch',
 				wheelSpeed: -1,
-				tolerance: 10,
+				tolerance: $isGameMode ? 100 : 10,
 				preventDefault: true,
 				onUp: () => switchPage(1),
 				onDown: () => switchPage(-1)
@@ -325,6 +363,11 @@
 			observer?.kill();
 			observer = undefined;
 		}
+
+		return () => {
+			observer?.kill();
+			observer = undefined;
+		};
 	});
 
 	let didInitialScroll = false;
