@@ -118,6 +118,12 @@
 		if (event.shiftKey) return;
 
 		switch (event.key) {
+			case 's':
+			case 'd':
+				if (!$isGameMode) break;
+				event.preventDefault();
+				switchPage(1);
+				break;
 			case 'ArrowDown':
 			case 'ArrowRight':
 			case 'Enter':
@@ -125,6 +131,12 @@
 			case 'PageDown':
 				event.preventDefault();
 				switchPage(1);
+				break;
+			case 'w':
+			case 'a':
+				if (!$isGameMode) break;
+				event.preventDefault();
+				switchPage(-1);
 				break;
 			case 'ArrowUp':
 			case 'ArrowLeft':
