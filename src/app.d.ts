@@ -1,5 +1,7 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
+import type { GameState } from '$lib/game/state';
+
 declare global {
 	namespace App {
 		interface Platform {
@@ -15,8 +17,12 @@ declare global {
 			cf?: IncomingRequestCfProperties;
 		}
 
+		interface Locals {
+			/** Decoded from the signed game cookie by handleGame in hooks.server.ts. */
+			game: GameState;
+		}
+
 		// interface Error {}
-		// interface Locals {}
 		// interface PageData {}
 		// interface PageState {}
 	}

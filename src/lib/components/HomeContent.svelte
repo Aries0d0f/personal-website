@@ -38,7 +38,7 @@
 
 		ol {
 			padding-left: 1rem;
-			
+
 			> li {
 				padding-left: 0.5rem;
 				font-weight: 600;

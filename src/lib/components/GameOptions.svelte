@@ -1,17 +1,21 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime';
 	import { useCRT } from '$lib/helpers/crt.svelte';
+	import { useGameStore } from '$lib/store/game';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 
 	const ACCELERATOR = { giveUp: 'G', backToGame: 'B', yes: 'Y', no: 'N' };
 
 	const { promote } = useCRT();
+	const { giveUp } = useGameStore();
 
 	let giveUpButton = $state<HTMLButtonElement>();
 	let backToGameButton = $state<HTMLButtonElement>();
 	let yesButton = $state<HTMLButtonElement>();
 	let noButton = $state<HTMLButtonElement>();
+	let isGivingUp = $state(false);
 
 	function accelerate(
 		event: KeyboardEvent,
@@ -26,8 +30,13 @@
 		button.click();
 	}
 
-	function handleGiveUp() {
-		// Implement the logic for giving up the game here
+	async function handleGiveUp() {
+		if (isGivingUp) return;
+		isGivingUp = true;
+
+		await giveUp();
+
+		window.location.assign(`/${getLocale()}`);
 	}
 
 	function keepUnderGlass(event: ToggleEvent) {
@@ -100,7 +109,7 @@
 			<p>{m.game_components_options_give_up_confirm_description()}</p>
 		</div>
 		<footer>
-			<button bind:this={yesButton} onclick={handleGiveUp}>
+			<button bind:this={yesButton} onclick={handleGiveUp} disabled={isGivingUp}>
 				{m.game_components_options_give_up_confirm_yes()}
 				<i>({ACCELERATOR.yes})</i>
 			</button>

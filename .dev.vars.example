@@ -1,0 +1,14 @@
+# Signs the game-progress JWT (src/lib/server/game-token.ts).
+#
+# Local only. Copy to `.dev.vars` and put anything in it — the game is the only
+# thing it protects, and locally there is nothing to protect it from.
+#
+# In production this comes from the Cloudflare secret store, and a missing value
+# is a hard failure rather than a silent fallback:
+#
+#   wrangler secret put GAME_SECRET
+#
+# Rotating it invalidates every token in the wild: players mid-run land back at
+# stage 0 and are flagged as tampered, since a token signed with the old key is
+# indistinguishable from a forgery. Rotate when nobody is mid-game, or not at all.
+GAME_SECRET=dev-only-game-secret-not-used-in-production

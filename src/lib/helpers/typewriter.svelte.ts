@@ -1,4 +1,12 @@
-const TYPING_DELAY_MAP: Record<string, number> = {
+interface Options {
+	skipFirst?: boolean;
+	baseInterval?: number;
+	startAt?: number | (() => number);
+	startDelay?: number;
+	delayMap?: Record<string, number>;
+}
+
+export const TYPING_DELAY_MAP: Record<string, number> = {
 	' ': 100,
 	'\b': 150,
 	'.': 200,
@@ -11,18 +19,11 @@ const TYPING_DELAY_MAP: Record<string, number> = {
 	'！': 300,
 	'?': 500,
 	'？': 500,
-	'\n': 700
+	'\n': 700,
+	'\t': 500
 };
 
-const BASE_INTERVAL = 30;
-
-interface Options {
-	skipFirst?: boolean;
-	baseInterval?: number;
-	startAt?: number | (() => number);
-	startDelay?: number;
-	delayMap?: Record<string, number>;
-}
+export const BASE_INTERVAL = 30;
 
 export const useTypewriter = (message: () => string, options: Options = {}) => {
 	const {
@@ -62,6 +63,8 @@ export const useTypewriter = (message: () => string, options: Options = {}) => {
 			const char = chars[index];
 			if (char === '\b') {
 				text = text.slice(0, -1);
+			} else if (char === '\t') {
+				// skip tab, which is used to slow down typing speed here.
 			} else {
 				text += char;
 			}
@@ -83,9 +86,28 @@ export const useTypewriter = (message: () => string, options: Options = {}) => {
 		};
 	});
 
+	// Jumping to the end still has to *arrive* at the end. A message can carry \b — the
+	// script uses it to make a line rewrite itself ("Back to Home\b\b\b\bGame") — and the
+	// animation applies those as it types. Assigning the raw string would leave the
+	// control characters sitting in the DOM, which is exactly what a returning player sees
+	// on `skipFirst`, since their first message is already the rewritten one.
+	const settled = (message: string) => {
+		let result = '';
+
+		for (const char of message) {
+			if (char === '\b') {
+				result = result.slice(0, -1);
+			} else {
+				result += char;
+			}
+		}
+
+		return result;
+	};
+
 	const skip = () => {
 		clearInterval(intervalId);
-		text = message();
+		text = settled(message());
 		isTyping = false;
 	};
 

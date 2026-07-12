@@ -1,5 +1,5 @@
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-import { derived, fromStore, type Readable } from 'svelte/store';
+import { derived, fromStore, get, writable, type Readable } from 'svelte/store';
 
 import { useCRT } from '$lib/helpers/crt.svelte';
 import { useGlitch } from '$lib/helpers/glitch.svelte';
@@ -23,8 +23,29 @@ type ScriptLine = () => string;
 export const useGameScript = (options: Options = {}) => {
 	const { isFirstStageClear = () => false, onFirstStageClear } = options;
 
-	const { lastMessageUpdatedAt, lastMessageUpdateSeconds, backButtonClickedTimes } = useGameStore();
+	const {
+		lastMessageUpdatedAt,
+		lastMessageUpdateSeconds,
+		backButtonClickedTimes,
+		isCaught,
+		hasClicked
+	} = useGameStore();
 	const { interference, burnOut } = useCRT();
+
+	const caughtCheating = writable<boolean>(get(isCaught));
+
+	isCaught.subscribe(($isCaught) => {
+		if ($isCaught) caughtCheating.set(true);
+	});
+
+	let acknowledgedClicks = get(backButtonClickedTimes);
+
+	backButtonClickedTimes.subscribe(($backButtonClickedTimes) => {
+		if ($backButtonClickedTimes === acknowledgedClicks) return;
+
+		acknowledgedClicks = $backButtonClickedTimes;
+		caughtCheating.set(false);
+	});
 
 	const gameButtonClickedTimesMessageMap = new SvelteMap<number, ScriptLine>([
 		[1, m.game_mode_description_script_after_back_to_game_1],
@@ -41,6 +62,9 @@ export const useGameScript = (options: Options = {}) => {
 
 	const gameButtonClickedTimesMessageRandomSet = new SvelteSet<ScriptLine>([]);
 
+	const RETURNING_SUPPRESSES = [1, 2];
+	const isReturningClicker = get(hasClicked);
+
 	const gameDescriptionMessage = derived<Readable<number>, ScriptLine>(
 		backButtonClickedTimes,
 		($backButtonClickedTimes) => {
@@ -49,6 +73,12 @@ export const useGameScript = (options: Options = {}) => {
 			} else {
 				for (const [times, message] of gameButtonClickedTimesMessageMap) {
 					if ($backButtonClickedTimes === times) {
+						if (isReturningClicker && RETURNING_SUPPRESSES.includes(times)) {
+							gameButtonClickedTimesMessageRandomSet.add(gameButtonClickedTimesMessageMap.get(3)!);
+							gameButtonClickedTimesMessageRandomSet.add(gameButtonClickedTimesMessageMap.get(6)!);
+							break;
+						}
+
 						if ($backButtonClickedTimes >= 3 && $backButtonClickedTimes <= 10) {
 							gameButtonClickedTimesMessageRandomSet.add(message);
 						}
@@ -73,10 +103,13 @@ export const useGameScript = (options: Options = {}) => {
 			}
 		}
 	);
+
 	const gameBackButtonText = derived<Readable<number>, ScriptLine>(
 		backButtonClickedTimes,
 		($backButtonClickedTimes) =>
-			$backButtonClickedTimes >= 1 ? m.game_back_to_game : m.pages_error_back_to_home
+			isReturningClicker || $backButtonClickedTimes >= 1
+				? m.game_back_to_game
+				: m.pages_error_back_to_home
 	);
 	const fallbackIndicator = derived(lastMessageUpdateSeconds, ($lastMessageUpdateSeconds) =>
 		Math.floor($lastMessageUpdateSeconds / 15)
@@ -106,11 +139,39 @@ export const useGameScript = (options: Options = {}) => {
 				: $gameDescriptionMessage
 	);
 
-	const descriptionLine = fromStore(gameDescriptionMessageWithFallbackHint);
+	// Outranks the hints: being caught is the more interesting thing that just happened,
+	// and a hint about looking around would be a strange thing to say to someone who was
+	// just dragged back through the door.
+	const cheatingInputs: [Readable<ScriptLine>, Readable<boolean>] = [
+		gameDescriptionMessageWithFallbackHint,
+		caughtCheating
+	];
+	const gameDescriptionMessageWithCheating = derived<typeof cheatingInputs, ScriptLine>(
+		cheatingInputs,
+		([$message, $caughtCheating]) => ($caughtCheating ? m.game_mode_description_cheating : $message)
+	);
+
+	const descriptionLine = fromStore(gameDescriptionMessageWithCheating);
 	const backButtonLine = fromStore(gameBackButtonText);
 
-	const gameDescription = useTypewriter(() => descriptionLine.current());
-	const gameBackButton = useTypewriter(() => backButtonLine.current(), {
+	// Resolved to text here, and *deliberately* through `$derived`, which is what stops
+	// the typewriter re-animating a line it is already showing.
+	//
+	// These stores carry `m.*` functions rather than strings, so that a locale switch
+	// re-resolves them. But a Svelte store treats every function value as changed (that
+	// is what `safe_not_equal` does with a function), and `fromStore` invalidates on
+	// every notification without comparing. So each click re-notified with the identical
+	// message, the typewriter's effect re-ran, and the back button re-played its
+	// "Back to Home" → "Back to Game" edit every single time.
+	//
+	// `$derived` compares its own value: same string, no invalidation, no re-run. The
+	// animation now fires when the words actually change, and locale switches still get
+	// through because a new locale yields a different string.
+	const descriptionText = $derived(descriptionLine.current());
+	const backButtonText = $derived(backButtonLine.current());
+
+	const gameDescription = useTypewriter(() => descriptionText);
+	const gameBackButton = useTypewriter(() => backButtonText, {
 		startAt: () => m.pages_error_back_to_home().length,
 		startDelay: 7500,
 		baseInterval: 150,

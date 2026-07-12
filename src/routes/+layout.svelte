@@ -9,11 +9,13 @@
 	import CrtScreen from '$lib/components/CrtScreen.svelte';
 	import GameOptions from '$lib/components/GameOptions.svelte';
 
-	let { children } = $props();
+	let { children, data } = $props();
 
 	let screenEl = $state<HTMLDivElement>();
 
-	const { isGameMode, detectGameMode } = useGameStore();
+	const { isGameMode, syncFromServer } = useGameStore();
+
+	syncFromServer(data?.game);
 
 	// No escaping the game through the browser chrome.
 	useNavigationLock(() => $isGameMode);
@@ -29,10 +31,9 @@
 		}
 	});
 
-	// Keep the reactive locale aligned with the URL after client-side switches.
 	$effect(() => {
 		syncLocale(page.url);
-		detectGameMode(page);
+		syncFromServer(data?.game);
 	});
 </script>
 

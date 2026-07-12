@@ -4,10 +4,12 @@
 	import { goto } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { useCRT } from '$lib/helpers/crt.svelte';
 	import { useGameScript } from '$lib/helpers/game-script.svelte';
 	import { useGameStore } from '$lib/store/game';
 
-	const { isGameMode, backButtonClickedTimes } = useGameStore();
+	const { isGameMode, isCaught, backButtonClickedTimes, clearStage, markClicked } = useGameStore();
+	const { interference } = useCRT();
 
 	const currentLang = $derived(getLocale());
 	const headTitle = $derived(
@@ -33,6 +35,13 @@
 	let gameStatus = $state(page.status);
 	const isFirstStageClear = $derived(gameStatus === 200);
 
+	$effect(() => {
+		if (!$isCaught) return;
+
+		const twitch = setTimeout(() => interference(), 750);
+		return () => clearTimeout(twitch);
+	});
+
 	const { gameDescription, gameBackButton, firstStageClearTitle, firstStageClearDescription } =
 		useGameScript({
 			isFirstStageClear: () => isFirstStageClear,
@@ -49,11 +58,15 @@
 			return;
 		} else {
 			backButtonClickedTimes.update((n) => n + 1);
+
+			markClicked();
 		}
 	}
 
-	function nextGameStage() {
-		goto(resolve(`/${currentLang}?game`), { replaceState: true });
+	async function nextGameStage() {
+		await clearStage(1);
+
+		goto(resolve(`/${currentLang}`), { replaceState: true });
 	}
 	//#endregion
 </script>
