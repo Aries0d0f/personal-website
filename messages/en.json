@@ -33,5 +33,8 @@
 	"game_mode_description_script_after_back_to_game_100": "100 clicks on a useless button? Hats off to you!",
 	"game_mode_description_script_after_back_to_game_999": "Wow, 999 clicks!\nYou really enjoyed clicking that button, didn't you?\nThat deserves a reward. Here's a hint: the way out is not through that button.",
 	"game_mode_stage_1_clear_title": "Page Not Found\b\b\b\b\b\b\b\b\bFound",
-	"game_mode_description_script_stage_1_clear": "Wait, wait!, wait!!\nThat's not the way out!\nThat will break me!!!"
+	"game_mode_description_script_stage_1_clear": "Wait, wait!, wait!!\nThat's not the way out!\nThat will break me!!!",
+	"game_components_avatar_title": "{#span}Here’s{/span}\n{#strong}GAME{/strong}",
+	"game_components_avatar_slogan": "In front of you :)",
+	"game_pages_home_profile_intro": "Don't overlook any abnormalies.\nIf you find any abnormalies, scroll back immediately.\nIf you don't find any abnormalies, do not scroll back.\nTo go back to the normal site."
 }
