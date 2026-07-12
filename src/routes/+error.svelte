@@ -33,20 +33,58 @@
 
 	//#region Game Mode Only Logic
 	let gameStatus = $state(page.status);
+	let sequence: string[] = $state([]);
+	let sequenceTimer = $state<ReturnType<typeof setTimeout>>();
 	const isFirstStageClear = $derived(gameStatus === 200);
 
-	$effect(() => {
-		if (!$isCaught) return;
-
-		const twitch = setTimeout(() => interference(), 750);
-		return () => clearTimeout(twitch);
+	const {
+		gameDescription,
+		gameBackButton,
+		firstStageClearTitle,
+		firstStageClearDescription,
+		immediateFireMessage
+	} = useGameScript({
+		isFirstStageClear: () => isFirstStageClear,
+		onFirstStageClear: nextGameStage
 	});
 
-	const { gameDescription, gameBackButton, firstStageClearTitle, firstStageClearDescription } =
-		useGameScript({
-			isFirstStageClear: () => isFirstStageClear,
-			onFirstStageClear: nextGameStage
-		});
+	const VIM_EXIT_CODE = ['Escape', 'Shift', ':', 'q'];
+	const isPrefix = (keys: string[]) => keys.every((key, i) => key === VIM_EXIT_CODE[i]);
+
+	function vimExitConsumes(event: KeyboardEvent) {
+		const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+
+		const next = [...sequence, key];
+		while (next.length && !isPrefix(next)) next.shift();
+		sequence = next;
+
+		if (sequenceTimer) clearTimeout(sequenceTimer);
+		sequenceTimer = setTimeout(() => {
+			sequence = [];
+		}, 1500);
+
+		if (sequence.length === VIM_EXIT_CODE.length) {
+			clearTimeout(sequenceTimer);
+			sequence = [];
+			return true;
+		}
+
+		return sequence.length >= 3;
+	}
+
+	function handleKeyEvent(event: KeyboardEvent) {
+		if (vimExitConsumes(event)) {
+			console.log('Vim exit sequence detected');
+			immediateFireMessage(m.game_mode_description_script_after_vim_quit);
+			return;
+		}
+
+		if (event.ctrlKey && event.key === 'c') {
+			console.log('Ctrl+C detected');
+			immediateFireMessage(m.game_mode_description_script_after_ctrl_c);
+			return;
+		}
+	}
 
 	function handleGameButtonClick() {
 		if (gameDescription.isTyping) {
@@ -68,8 +106,17 @@
 
 		goto(resolve(`/${currentLang}`), { replaceState: true });
 	}
+
+	$effect(() => {
+		if (!$isCaught) return;
+
+		const twitch = setTimeout(() => interference(), 750);
+		return () => clearTimeout(twitch);
+	});
 	//#endregion
 </script>
+
+<svelte:window on:keydown={handleKeyEvent} />
 
 <svelte:head>
 	<title>{headTitle} | {m.noun_general_name()}</title>
