@@ -49,9 +49,9 @@ const abnormalityLottery = (discovered: AbnormalityCode[]): AbnormalityCode | nu
 
 	const randomSeed = Math.random();
 
-	if (randomSeed < 0.15) {
+	if (randomSeed < 0.1) {
 		return null;
-	} else if (randomSeed < 0.8) {
+	} else if (randomSeed < (0.99 - 0.15 * (discoveredSet.size / abnormalityCodeSet.size)) && undiscovered.size > 0) {
 		return randomFromSet(undiscovered);
 	} else {
 		return randomFromSet(discoveredSet);
