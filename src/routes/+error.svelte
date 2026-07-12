@@ -302,6 +302,7 @@
 					margin: 0;
 					outline: none;
 					color: inherit;
+					caret-color: rgba(255, 255, 255, 0.05);
 					font-family: inherit;
 					-moz-appearance: textfield;
 
