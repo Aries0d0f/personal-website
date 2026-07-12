@@ -3,6 +3,7 @@
 	import type { PageData } from './$types';
 
 	import { useGameStore } from '$lib/store/game';
+	import { Abnormality } from '$lib/game/abnoramlity';
 
 	const { abnormality } = useGameStore();
 
@@ -26,13 +27,27 @@
 	// mdsvex's default export is a Svelte component — render it directly.
 	const Content = $derived(data.content);
 	const currentAbnormality = $derived($abnormality);
+	const lookupInfo = $derived.by(async () => {
+		if (currentAbnormality === Abnormality.AN04) {
+			return await fetch('/ip+abuse', {
+				headers: {
+					'Accept': 'application/json'
+				}
+			})
+				.then((res) => res.json())
+				.then((data) => {
+					return data;
+				});
+		}
+		return null;
+	});
 </script>
 
 {#if ViewportLayout}
 	{#await ViewportLayout then { default: Layout }}
+		{currentAbnormality}
 		<Layout {data}>
-			{currentAbnormality}
-			<Content {currentAbnormality} />
+			<Content {currentAbnormality} {lookupInfo} />
 		</Layout>
 	{/await}
 {/if}
