@@ -19,7 +19,7 @@ const BASE_INTERVAL = 30;
 interface Options {
 	skipFirst?: boolean;
 	baseInterval?: number;
-	startAt?: number;
+	startAt?: number | (() => number);
 	startDelay?: number;
 	delayMap?: Record<string, number>;
 }
@@ -37,10 +37,14 @@ export const useTypewriter = (message: () => string, options: Options = {}) => {
 	let isTyping = $state(false);
 	let intervalId = $state<ReturnType<typeof setInterval>>();
 
-	$effect(() => {
-		const chars = message().split('').slice(startAt);
+	const prefixLength = () => (typeof startAt === 'function' ? startAt() : startAt);
 
-		text = message().split('').slice(0, startAt).join('');
+	$effect(() => {
+		const full = message().split('');
+		const prefix = prefixLength();
+		const chars = full.slice(prefix);
+
+		text = full.slice(0, prefix).join('');
 		isTyping = true;
 		if (chars.length === 0) {
 			isTyping = false;
