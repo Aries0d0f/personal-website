@@ -303,6 +303,7 @@
 			}
 		}
 
+		mix-blend-mode: plus-lighter;
 		appearance: none;
 		background: none;
 		border: none;
@@ -311,12 +312,12 @@
 		cursor: pointer;
 		position: absolute;
 		top: 4rem;
-		right: 4rem;
+		left: 4rem;
 		font-size: 4rem;
 		color: #aaa;
 		z-index: 1000;
 		transform-origin: center;
-		transform: matrix(1.1, -0.2, 0.6, 1.2, 0, 0);
+		transform: matrix(1.2, -0.8, 0.45, 1.1, 10, 0);
 		outline: none;
 	}
 
