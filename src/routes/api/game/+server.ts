@@ -49,7 +49,7 @@ const abnormalityLottery = (discovered: AbnormalityCode[]): AbnormalityCode | nu
 
 	const randomSeed = Math.random();
 
-	if (randomSeed < 0.3) {
+	if (randomSeed < 0.15) {
 		return null;
 	} else if (randomSeed < 0.8) {
 		return randomFromSet(undiscovered);
