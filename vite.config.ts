@@ -5,7 +5,15 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	// content/ lives at the project root (outside src), so Vite's dev server
 	// blocks dynamic imports into it by default. Whitelist it explicitly.
-	server: { fs: { allow: ['./content'] } },
+	server: {
+		fs: { allow: ['./content'] },
+		proxy: {
+			'/ip': {
+				target: 'https://aries0d0f.me/ip',
+				changeOrigin: true
+			}
+		}
+	},
 	plugins: [
 		sveltekit(),
 		paraglideVitePlugin({
