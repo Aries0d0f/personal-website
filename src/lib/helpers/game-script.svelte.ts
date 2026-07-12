@@ -138,7 +138,20 @@ export const useGameScript = (options: Options = {}) => {
 	// The whole page takes the hit the moment the status flips, the same way it did on
 	// the way into game mode. The text keeps corrupting from there.
 	$effect(() => {
-		if (isFirstStageClear()) void interference();
+		if (isFirstStageClear()) {
+			setTimeout(() => {
+				interference();
+			}, 1000);
+			setTimeout(() => {
+				interference();
+			}, 3000);
+			setTimeout(() => {
+				interference();
+			}, 5750);
+			setTimeout(() => {
+				interference();
+			}, 6250);
+		}
 	});
 
 	const firstStageClearTitle = useGlitch(() => firstStageClearTitleText.current, isFirstStageClear);

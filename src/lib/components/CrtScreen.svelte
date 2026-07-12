@@ -29,6 +29,7 @@
 	const noop = () => {};
 
 	let burst = $state(false);
+	let burning = $state(false);
 	let sliceTone = $state<SliceTone>('invert');
 
 	let voidEl = $state<HTMLElement>();
@@ -190,7 +191,8 @@
 				{ scaleY: 1, opacity: 1, duration: 0.12, ease: 'power3.out' },
 				COLLAPSE_AT + 0.1
 			)
-			.to(lineEl!, { scaleX: 0.35, duration: 0.16, ease: 'power2.inOut' }, COLLAPSE_AT + 0.22);
+			.to(lineEl!, { scaleX: 0.001, duration: 0.16, ease: 'power2.inOut' }, COLLAPSE_AT + 0.32)
+			.to(lineEl!, { opacity: 0, duration: 0.16, ease: 'power2.inOut' }, '<+=0.16');
 
 		return tl;
 	}
@@ -285,7 +287,7 @@
 		// Blowout. The swap happens inside the white, so the cut is never seen.
 		tl.fromTo(flashEl!, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.in' }, 2.3)
 			.to(el, { scale: 1.03, duration: 0.32, ease: 'power2.in' }, 2.3)
-			.to(staticEl!, { opacity: 0, duration: 0.22 }, 2.42);
+			.to(staticEl!, { opacity: 0, duration: 0.22 }, 3.42);
 
 		return tl;
 	}
@@ -298,10 +300,17 @@
 	function sweepOpen(el: HTMLElement) {
 		return gsap
 			.timeline()
-			.set(el, { transformOrigin: viewportCenter(), scaleY: 0.004, scaleX: 1.04 })
-			.to(lineEl!, { scaleX: 1, duration: 0.14, ease: 'power2.out' })
+			.set(el, {
+				transformOrigin: viewportCenter(),
+				opacity: 1,
+				scaleY: 0.004,
+				scaleX: 1.04,
+				delay: 1
+			})
+			.set(lineEl!, { opacity: 1 })
+			.to(lineEl!, { scaleX: 1, duration: 0.225, ease: 'power2.out' })
 			.to(lineEl!, { opacity: 0, duration: 0.18 })
-			.to(el, { scaleY: 1, scaleX: 1, duration: 0.5, ease: 'expo.out' }, '<')
+			.to(el, { scaleY: 1, scaleX: 1, duration: 0.5, ease: 'expo.out', delay: 0.1 }, '<')
 			.to(voidEl!, { opacity: 0, duration: 0.45, ease: 'power2.out' }, '<+=0.05');
 	}
 
@@ -400,7 +409,18 @@
 	// On the way in the tube is losing its picture, so the tears punch black holes in it.
 	// Once the game is on and the tube is overloading, they flare through it instead.
 	const powerCycle = (swap: Swap) => play((el) => buildCycle(el, swap), swap, 'black');
-	const burnOutCycle = (swap: Swap) => play((el) => buildBurnOut(el, swap), swap, 'invert');
+
+	// The tube is losing its vertical hold long before it gives out, so the roll stops
+	// rolling and starts jumping. Flagged for the whole cycle, not just the overload.
+	const burnOutCycle = async (swap: Swap) => {
+		burning = true;
+
+		try {
+			await play((el) => buildBurnOut(el, swap), swap, 'invert');
+		} finally {
+			burning = false;
+		}
+	};
 
 	// Nothing to hide: the picture stays up the whole way through, so nothing is swapped.
 	const interferenceCycle = () => play(interference, noop, 'invert');
@@ -412,6 +432,7 @@
 		if (!import.meta.env.DEV || !el) return;
 
 		sliceTone = cycle === 'burn' ? 'invert' : 'black';
+		burning = cycle === 'burn';
 		burst = true;
 		await tick();
 		armScreen(el);
@@ -435,6 +456,7 @@
 		devTools = undefined;
 
 		if (screen) disarmScreen(screen);
+		burning = false;
 		burst = false;
 	}
 
@@ -501,7 +523,7 @@
 
 		{#if active}
 			<div class="crt-scanlines"></div>
-			<div class="crt-band"></div>
+			<div class="crt-band" class:flicking={burning}></div>
 			<div class="crt-grain"></div>
 			<div class="crt-vignette"></div>
 			<div class="crt-glimmer"></div>
@@ -710,6 +732,13 @@
 
 			&-band {
 				animation: crt-roll 7s linear infinite;
+
+				// Vertical hold gone: the band snaps between two positions instead of
+				// sliding through them. `steps` is what sells it — an interpolated
+				// travel this short would read as a hum, not a flick.
+				&.flicking {
+					animation: crt-roll-flicking 0.06s steps(2, jump-none) infinite alternate;
+				}
 			}
 
 			&-grain {
@@ -735,6 +764,15 @@
 	@keyframes crt-roll {
 		to {
 			transform: translateY(260%);
+		}
+	}
+
+	@keyframes crt-roll-flicking {
+		from {
+			transform: translateY(20%);
+		}
+		to {
+			transform: translateY(22%);
 		}
 	}
 
