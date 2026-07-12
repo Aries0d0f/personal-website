@@ -23,6 +23,8 @@
 	"game_mode_description_hint_3": "この状況、何か意味があると思わない？",
 	"game_mode_description_hint_4": "この状況から抜け出す方法が、きっとあるはず。",
 	"game_mode_description_cheating": "おやおや！\n誰かさん、ズルしようとしてない？\n\n…言っとくけど、ズルは、\nダイダイダイダイ\t大\t嫌\tい\tだ\tよ\t。",
+	"game_mode_description_script_after_vim_quit": "私がテキストエディタに見える？\nそんな方法で私を終了できるとは思えないけど。",
+	"game_mode_description_script_after_ctrl_c": "私がターミナルに見える？\nそんな方法で私を終了できるとは思えないけど。",
 	"game_mode_description_script_after_back_to_game_1": "おっと、おっと！変え忘れてた！\nゲームしたい？\nゲームがしたいんだよね？\nじゃあー、\n今の私はゲームやってるから、\nここが私のホーム。\n\nうん、こっちのほうがいいね。",
 	"game_mode_description_script_after_back_to_game_2": "また会ったね！\nもうここにいるじゃない。",
 	"game_mode_description_script_after_back_to_game_3": "うまくいかなかったでしょ？\n別の出口を探すしかないみたいだね。\n\n頑張って！",
@@ -34,5 +36,16 @@
 	"game_mode_description_script_after_back_to_game_100": "役に立たないボタンを100回クリック？\nある意味すごいね。",
 	"game_mode_description_script_after_back_to_game_999": "うわ、999回！\nそのボタンを押すの、よっぽど楽しいんだね。\nご褒美をあげよう。ヒント：出口はそのボタンの先にはないよ。",
 	"game_mode_stage_1_clear_title": "ページが見つかりません\b\b\bました",
-	"game_mode_description_script_stage_1_clear": "待って、待って！、待って！！\nそれは出口じゃない！\n私が壊れちゃう！！！"
+	"game_mode_description_script_stage_1_clear": "待って、待って！、待って！！\nそれは出口じゃない！\n私が壊れちゃう！！！",
+	"game_components_avatar_title": "{#strong}ゲーム{/strong}\n{#span}でーす{/span}",
+	"game_components_avatar_slogan": "In front of you :)",
+	"game_components_options_title": "ゲームオプション",
+	"game_components_options_language": "言語を選択",
+	"game_components_options_back_to_game": "ゲームに戻る",
+	"game_components_options_give_up": "諦める",
+	"game_components_options_give_up_confirm_title": "本当に諦めますか？",
+	"game_components_options_give_up_confirm_description": "諦めると、これまでの進行状況はすべて失われ、通常のサイトに戻ります。\n本当に諦めますか？",
+	"game_components_options_give_up_confirm_yes": "はい",
+	"game_components_options_give_up_confirm_no": "いいえ",
+	"game_pages_home_profile_intro": "{#li}{#strong}スクロール{/strong}するか、\n{#keyCode}←{/keyCode}{#keyCode}→{/keyCode}{#keyCode}↑{/keyCode}{#keyCode}↓{/keyCode} キーで移動すること。{/li}{#li}{#strong}異変{/strong}を見逃さないこと。{/li}{#li}もし異変を見つけたら、{#strong}すぐにここへ戻ってくること。{/strong}{/li}{#li}もし異変が見つからなければ、{#strong}次のページへ進むこと。{/strong}{/li}{#li}通常のサイトに戻ること。{/li}"
 }
