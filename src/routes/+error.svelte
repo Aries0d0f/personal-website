@@ -53,7 +53,7 @@
 	}
 
 	function nextGameStage() {
-		goto(resolve(`/${currentLang}`));
+		goto(resolve(`/${currentLang}?game`), { replaceState: true });
 	}
 	//#endregion
 
