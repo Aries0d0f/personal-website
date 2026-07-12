@@ -1,15 +1,14 @@
 import { getContext, hasContext, setContext } from 'svelte';
 import { writable, derived, readable, get } from 'svelte/store';
 
-import { computeStageProof } from '$lib/game/proof';
-import { IDLE_GAME_STATE, type GameState } from '$lib/game/state';
-
 import type { Writable } from 'svelte/store';
-import {
-	castAbnormalityCodeToEnum,
-	type Abnormality,
-	type AbnormalityCode
-} from '$lib/game/abnoramlity';
+
+import { computeStageProof } from '$lib/game/proof';
+import { IDLE_GAME_STATE } from '$lib/game/state';
+import { castAbnormalityCodeToEnum } from '$lib/game/abnoramlity';
+
+import type { GameState } from '$lib/game/state';
+import type { Abnormality, AbnormalityCode } from '$lib/game/abnoramlity';
 
 interface Model {
 	active: Writable<boolean>;
