@@ -211,7 +211,6 @@ export const useGameScript = (options: Options = {}) => {
 	);
 
 	const immediateFireMessage = (message: ScriptLine) => {
-		console.log('Immediate message fired:', message());
 		immediateMessageQueue.update((queue) => {
 			queue.add(message);
 			return queue;

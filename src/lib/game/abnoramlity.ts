@@ -26,9 +26,11 @@ export enum Abnormality {
 	AN24 = '24_gameoptions_eye_icon',
 	AN25 = '25_gameoptions_alien_language',
 	AN26 = '26_gameoptions_give_up'
-};
+}
 
-export const abnormalityCodeMap = new Map(Object.entries(Abnormality).map(([code, value]) => [value, code as keyof typeof Abnormality]));
+export const abnormalityCodeMap = new Map(
+	Object.entries(Abnormality).map(([code, value]) => [value, code as keyof typeof Abnormality])
+);
 
 export const abnormalityCodeSet = new Set(Object.keys(Abnormality) as (keyof typeof Abnormality)[]);
 
@@ -40,4 +42,4 @@ export const castAbnormalityCodeToEnum = (code: AbnormalityCode): Abnormality =>
 
 export const castAbnormalityEnumToCode = (abnormality: Abnormality): AbnormalityCode => {
 	return abnormalityCodeMap.get(abnormality) as AbnormalityCode;
-}
+};

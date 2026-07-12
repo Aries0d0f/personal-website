@@ -204,10 +204,7 @@ export async function verifyGameToken(token: string, secret: string): Promise<Ve
 	// Only the major half is enforced. A mismatched major is a shape we no longer speak —
 	// the signature already proved we minted this, so that is our doing, not theirs. The
 	// minor half is reserved for a future migration to key off; it is not compared here.
-	if (
-		!semver.valid(claims?.v) ||
-		semver.major(claims.v) !== semver.major(GAME_TOKEN_VERSION)
-	) {
+	if (!semver.valid(claims?.v) || semver.major(claims.v) !== semver.major(GAME_TOKEN_VERSION)) {
 		return { ok: false, reason: 'stale' };
 	}
 

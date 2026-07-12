@@ -74,13 +74,11 @@
 
 	function handleKeyEvent(event: KeyboardEvent) {
 		if (vimExitConsumes(event)) {
-			console.log('Vim exit sequence detected');
 			immediateFireMessage(m.game_mode_description_script_after_vim_quit);
 			return;
 		}
 
 		if (event.ctrlKey && event.key === 'c') {
-			console.log('Ctrl+C detected');
 			immediateFireMessage(m.game_mode_description_script_after_ctrl_c);
 			return;
 		}

@@ -41,7 +41,7 @@ const randomFromSet = <T>(set: Set<T>): T | null => {
 
 	const randomIndex = Math.floor(Math.random() * arr.length);
 	return arr[randomIndex];
-}
+};
 
 const abnormalityLottery = (discovered: AbnormalityCode[]): AbnormalityCode | null => {
 	const discoveredSet = new Set(discovered);
@@ -135,7 +135,7 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 					currentAbnormality: abnormalityLottery(current.discoveredAbnormalities ?? []),
 					discoveredAbnormalities: current.currentAbnormality
 						? [...(current.discoveredAbnormalities ?? []), current.currentAbnormality]
-						: current.discoveredAbnormalities ?? []
+						: (current.discoveredAbnormalities ?? [])
 				}
 			: {
 					currentAbnormality: null,

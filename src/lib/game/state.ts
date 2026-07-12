@@ -1,7 +1,7 @@
 // The game's shared vocabulary — imported by both the client store and the
 // server that signs the token, so it must stay free of any server-only import.
 
-import type { AbnormalityCode } from "./abnoramlity";
+import type { AbnormalityCode } from './abnoramlity';
 
 /** Name of the cookie carrying the signed game token. */
 export const GAME_COOKIE = 'game';
