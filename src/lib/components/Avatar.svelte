@@ -176,13 +176,24 @@
 	}
 
 	function switchGameModeAvatar() {
-		setTimeout(() => {
-			gsap.to('#image-source-no-bg', {
-				attr: { 'xlink:href': avatarImgGameMode },
+		const tl = gsap.timeline();
+		tl.to('#image-source-no-bg', {
+			attr: { 'xlink:href': avatarImgGameMode },
+			duration: 0.3,
+			ease: 'power3.out',
+			delay: 0.36
+		})
+			.to('#image-source-no-bg', {
+				attr: { 'xlink:href': avatarImgNoBg },
 				duration: 0.5,
 				ease: 'power3.out'
+			})
+			.to('#image-source-no-bg', {
+				attr: { 'xlink:href': avatarImgGameMode },
+				duration: 0.5,
+				ease: 'power3.out',
+				delay: 0.36
 			});
-		}, 360);
 	}
 
 	const crt = useCRT();
