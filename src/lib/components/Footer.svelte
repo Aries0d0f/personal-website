@@ -62,6 +62,7 @@
 					class="contact"
 					aria-label="Exit"
 					aria-disabled={$isGameMode && $stage < 6}
+					data-forbidden={$isGameMode && $stage < 6}
 				>
 					<span>Exit</span>
 					<Icon class="icon" icon="fa7-solid:door-open" />
@@ -213,9 +214,13 @@
 			filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.25));
 		}
 
-		&[aria-disabled='true'] {
-			cursor: not-allowed;
+		&[aria-disabled='true']:not(:hover),
+		&[data-forbidden='true'] {
 			opacity: 0.3;
+		}
+
+		&[data-forbidden='true'] {
+			cursor: not-allowed;
 		}
 
 		> span {
