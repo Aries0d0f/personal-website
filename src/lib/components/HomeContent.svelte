@@ -9,11 +9,24 @@
 
 <article>
 	{#if $isGameMode}
-		{const rules = m.game_pages_home_profile_intro().split('\n')}
 		<ol>
-			{#each rules as rule, index (index)}
-				<li>{rule}</li>
-			{/each}
+			<ParaglideMessage message={m.game_pages_home_profile_intro} inputs={{}}>
+				{#snippet li({ children })}
+					<li>
+						{@render children?.()}
+					</li>
+				{/snippet}
+				{#snippet strong({ children })}
+					<strong>
+						{@render children?.()}
+					</strong>
+				{/snippet}
+				{#snippet keyCode({ children })}
+					<kbd>
+						{@render children?.()}
+					</kbd>
+				{/snippet}
+			</ParaglideMessage>
 		</ol>
 	{:else}
 		<ParaglideMessage message={m.pages_home_profile_intro} inputs={{}}>
@@ -44,6 +57,15 @@
 				font-weight: 600;
 				margin-bottom: 0.5rem;
 			}
+		}
+
+		kbd {
+			font-size: 0.875rem;
+			padding: 0.075rem 0.35rem;
+			border-radius: 0.25rem;
+			margin: 0 0.125rem;
+			background-color: #f5f5f5;
+			border: 1px solid #ccc;
 		}
 	}
 </style>
