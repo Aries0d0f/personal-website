@@ -6,7 +6,7 @@
 
 	let { sideMode, mobile }: { sideMode?: boolean; mobile?: boolean } = $props();
 
-	const { isGameMode } = useGameStore();
+	const { isGameMode, stage } = useGameStore();
 	const contacts = [
 		{
 			name: 'Email',
@@ -34,11 +34,13 @@
 			icon: 'fa7-brands:linkedin-in'
 		}
 	];
+
+	function handleGameClear() {}
 </script>
 
 <footer class:side={sideMode} class:mobile>
 	<ul class="contact-container">
-		{#each contacts as contact (contact.name)}
+		{#each contacts as contact, index (contact.name)}
 			<li>
 				<a
 					href={contact.url}
@@ -46,6 +48,7 @@
 					rel="external noopener noreferrer"
 					class="contact"
 					aria-label={contact.name}
+					aria-disabled={$isGameMode && $stage < index + 2}
 				>
 					<span>{contact.name}</span>
 					<Icon class="icon" icon={contact.icon} />
@@ -54,10 +57,15 @@
 		{/each}
 		{#if $isGameMode}
 			<li>
-				<a href="https://aries0d0f.me/" rel="external" class="contact" aria-label="Exit">
+				<button
+					onclick={handleGameClear}
+					class="contact"
+					aria-label="Exit"
+					aria-disabled={$isGameMode && $stage < 6}
+				>
 					<span>Exit</span>
 					<Icon class="icon" icon="fa7-solid:door-open" />
-				</a>
+				</button>
 			</li>
 		{/if}
 	</ul>
@@ -181,8 +189,18 @@
 			> li {
 				display: inline-flex;
 			}
+
+			button {
+				font-family: inherit;
+				appearance: none;
+				background: none;
+				border: none;
+				margin: 0;
+				padding: 0;
+			}
 		}
 
+		cursor: pointer;
 		color: #000;
 		transition: color 0.3s ease;
 		position: relative;
@@ -193,6 +211,11 @@
 
 		&:hover {
 			filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.25));
+		}
+
+		&[aria-disabled='true'] {
+			cursor: not-allowed;
+			opacity: 0.3;
 		}
 
 		> span {
