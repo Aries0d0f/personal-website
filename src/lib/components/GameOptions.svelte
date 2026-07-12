@@ -1,9 +1,12 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { useCRT } from '$lib/helpers/crt.svelte';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 
 	const ACCELERATOR = { giveUp: 'G', backToGame: 'B', yes: 'Y', no: 'N' };
+
+	const { promote } = useCRT();
 
 	let giveUpButton = $state<HTMLButtonElement>();
 	let backToGameButton = $state<HTMLButtonElement>();
@@ -26,6 +29,10 @@
 	function handleGiveUp() {
 		// Implement the logic for giving up the game here
 	}
+
+	function keepUnderGlass(event: ToggleEvent) {
+		if (event.newState === 'open') promote();
+	}
 </script>
 
 <button class="game-dialog" command="show-modal" commandfor="game-options">
@@ -35,6 +42,7 @@
 <dialog
 	id="game-options"
 	class="game-dialog-container"
+	ontoggle={keepUnderGlass}
 	onkeydown={(event) =>
 		accelerate(event, {
 			[ACCELERATOR.giveUp]: giveUpButton,
@@ -74,6 +82,7 @@
 <dialog
 	id="game-confirm-give-up"
 	class="game-dialog-container"
+	ontoggle={keepUnderGlass}
 	onkeydown={(event) =>
 		accelerate(event, { [ACCELERATOR.yes]: yesButton, [ACCELERATOR.no]: noButton })}
 >

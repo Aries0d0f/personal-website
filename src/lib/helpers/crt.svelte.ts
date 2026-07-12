@@ -8,7 +8,11 @@ interface Routines {
 	interference: Cycle;
 	/** Overdrive the tube with static until it whites out, swap inside the blowout, fade back in. */
 	burnOut: Cycle;
+	/** Put the tube back on top of the top layer, after whatever was just promoted into it. */
+	promote: () => void;
 }
+
+type CycleName = 'powerCycle' | 'interference' | 'burnOut';
 
 const noop = () => {};
 
@@ -31,7 +35,7 @@ export const useCRT = () => {
 	// second one must not start on top of them. A non-exclusive cycle is pure decoration —
 	// it neither takes the lock nor waits on it, so it can never hold the tube shut for a
 	// cycle that has somewhere to be.
-	const run = async (name: keyof Routines, swap: Swap, exclusive = true) => {
+	const run = async (name: CycleName, swap: Swap, exclusive = true) => {
 		const routine = routines?.[name];
 
 		if (!routine || prefersReducedMotion()) {
@@ -66,6 +70,10 @@ export const useCRT = () => {
 		powerCycle: (swap: Swap) => run('powerCycle', swap),
 		burnOut: (swap: Swap) => run('burnOut', swap),
 		interference: () => run('interference', noop, false),
+		// The tube is in the top layer, which paints in the order things were added to it —
+		// z-index buys nothing there. Anything promoted after it (a modal dialog) lands on
+		// top of the picture, so it has to be put back up once that thing is in.
+		promote: () => routines?.promote(),
 		get isRunning() {
 			return running;
 		}

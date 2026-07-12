@@ -32,6 +32,7 @@
 	let burning = $state(false);
 	let sliceTone = $state<SliceTone>('invert');
 
+	let crtEl = $state<HTMLElement>();
 	let voidEl = $state<HTMLElement>();
 	let lineEl = $state<HTMLElement>();
 	let flashEl = $state<HTMLElement>();
@@ -460,11 +461,30 @@
 		burst = false;
 	}
 
+	// A modal dialog is promoted into the top layer, which paints above the whole document
+	// no matter what z-index says. The only way for the picture to reach over one is to be
+	// in the top layer as well — hence a manual popover rather than a plain overlay.
+	function show() {
+		if (crtEl && !crtEl.matches(':popover-open')) crtEl.showPopover();
+	}
+
+	// Within the top layer, order of promotion is order of paint. Whatever went in after the
+	// tube is now in front of it, so the tube leaves and comes back in behind nothing.
+	function promote() {
+		if (!crtEl?.matches(':popover-open')) return;
+
+		crtEl.hidePopover();
+		crtEl.showPopover();
+	}
+
+	$effect(show);
+
 	onMount(() => {
 		const unregister = register({
 			powerCycle,
 			interference: interferenceCycle,
-			burnOut: burnOutCycle
+			burnOut: burnOutCycle,
+			promote
 		});
 
 		if (dev) {
@@ -511,7 +531,7 @@
 </svg>
 
 {#if burst || active}
-	<div class="crt" aria-hidden="true">
+	<div class="crt" popover="manual" aria-hidden="true" bind:this={crtEl}>
 		<div class="crt-void" bind:this={voidEl}></div>
 
 		{#if burst}
@@ -565,6 +585,18 @@
 		z-index: 9999;
 		pointer-events: none;
 		overflow: hidden;
+
+		// The UA shrink-wraps a popover and gives it a border, padding and an opaque
+		// background. The tube is a sheet of glass over the whole viewport: none of that.
+		width: auto;
+		height: auto;
+		max-width: none;
+		max-height: none;
+		margin: 0;
+		border: 0;
+		padding: 0;
+		background: none;
+		color: inherit;
 
 		> * {
 			position: absolute;
