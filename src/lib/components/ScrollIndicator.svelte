@@ -9,7 +9,7 @@
 	const TRACK_WIDTH = 16; // 1rem
 	const SAMPLES = 96;
 
-	const seg = 100 / (pageOrder.length + 1);
+	const seg = 100 / pageOrder.length;
 
 	let vw = $state(0);
 	let vh = $state(0);
