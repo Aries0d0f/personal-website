@@ -119,6 +119,12 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 新北，臺灣_
 
 </hgroup>
 
+{#if currentAbnormality === Abnormality.AN02}
+
+施設礎基 TI 的用實與具工部內、站網立建零從織組利營非型化文助協。
+
+{:else}
+
 {#if currentAbnormality === Abnormality.AN05}
 
 {an05SelfDeleteExperience.current}
@@ -127,6 +133,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 新北，臺灣_
 
 協助文化型非營利組織從零建立網站、內部工具與實用的 IT 基礎設施。
 
+{/if}
 {/if}
 
 </section>

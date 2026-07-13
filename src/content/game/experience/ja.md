@@ -119,6 +119,12 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 新北，台湾_
 
 </hgroup>
 
+{#if currentAbnormality === Abnormality.AN02}
+
+たしまい行を援支るえ整らかロゼをラフンイITな的用実、ルーツ部内、トイサWebのNPO系化文。
+
+{:else}
+
 {#if currentAbnormality === Abnormality.AN05}
 
 {an05SelfDeleteExperience.current}
@@ -127,6 +133,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 新北，台湾_
 
 文化系NPOのWebサイト、内部ツール、実用的なITインフラをゼロから整える支援を行いました。
 
+{/if}
 {/if}
 
 </section>
