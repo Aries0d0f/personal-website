@@ -250,6 +250,28 @@
 		&-body {
 			padding: 1rem;
 			overflow-y: auto;
+			scrollbar-width: 0.5rem;
+
+			&::-webkit-scrollbar {
+				width: 0.5rem;
+				height: 0.5rem;
+			}
+
+			&::-webkit-scrollbar-track {
+				background: #ccc;
+				border: 1px solid $ink;
+				border-top-width: 0;
+				border-bottom-width: 0;
+			}
+
+			&::-webkit-scrollbar-thumb {
+				background: $ink;
+			}
+
+			&::-webkit-scrollbar-button:decrement {
+				width: 0.5rem;
+				height: 0.5rem;
+			}
 		}
 	}
 
