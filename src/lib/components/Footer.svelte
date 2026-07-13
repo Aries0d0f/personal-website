@@ -1,12 +1,15 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { readable } from 'svelte/store';
+	import { m } from '$lib/paraglide/messages.js';
 
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
+	import { Abnormality } from '$lib/game/abnoramlity';
 	import { useGameStore } from '$lib/store/game';
 
 	let { sideMode, mobile }: { sideMode?: boolean; mobile?: boolean } = $props();
 
-	const { isGameMode, stage } = useGameStore();
+	const { isGameMode, stage, abnormality } = useGameStore();
 	const contacts = [
 		{
 			name: 'Email',
@@ -35,6 +38,16 @@
 		}
 	];
 
+	const doorIconAbnormal = readable(`fa7-solid:door-open`, (set) => {
+		const interval = setInterval(() => {
+			set(`fa7-solid:door-${Math.random() < 0.5 ? 'open' : 'closed'}`);
+		}, 100);
+
+		return function stop() {
+			clearInterval(interval);
+		};
+	});
+
 	function handleGameClear() {}
 </script>
 
@@ -50,7 +63,11 @@
 					aria-label={contact.name}
 					aria-disabled={$isGameMode && $stage < index + 2}
 				>
-					<span>{contact.name}</span>
+					{#if $isGameMode && $abnormality === Abnormality.AN16}
+						<span>{m.game_mode_creepy_footer_alt()}</span>
+					{:else}
+						<span>{contact.name}</span>
+					{/if}
 					<Icon class="icon" icon={contact.icon} />
 				</a>
 			</li>
@@ -64,8 +81,16 @@
 					aria-disabled={$isGameMode && $stage < 6}
 					data-forbidden={$isGameMode && $stage < 6}
 				>
-					<span>Exit</span>
-					<Icon class="icon" icon="fa7-solid:door-open" />
+					{#if $isGameMode && $abnormality === Abnormality.AN16}
+						<span>{m.game_mode_creepy_footer_alt()}</span>
+					{:else}
+						<span>Exit</span>
+					{/if}
+					{#if $isGameMode && $abnormality === Abnormality.AN17}
+						<Icon class="icon" icon={$doorIconAbnormal} />
+					{:else}
+						<Icon class="icon" icon="fa7-solid:door-open" />
+					{/if}
 				</button>
 			</li>
 		{/if}
@@ -233,6 +258,7 @@
 			top: calc(100% + 0.4rem);
 			z-index: 10;
 			font-size: 0.8125rem;
+			white-space: nowrap;
 
 			&::selection {
 				background: none !important;
