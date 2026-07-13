@@ -27,7 +27,7 @@ export const GAME_CAUGHT_COOKIE = 'game_caught';
  * tokens from "old and needs upgrading" without another round of retiring everyone's
  * progress. Patch is unused and always 0.
  */
-export const GAME_TOKEN_VERSION = '1.0.0';
+export const GAME_TOKEN_VERSION = '1.1.0';
 
 /** A game session outlives the browser session, but not by much. */
 export const GAME_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
@@ -40,7 +40,7 @@ export const GAME_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 export const MAX_STAGE = 7;
 
 export interface GameState {
-	/** Whether the player is inside the game. Only giving up turns this off. */
+	/** Whether the player is inside the game. Giving up or clearing the game turns this off. */
 	active: boolean;
 	/** Highest stage cleared so far. 0 while the game is running but unbeaten. */
 	stage: number;
@@ -69,6 +69,13 @@ export interface GameState {
 	proofSeed: string | null;
 	currentAbnormality: AbnormalityCode | null;
 	discoveredAbnormalities: AbnormalityCode[];
+	/**
+	 * The run ended in victory. Unlike giving up, clearing does not tear the token up —
+	 * it parks it: inactive, progress zeroed, but still carrying `discoveredAbnormalities`
+	 * so the collection is waiting when the player comes back for the next challenge
+	 * (via the `restart` intent or the front door).
+	 */
+	cleared: boolean;
 }
 
 export const IDLE_GAME_STATE: GameState = {
@@ -79,5 +86,6 @@ export const IDLE_GAME_STATE: GameState = {
 	startedAt: null,
 	proofSeed: null,
 	currentAbnormality: null,
-	discoveredAbnormalities: []
+	discoveredAbnormalities: [],
+	cleared: false
 };

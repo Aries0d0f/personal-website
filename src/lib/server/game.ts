@@ -67,15 +67,20 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 	const result = await verifyGameToken(token, secret);
 
 	if (result.ok) {
+		// A parked token — signed by the game-clear intent — is not an active run. It
+		// exists to carry the abnormality collection into the next one.
+		const cleared = result.claims.w === true;
+
 		return {
-			active: true,
+			active: !cleared,
 			stage: result.claims.stage,
 			caught,
 			clicked: result.claims.c === true,
-			startedAt: result.claims.iat * 1000,
+			startedAt: cleared ? null : result.claims.iat * 1000,
 			proofSeed: await hashGameToken(token),
 			currentAbnormality: result.claims.a ?? null,
-			discoveredAbnormalities: result.claims.d ?? []
+			discoveredAbnormalities: result.claims.d ?? [],
+			cleared
 		};
 	}
 
@@ -99,7 +104,8 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 		startedAt: Date.now(),
 		proofSeed: null,
 		currentAbnormality: null,
-		discoveredAbnormalities: []
+		discoveredAbnormalities: [],
+		cleared: false
 	};
 	reset.proofSeed = await writeGameState(event.cookies, event.platform, reset);
 
@@ -122,6 +128,7 @@ export async function writeGameState(
 			clicked: state.clicked,
 			currentAbnormality: state.currentAbnormality,
 			discoveredAbnormalities: state.discoveredAbnormalities,
+			cleared: state.cleared,
 			issuedAt: state.startedAt ? Math.floor(state.startedAt / 1000) : undefined
 		},
 		getGameSecret(platform)

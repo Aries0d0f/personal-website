@@ -47,8 +47,6 @@
 			clearInterval(interval);
 		};
 	});
-
-	function handleGameClear() {}
 </script>
 
 <footer class:side={sideMode} class:mobile>
@@ -75,7 +73,6 @@
 		{#if $isGameMode}
 			<li>
 				<button
-					onclick={handleGameClear}
 					class="contact"
 					aria-label="Exit"
 					aria-disabled={$isGameMode && $stage < 6}

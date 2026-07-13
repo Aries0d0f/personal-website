@@ -21,6 +21,13 @@ interface Model {
 	lastMessageUpdatedAt: Writable<Date | null>;
 	abnormality: Writable<Abnormality | false>;
 	discoveredAbnormalities: Writable<Set<AbnormalityCode>>;
+	/**
+	 * The parked state handed back by a successful `game-clear`, held here while the
+	 * victory dialog is up. Non-null is what "show the GameClear screen" means. It is
+	 * deliberately not adopted right away, so the screen stays in game mode underneath
+	 * the dialog until the player picks a door (see `leaveClearedGame` / `continueChallenge`).
+	 */
+	clearedState: Writable<GameState | null>;
 }
 
 const STORE_KEY = Symbol.for('GAME_STORE');
@@ -36,7 +43,8 @@ const createGameStore = () => {
 		lastMessageUpdatedAt: writable(null),
 		backButtonClickedTimes: writable(0),
 		abnormality: writable(false),
-		discoveredAbnormalities: writable(new Set<AbnormalityCode>())
+		discoveredAbnormalities: writable(new Set<AbnormalityCode>()),
+		clearedState: writable<GameState | null>(null)
 	});
 };
 
@@ -93,7 +101,9 @@ export const useGameStore = () => {
 		gameStartAt: derived(state.gameStartAt, ($gameStartAt) => $gameStartAt),
 		gameStartSeconds: derived([state.gameStartAt, timer], timeSecDeltaCalc),
 		lastMessageUpdateSeconds: derived([state.lastMessageUpdatedAt, timer], timeSecDeltaCalc),
-		abnormality: derived(state.abnormality, ($abnormality) => $abnormality)
+		abnormality: derived(state.abnormality, ($abnormality) => $abnormality),
+		discoveredAbnormalities: derived(state.discoveredAbnormalities, ($discovered) => $discovered),
+		isGameCleared: derived(state.clearedState, ($cleared) => $cleared !== null)
 	};
 
 	const adopt = (server: GameState) => {
@@ -129,13 +139,64 @@ export const useGameStore = () => {
 			}
 		},
 
+		gameClear: async () => {
+			const seed = get(state.proofSeed);
+			const startedAt = get(state.gameStartAt);
+			const stage = get(state.stage);
+			const token = seed && startedAt ? computeStageProof(seed, stage, startedAt.getTime()) : null;
+
+			const next = await post({ intent: 'game-clear', stage, token });
+			if (!next) return;
+
+			// Refused — caught, or demoted back to stage 1 — is an ordinary state change.
+			if (next.active) {
+				adopt(next);
+				return;
+			}
+
+			// The win. Hold the parked state instead of adopting it, so game mode keeps
+			// running underneath the GameClear dialog until the player picks a door.
+			state.discoveredAbnormalities.set(new Set(next.discoveredAbnormalities));
+			state.clearedState.set(next);
+		},
+
+		/**
+		 * Back to the normal world: adopt the parked state the server already signed.
+		 * Navigation is the caller's job.
+		 */
+		leaveClearedGame: () => {
+			const parked = get(state.clearedState);
+			if (!parked) return;
+
+			state.clearedState.set(null);
+			adopt(parked);
+			state.backButtonClickedTimes.set(0);
+			state.lastMessageUpdatedAt.set(null);
+		},
+
+		/** Straight into the next round at stage 1, abnormality collection intact. */
+		continueChallenge: async () => {
+			const next = await post({ intent: 'restart' });
+			if (!next) return;
+
+			state.clearedState.set(null);
+			adopt(next);
+			state.backButtonClickedTimes.set(0);
+			state.lastMessageUpdatedAt.set(null);
+		},
+
 		challengeStage: async (direction: 1 | -1) => {
 			if (
 				(direction === 1 && !get(state.abnormality)) ||
 				(direction === -1 && get(state.abnormality))
 			) {
-				// Passing challenge, go to next stage.
-				actions.clearStage(get(state.stage) + 1);
+				if (get(state.stage) === 7) {
+					// Game clear
+					actions.gameClear();
+				} else {
+					// Passing challenge, go to next stage.
+					actions.clearStage(get(state.stage) + 1);
+				}
 			} else {
 				// Failing challenge, go back to stage 1.
 				actions.clearStage(1);

@@ -1,4 +1,4 @@
-import { SvelteSet } from "svelte/reactivity";
+import { SvelteSet } from 'svelte/reactivity';
 
 type Swap = () => void | Promise<void>;
 type Cycle = (swap: Swap) => Promise<void>;

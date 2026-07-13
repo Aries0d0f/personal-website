@@ -101,7 +101,9 @@ const handleGame: Handle = async ({ event, resolve }) => {
 	const state = await readGameState(event);
 	const path = deLocalizeUrl(event.url).pathname;
 
-	// The front door. No token yet, and they knocked on /{lang}/game.
+	// The front door. No active run, and they knocked on /{lang}/game. A cleared run
+	// leaves its token parked rather than deleted (see the game-clear intent), so the
+	// abnormality collection it carries survives into the run minted here.
 	if (!state.active && path === GAME_ENTRY) {
 		event.locals.game = {
 			active: true,
@@ -109,7 +111,10 @@ const handleGame: Handle = async ({ event, resolve }) => {
 			caught: false,
 			clicked: false,
 			startedAt: Date.now(),
-			proofSeed: null
+			proofSeed: null,
+			currentAbnormality: null,
+			discoveredAbnormalities: state.discoveredAbnormalities,
+			cleared: false
 		};
 		event.locals.game.proofSeed = await writeGameState(
 			event.cookies,

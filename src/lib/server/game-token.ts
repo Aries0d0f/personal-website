@@ -33,6 +33,11 @@ const encoder = new TextEncoder();
  * abnormality by editing a plain cookie, so they are signed in rather than kept
  * alongside the token. Both omitted while empty, to keep the token short.
  *
+ * `w` (won) parks the token after a game clear: the run is over, but the token stays
+ * to carry `d` into the next one. It is signed in because it is also an entitlement —
+ * only a parked token may restart straight at stage 1, skipping the front door.
+ * Omitted while false, to keep the token short.
+ *
  * Getting caught cheating is deliberately *not* a claim. It is an event, not a property
  * of the player, and signing it in would make it survive every reload — pinning them to
  * the same accusation for the rest of the run. It lives in a one-shot cookie instead
@@ -45,6 +50,7 @@ export interface GameClaims {
 	c?: boolean;
 	a?: AbnormalityCode;
 	d?: AbnormalityCode[];
+	w?: boolean;
 	iat: number;
 	exp: number;
 }
@@ -127,6 +133,7 @@ export async function signGameToken(
 		clicked?: boolean;
 		currentAbnormality?: AbnormalityCode | null;
 		discoveredAbnormalities?: AbnormalityCode[];
+		cleared?: boolean;
 		issuedAt?: number;
 	},
 	secret: string
@@ -138,6 +145,7 @@ export async function signGameToken(
 		...(input.clicked ? { c: true } : {}),
 		...(input.currentAbnormality ? { a: input.currentAbnormality } : {}),
 		...(input.discoveredAbnormalities?.length ? { d: input.discoveredAbnormalities } : {}),
+		...(input.cleared ? { w: true } : {}),
 		iat,
 		exp: iat + GAME_MAX_AGE_SECONDS
 	};
@@ -220,6 +228,11 @@ export async function verifyGameToken(token: string, secret: string): Promise<Ve
 		claims.d !== undefined &&
 		(!Array.isArray(claims.d) || !claims.d.every((code) => abnormalityCodeSet.has(code)))
 	) {
+		return { ok: false, reason: 'forged' };
+	}
+
+	// We only ever sign `w` as literally true; anything else is not our writing.
+	if (claims.w !== undefined && claims.w !== true) {
 		return { ok: false, reason: 'forged' };
 	}
 

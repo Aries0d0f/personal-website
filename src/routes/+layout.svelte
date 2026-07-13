@@ -8,13 +8,14 @@
 	import Viewport from '$lib/layout/Viewport.svelte';
 	import CrtScreen from '$lib/components/CrtScreen.svelte';
 	import GameOptions from '$lib/components/GameOptions.svelte';
+	import GameClear from '$lib/components/GameClear.svelte';
 	import { onMount } from 'svelte';
 
 	let { children, data } = $props();
 
 	let screenEl = $state<HTMLDivElement>();
 
-	const { isGameMode, syncFromServer } = useGameStore();
+	const { isGameMode, isGameCleared, syncFromServer } = useGameStore();
 
 	syncFromServer(data?.game);
 
@@ -79,6 +80,9 @@
 	{/if}
 	{#if $isGameMode}
 		<GameOptions />
+	{/if}
+	{#if $isGameCleared}
+		<GameClear />
 	{/if}
 </div>
 

@@ -10,7 +10,7 @@
 
 import { error, json } from '@sveltejs/kit';
 
-import { MAX_STAGE, type GameState } from '$lib/game/state';
+import { IDLE_GAME_STATE, MAX_STAGE, type GameState } from '$lib/game/state';
 import { computeStageProof } from '$lib/game/proof';
 import { clearGameState, writeGameState } from '$lib/server/game';
 import {
@@ -29,6 +29,18 @@ interface ClearStageRequest {
 	token: string;
 }
 
+interface GameClearRequest {
+	intent: 'game-clear';
+	/** The stage the player is standing on — the exit only opens from the last rooms. */
+	stage: number;
+	/** Proof code for that stage, same scheme as `clear-stage`. */
+	token: string;
+}
+
+interface RestartRequest {
+	intent: 'restart';
+}
+
 interface GiveUpRequest {
 	intent: 'give-up';
 }
@@ -37,7 +49,12 @@ interface ButtonClickedRequest {
 	intent: 'button-clicked';
 }
 
-type GameRequest = ClearStageRequest | GiveUpRequest | ButtonClickedRequest;
+type GameRequest =
+	| ClearStageRequest
+	| GameClearRequest
+	| RestartRequest
+	| GiveUpRequest
+	| ButtonClickedRequest;
 
 const randomFromSet = <T>(set: Set<T>): T | null => {
 	const arr = Array.from(set);
@@ -106,8 +123,29 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 			startedAt: null,
 			proofSeed: null,
 			currentAbnormality: null,
-			discoveredAbnormalities: []
+			discoveredAbnormalities: [],
+			cleared: false
 		} satisfies GameState);
+	}
+
+	// Starting the next round from the victory screen. Only a parked token — one that
+	// actually cleared the game — may drop straight into stage 1 with its abnormality
+	// collection intact. Everyone else walks in through the front door, /{lang}/game.
+	if (body?.intent === 'restart') {
+		if (locals.game.active || !locals.game.cleared) {
+			error(403, 'Nothing to continue');
+		}
+
+		const next: GameState = {
+			...IDLE_GAME_STATE,
+			active: true,
+			stage: 1,
+			startedAt: Date.now(),
+			discoveredAbnormalities: locals.game.discoveredAbnormalities
+		};
+		next.proofSeed = await writeGameState(cookies, platform, next);
+
+		return json(next satisfies GameState);
 	}
 
 	// The player has now seen the decoy button admit what it is. Remember it, so a reload
@@ -128,7 +166,7 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 		return json(next satisfies GameState);
 	}
 
-	if (body?.intent !== 'clear-stage') {
+	if (body?.intent !== 'clear-stage' && body?.intent !== 'game-clear') {
 		error(400, 'Unknown intent');
 	}
 
@@ -144,8 +182,14 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 
 	const current = locals.game;
 
-	// Anti-cheat
-	if (stage > current.stage + 1) {
+	// Anti-cheat. For game-clear the claimed stage is the one being stood on, not the
+	// one being reached, so it must match the token exactly — and the exit only opens
+	// from the last rooms (the footer keeps it locked below stage 6).
+	if (
+		body.intent === 'game-clear'
+			? stage !== current.stage || current.stage < MAX_STAGE - 1
+			: stage > current.stage + 1
+	) {
 		return json({ ...current, caught: true } satisfies GameState);
 	}
 
@@ -156,6 +200,17 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 
 	if (!expected || typeof token !== 'string' || token !== expected) {
 		return json({ ...current, caught: true } satisfies GameState);
+	}
+
+	if (body.intent === 'game-clear') {
+		const next: GameState = {
+			...IDLE_GAME_STATE,
+			cleared: true,
+			discoveredAbnormalities: current.discoveredAbnormalities ?? []
+		};
+		next.proofSeed = await writeGameState(cookies, platform, next);
+
+		return json(next satisfies GameState);
 	}
 
 	const abnormals: Pick<GameState, 'currentAbnormality' | 'discoveredAbnormalities'> =
