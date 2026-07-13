@@ -5,6 +5,7 @@
 	import { useCRT } from '$lib/helpers/crt.svelte';
 	import { useGameStore } from '$lib/store/game';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
+	import Codex from './Codex.svelte';
 	import { Abnormality } from '$lib/game/abnoramlity';
 
 	const ACCELERATOR = { giveUp: 'G', backToGame: 'B', yes: 'Y', no: 'N' };
@@ -91,6 +92,16 @@
 			</h2>
 			<div class="game-dialog-field">
 				<LanguageSwitcher fullLangName abnormal={$abnormality} />
+			</div>
+			<h2>
+				{#if $abnormality === Abnormality.AN26}
+					{m.game_components_options_give_up()}
+				{:else}
+					{m.game_components_codex_title()}
+				{/if}
+			</h2>
+			<div class="game-dialog-field">
+				<Codex />
 			</div>
 		</div>
 		<footer>
@@ -314,10 +325,12 @@
 		}
 
 		&-body {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
 			padding: 1rem;
 
 			> h2 {
-				margin: 0 0 0.625rem;
 				font-size: 0.8125rem;
 				font-weight: 700;
 				line-height: 1.25;
@@ -329,6 +342,10 @@
 				line-height: 1.5;
 				white-space: pre-line;
 			}
+		}
+
+		&-field {
+			margin-bottom: 1rem;
 		}
 
 		mix-blend-mode: plus-lighter;
