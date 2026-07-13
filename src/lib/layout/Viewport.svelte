@@ -418,7 +418,7 @@
 		if (showNoiseScreen) {
 			gsap.set('.game-dialog', { opacity: 0 });
 		}
-	})
+	});
 
 	let resumeFromTurnOff: (() => void) | undefined;
 

@@ -46,11 +46,7 @@
 	}
 </script>
 
-<button
-	class="game-dialog"
-	command="show-modal"
-	commandfor="game-options"
->
+<button class="game-dialog" command="show-modal" commandfor="game-options">
 	{#if $abnormality === Abnormality.AN24}
 		<Icon class="icon" icon="fa7-solid:eye" />
 	{:else}
