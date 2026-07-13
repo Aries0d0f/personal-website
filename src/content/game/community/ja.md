@@ -9,15 +9,15 @@ layout: timeline
 
   let { currentAbnormality }: { currentAbnormality: Abnormality } = $props();
 
-  const hitconTitle = useGlitch(() => `HITCON 2020`, () => currentAbnormality !== Abnormality.AN07, {
+  const hitconTitle = useGlitch(() => `HITCON 2020`, () => currentAbnormality === Abnormality.AN07, {
     maxIntensity: 1,
     depth: 10000
   });
-  const hitconSubtitle = useGlitch(() => `Hacks in Taiwan Conference`, () => currentAbnormality !== Abnormality.AN07, {
+  const hitconSubtitle = useGlitch(() => `Hacks in Taiwan Conference`, () => currentAbnormality === Abnormality.AN07, {
     maxIntensity: 1,
     depth: 10000
   });
-  const hitconDescription = useGlitch(() => `システム開発チームメンバー`, () => currentAbnormality !== Abnormality.AN07, {
+  const hitconDescription = useGlitch(() => `システム開発チームメンバー`, () => currentAbnormality === Abnormality.AN07, {
     maxIntensity: 1,
     depth: 10000
   });
