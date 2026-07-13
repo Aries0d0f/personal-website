@@ -9,13 +9,15 @@
 	const TRACK_WIDTH = 16; // 1rem
 	const SAMPLES = 96;
 
-	const seg = 100 / pageOrder.length;
+	const seg = 100 / pageOrder.filter((key) => !key.includes('blank')).length;
 
 	let vw = $state(0);
 	let vh = $state(0);
 
 	const pageIndex = $derived.by(() => {
-		const index = pageOrder.indexOf(pageKeyFromHref(page.url.pathname) || 'home');
+		const index = pageOrder
+			.filter((key) => !key.includes('blank'))
+			.indexOf(pageKeyFromHref(page.url.pathname) || 'home');
 		return index === -1 ? 0 : index;
 	});
 

@@ -8,7 +8,7 @@
 
 	import type { PageKey } from '$lib/pages';
 
-	const titles: Record<Exclude<PageKey, 'blank'>, () => string> = {
+	const titles: Record<Exclude<PageKey, 'blank' | 'blank-after'>, () => string> = {
 		home: m.pages_home_title,
 		experience: m.pages_experience_title,
 		community: m.pages_community_title,
@@ -18,7 +18,7 @@
 	const currentLang = $derived(getLocale());
 	const menuItems = $derived(
 		pageOrder
-			.filter((key) => key !== 'blank')
+			.filter((key) => key !== 'blank' && key !== 'blank-after')
 			.map((key) => ({
 				name: key,
 				title: titles[key](),
