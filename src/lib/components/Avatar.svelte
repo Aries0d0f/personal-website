@@ -11,14 +11,16 @@
 	import { useCRT } from '$lib/helpers/crt.svelte';
 	import avatarImgNoBg from '$lib/assets/avatar-nbg.png';
 	import avatarImgGameMode from '$lib/assets/avatar-nbg-gamemode.png';
+	import avatarImgGameModeCreepy from '$lib/assets/avatar-nbg-gamemode-creepy.png';
 	import avatarImg from '$lib/assets/avatar.jpg';
+	import { Abnormality } from '$lib/game/abnoramlity';
 
 	let { width, height } = $props<{
 		width: number;
 		height: number;
 	}>();
 
-	const { isGameMode } = useGameStore();
+	const { isGameMode, abnormality } = useGameStore();
 
 	const BASE_IMG_WIDTH = 423;
 
@@ -175,17 +177,17 @@
 			);
 	}
 
-	function switchGameModeAvatar(skipTransition = false) {
+	function switchGameModeAvatar(skipTransition = false, creepyMode = false) {
 		if (skipTransition) {
 			gsap.set('#image-source-no-bg', {
-				attr: { 'xlink:href': avatarImgGameMode }
+				attr: { 'xlink:href': creepyMode ? avatarImgGameModeCreepy : avatarImgGameMode }
 			});
 			return;
 		}
 
 		const tl = gsap.timeline();
 		tl.to('#image-source-no-bg', {
-			attr: { 'xlink:href': avatarImgGameMode },
+			attr: { 'xlink:href': creepyMode ? avatarImgGameModeCreepy : avatarImgGameMode },
 			duration: 0.3,
 			ease: 'power3.out',
 			delay: 0.36
@@ -196,7 +198,7 @@
 				ease: 'power3.out'
 			})
 			.to('#image-source-no-bg', {
-				attr: { 'xlink:href': avatarImgGameMode },
+				attr: { 'xlink:href': creepyMode ? avatarImgGameModeCreepy : avatarImgGameMode },
 				duration: 0.5,
 				ease: 'power3.out',
 				delay: 0.36
@@ -211,7 +213,11 @@
 		}
 
 		if ($isGameMode) {
-			switchGameModeAvatar(true);
+			if ($abnormality === Abnormality.AN14) {
+				switchGameModeAvatar(true, true);
+			} else {
+				switchGameModeAvatar(true, false);
+			}
 		}
 	});
 
@@ -287,7 +293,13 @@
 					startOffset={width >= 320 ? '49%' : '35.75%'}
 					text-anchor="left"
 				>
-					{$isGameMode ? m.game_components_avatar_slogan() : m.components_avatar_slogan()}
+					{#if $isGameMode && $abnormality === Abnormality.AN15}
+						{m.game_components_avatar_slogan_creepy()}
+					{:else if $isGameMode}
+						{m.game_components_avatar_slogan()}
+					{:else}
+						{m.components_avatar_slogan()}
+					{/if}
 				</textPath>
 			</text>
 			<circle
