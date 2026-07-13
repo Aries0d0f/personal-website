@@ -20,7 +20,7 @@ export enum Abnormality {
 	AN18 = '18_screen_red',
 	AN19 = '19_screen_monochrome',
 	AN20 = '20_screen_inverted',
-	AN21 = '21_screen_hand',
+	AN21 = '21_screen_noise',
 	AN22 = '22_screen_turn_off',
 	AN23 = '23_screen_break',
 	AN24 = '24_gameoptions_eye_icon',
