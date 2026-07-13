@@ -4,6 +4,7 @@
 
 	import { useGameStore } from '$lib/store/game';
 	import { Abnormality } from '$lib/game/abnoramlity';
+	import { dev } from '$app/env';
 
 	const { abnormality } = useGameStore();
 
@@ -45,7 +46,9 @@
 
 {#if ViewportLayout}
 	{#await ViewportLayout then { default: Layout }}
-		{currentAbnormality}
+		{#if dev}
+			{currentAbnormality}
+		{/if}
 		<Layout {data}>
 			<Content {currentAbnormality} {lookupInfo} />
 		</Layout>
