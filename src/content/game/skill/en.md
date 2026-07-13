@@ -107,13 +107,15 @@ RESTful API, GraphQL, WebSocket, gRPC, Protobuf, GORM, OpenAPI, Nginx, Server Po
 
 ## Programming Language
 
-TypeScript, JavaScript, Golang
-
 {#if currentAbnormality === Abnormality.AN10}
+
+⏁⊬⌿⟒⌇☊⍀⟟⌿⏁, ⟊⏃⎐⏃⌇☊⍀⟟⌿⏁, ☌⍜⌰⏃⋏☌
 
 TlhIngan Hol, Galactic Basic
 
 {:else}
+
+TypeScript, JavaScript, Golang
 
 Node.js, Python, Shell Scripting
 
@@ -158,6 +160,7 @@ Pensieve, Nimbus 2000, Model Dragon, Howler
 {:else}
 
 Git, Linux, Google Cloud, Cloudflare Workers
+
 VMware ESXi, Proxmox VE, RouterOS, Figma
 
 {/if}

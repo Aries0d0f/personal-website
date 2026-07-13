@@ -107,13 +107,15 @@ RESTful API, GraphQL, WebSocket, gRPC, Protobuf, GORM, OpenAPI, Nginx, Server Po
 
 ## プログラミング言語
 
-TypeScript, JavaScript, Golang
-
 {#if currentAbnormality === Abnormality.AN10}
+
+⏁⊬⌿⟒⌇☊⍀⟟⌿⏁, ⟊⏃⎐⏃⌇☊⍀⟟⌿⏁, ☌⍜⌰⏃⋏☌
 
 TlhIngan Hol, Galactic Basic
 
 {:else}
+
+TypeScript, JavaScript, Golang
 
 Node.js, Python, Shell Scripting
 
@@ -152,11 +154,13 @@ Cypress, Playwright, Chromatic, Sentry
 {#if currentAbnormality === Abnormality.AN13}
 
 Gobstone, Gargoyle, Pensieve, Elder Wands
+
 Pensieve, Nimbus 2000, Model Dragon, Howler
 
 {:else}
 
 Git, Linux, Google Cloud, Cloudflare Workers
+
 VMware ESXi, Proxmox VE, RouterOS, Figma
 
 {/if}

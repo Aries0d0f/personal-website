@@ -20,9 +20,9 @@ layout: timeline
 	const an05SelfDeleteExperienceOriginalStr = `文化系NPOのWebサイト、内部ツール、実用的なITインフラをゼロから整える支援を行いました。`;
 	const an05SelfDeleteExperienceStr = an05SelfDeleteExperienceOriginalStr.slice(0, an05SelfDeleteExperienceOriginalStr.length - parseInt(sessionStorage.getItem(an05SessionNamespace) || '0'));
 	const an05SelfDeleteExperience = useTypewriter(() => `${an05SelfDeleteExperienceStr}${'\b'.repeat(an05SelfDeleteExperienceStr.length)}`, {
-		startDelay: parseInt(sessionStorage.getItem(an05SessionNamespace) || '0') > 0 ? 0 : 3000,
+		startDelay: parseInt(sessionStorage.getItem(an05SessionNamespace) || '0') > 0 ? 0 : 1000,
 		startAt: () => an05SelfDeleteExperienceStr.length,
-		baseInterval: Math.max(3000 - parseInt(sessionStorage.getItem(an05SessionNamespace) || '0') * 200, 100)
+		baseInterval: Math.max(1000 - parseInt(sessionStorage.getItem(an05SessionNamespace) || '0') * 200, 100)
 	});
 
 	function lookupInfoToStr(lookupInfo: any): string {
