@@ -123,7 +123,7 @@ Node.js, Python, Shell Scripting
 
 </section>
 
-<section size="{currentAbnormality === Abnormality.AN12 ? 'full' : undefined}">
+<section>
 
 ## DevOps、ｸﾗｳﾄﾞﾈﾃｨﾌﾞ
 
@@ -133,7 +133,11 @@ Helm, Terraform, Argo CD, GitHub Actions, Traefik, Istio, Jenkins
 
 </section>
 
-{#if currentAbnormality !== Abnormality.AN12}
+{#if currentAbnormality === Abnormality.AN12}
+
+<section class="noise"></section>
+
+{:else}
 
 <section>
 
