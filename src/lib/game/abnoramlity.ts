@@ -16,7 +16,7 @@ export enum Abnormality {
 	AN14 = '14_avatar_bear_bleeding',
 	AN15 = '15_avatar_slogan_strange',
 	AN16 = '16_home_footer_hover_hell',
-	AN17 = '17_home_footer_strange_licensing',
+	AN17 = '17_home_footer_strange_door',
 	AN18 = '18_screen_red',
 	AN19 = '19_screen_monochrome',
 	AN20 = '20_screen_inverted',
