@@ -73,6 +73,29 @@
 						place-items: center;
 					}
 
+					s {
+						text-decoration: none;
+						position: relative;
+
+						&::before {
+							pointer-events: none;
+							position: absolute;
+							z-index: -1;
+							left: 0;
+							top: 0;
+							content: '';
+							display: block;
+							width: 0;
+							height: 100%;
+							background-color: #000;
+							position: absolute;
+							left: 0;
+							bottom: 50%;
+							animation-delay: 2s;
+							animation: strikeThrough 0.5s ease forwards;
+						}
+					}
+
 					p:has(:only-child) {
 						line-height: 1;
 					}
@@ -124,6 +147,15 @@
 					to {
 						opacity: 1;
 						transform: translateY(0);
+					}
+				}
+
+				@keyframes strikeThrough {
+					from {
+						width: 0;
+					}
+					to {
+						width: 100%;
 					}
 				}
 			}
