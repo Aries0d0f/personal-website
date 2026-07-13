@@ -48,6 +48,10 @@
 	"game_components_options_give_up_confirm_description": "諦めると、これまでの進行状況はすべて失われ、通常のサイトに戻ります。\n本当に諦めますか？",
 	"game_components_options_give_up_confirm_yes": "はい",
 	"game_components_options_give_up_confirm_no": "いいえ",
+	"game_components_clear_title": "ゲームクリア！",
+	"game_components_clear_description": "おめでとう！\n戻る道を見つけたね。\n\n発見した異変：{discovered} / {total}",
+	"game_components_clear_continue": "挑戦を続ける",
+	"game_components_clear_back_to_normal": "通常のサイトに戻る",
 	"game_pages_home_profile_intro": "{#li}{#strong}スクロール{/strong}するか、\n{#keyCode}←{/keyCode}{#keyCode}→{/keyCode}{#keyCode}↑{/keyCode}{#keyCode}↓{/keyCode} キーで移動すること。{/li}{#li}{#strong}異変{/strong}を見逃さないこと。{/li}{#li}もし異変を見つけたら、{#strong}すぐにひきかえすこと。{/strong}{/li}{#li}もし異変が見つからなければ、{#strong}次のページへ進むこと。{/strong}{/li}{#li}通常のサイトに戻ること。{/li}",
 	"game_mode_creepy_footer_alt": "死ね"
 }
