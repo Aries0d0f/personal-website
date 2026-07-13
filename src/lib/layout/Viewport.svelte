@@ -53,6 +53,15 @@
 	let observer: Observer | undefined;
 	let lastDirection: 1 | -1 = 1;
 
+	// Modal <dialog>s (game options, codex) sit above the viewport but the wheel Observer
+	// listens on window, so a scroll inside them would still page-switch underneath.
+	// `toggle` doesn't bubble, but a capture-phase listener on document still sees it.
+	let dialogOpen = $state(false);
+
+	function syncDialogState() {
+		dialogOpen = !!document.querySelector('dialog[open]');
+	}
+
 	let sectionObserver: IntersectionObserver | undefined;
 	let sectionEls: HTMLElement[] = [];
 	let currentSectionKey: PageKey | null = null;
@@ -472,6 +481,11 @@
 		};
 	});
 
+	$effect(() => {
+		if (dialogOpen) observer?.disable();
+		else observer?.enable();
+	});
+
 	let didInitialScroll = false;
 	$effect(() => {
 		if (showCombined && !didInitialScroll) {
@@ -502,6 +516,8 @@
 	onMount(() => {
 		mounted = true;
 
+		document.addEventListener('toggle', syncDialogState, true);
+
 		if (showCombined) {
 			if (pageKeyFromPath(page.url.pathname) === 'home') {
 				startAnimation();
@@ -514,7 +530,10 @@
 			startAnimation();
 		}
 
-		return () => observer?.kill();
+		return () => {
+			document.removeEventListener('toggle', syncDialogState, true);
+			observer?.kill();
+		};
 	});
 </script>
 
