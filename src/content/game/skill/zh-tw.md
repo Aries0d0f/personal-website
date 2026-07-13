@@ -158,7 +158,6 @@ Pensieve, Nimbus 2000, Model Dragon, Howler
 {:else}
 
 Git, Linux, Google Cloud, Cloudflare Workers
-
 VMware ESXi, Proxmox VE, RouterOS, Figma
 
 {/if}
