@@ -4,12 +4,15 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { pageOrder } from '$lib/pages';
 	import { loadContent } from '$lib/content';
+	import { useGameStore } from '$lib/store/game';
 
 	import HomeContent from '$lib/components/HomeContent.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import General from './General.svelte';
 	import Timeline from './Timeline.svelte';
 	import Bento from './Bento.svelte';
+
+	const { isGameMode } = useGameStore();
 
 	const layouts: Record<
 		string,
@@ -28,7 +31,7 @@
 		{#if key === 'home'}
 			<HomeContent />
 		{:else}
-			{#await loadContent(key, lang) then loaded}
+			{#await loadContent(key, lang, $isGameMode) then loaded}
 				{#if loaded}
 					{@const Layout = layouts[loaded.metadata.layout ?? 'default'] ?? layouts.default}
 					{@const Body = loaded.content}

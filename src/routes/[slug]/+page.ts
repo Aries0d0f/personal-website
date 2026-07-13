@@ -4,11 +4,12 @@ import { loadContent } from '$lib/content';
 
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = async ({ params, url }) => {
+export const load: PageLoad = async ({ params, url, parent }) => {
 	const lang = getLocaleForUrl(url.href);
 	const { slug } = params;
+	const { game } = await parent();
 
-	const loaded = await loadContent(slug, lang);
+	const loaded = await loadContent(slug, lang, game?.active ?? false);
 	if (!loaded) throw error(404, 'Not found');
 
 	return { content: loaded.content, metadata: loaded.metadata, lang, slug };

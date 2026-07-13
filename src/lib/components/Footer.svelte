@@ -1,10 +1,15 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { readable } from 'svelte/store';
+	import { m } from '$lib/paraglide/messages.js';
 
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
+	import { Abnormality } from '$lib/game/abnoramlity';
+	import { useGameStore } from '$lib/store/game';
 
 	let { sideMode, mobile }: { sideMode?: boolean; mobile?: boolean } = $props();
 
+	const { isGameMode, stage, abnormality } = useGameStore();
 	const contacts = [
 		{
 			name: 'Email',
@@ -32,11 +37,21 @@
 			icon: 'fa7-brands:linkedin-in'
 		}
 	];
+
+	const doorIconAbnormal = readable(`fa7-solid:door-open`, (set) => {
+		const interval = setInterval(() => {
+			set(`fa7-solid:door-${Math.random() < 0.5 ? 'open' : 'closed'}`);
+		}, 100);
+
+		return function stop() {
+			clearInterval(interval);
+		};
+	});
 </script>
 
 <footer class:side={sideMode} class:mobile>
 	<ul class="contact-container">
-		{#each contacts as contact (contact.name)}
+		{#each contacts as contact, index (contact.name)}
 			<li>
 				<a
 					href={contact.url}
@@ -44,12 +59,38 @@
 					rel="external noopener noreferrer"
 					class="contact"
 					aria-label={contact.name}
+					aria-disabled={$isGameMode && $stage < index + 2}
 				>
-					<span>{contact.name}</span>
+					{#if $isGameMode && $abnormality === Abnormality.AN16}
+						<span>{m.game_mode_creepy_footer_alt()}</span>
+					{:else}
+						<span>{contact.name}</span>
+					{/if}
 					<Icon class="icon" icon={contact.icon} />
 				</a>
 			</li>
 		{/each}
+		{#if $isGameMode}
+			<li>
+				<button
+					class="contact"
+					aria-label="Exit"
+					aria-disabled={$isGameMode && $stage < 7}
+					data-forbidden={$isGameMode && $stage < 7}
+				>
+					{#if $isGameMode && $abnormality === Abnormality.AN16}
+						<span>{m.game_mode_creepy_footer_alt()}</span>
+					{:else}
+						<span>Exit</span>
+					{/if}
+					{#if $isGameMode && $abnormality === Abnormality.AN17}
+						<Icon class="icon" icon={$doorIconAbnormal} />
+					{:else}
+						<Icon class="icon" icon="fa7-solid:door-open" />
+					{/if}
+				</button>
+			</li>
+		{/if}
 	</ul>
 	<p>
 		{#if sideMode}
@@ -171,8 +212,18 @@
 			> li {
 				display: inline-flex;
 			}
+
+			button {
+				font-family: inherit;
+				appearance: none;
+				background: none;
+				border: none;
+				margin: 0;
+				padding: 0;
+			}
 		}
 
+		cursor: pointer;
 		color: #000;
 		transition: color 0.3s ease;
 		position: relative;
@@ -185,6 +236,15 @@
 			filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.25));
 		}
 
+		&[aria-disabled='true']:not(:hover),
+		&[data-forbidden='true'] {
+			opacity: 0.3;
+		}
+
+		&[data-forbidden='true'] {
+			cursor: not-allowed;
+		}
+
 		> span {
 			position: absolute;
 			background: #000;
@@ -195,6 +255,7 @@
 			top: calc(100% + 0.4rem);
 			z-index: 10;
 			font-size: 0.8125rem;
+			white-space: nowrap;
 
 			&::selection {
 				background: none !important;

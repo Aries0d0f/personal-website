@@ -3,10 +3,12 @@
 	import { resolve } from '$app/paths';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { pageOrder, pageHref, type PageKey } from '$lib/pages';
+	import { pageOrder, pageHref } from '$lib/pages';
 	import Footer from './Footer.svelte';
 
-	const titles: Record<PageKey, () => string> = {
+	import type { PageKey } from '$lib/pages';
+
+	const titles: Record<Exclude<PageKey, 'blank'>, () => string> = {
 		home: m.pages_home_title,
 		experience: m.pages_experience_title,
 		community: m.pages_community_title,
@@ -15,11 +17,13 @@
 
 	const currentLang = $derived(getLocale());
 	const menuItems = $derived(
-		pageOrder.map((key) => ({
-			name: key,
-			title: titles[key](),
-			href: pageHref(key, currentLang)
-		}))
+		pageOrder
+			.filter((key) => key !== 'blank')
+			.map((key) => ({
+				name: key,
+				title: titles[key](),
+				href: pageHref(key, currentLang)
+			}))
 	);
 </script>
 

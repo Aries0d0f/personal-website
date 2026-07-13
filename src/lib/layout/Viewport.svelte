@@ -10,18 +10,42 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Menu from '$lib/components/Menu.svelte';
 	import AllSections from '$lib/layout/AllSections.svelte';
+	import { Abnormality } from '$lib/game/abnoramlity';
+	import { useGameStore } from '$lib/store/game';
+	import { useCRT } from '$lib/helpers/crt.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { pageOrder, pageHref, type PageKey } from '$lib/pages';
+	import { pageOrder, pageHref } from '$lib/pages';
+	import ScrollIndicator from '$lib/components/ScrollIndicator.svelte';
+
+	import type { PageKey } from '$lib/pages';
 
 	gsap.registerPlugin(Observer);
 
 	const MOBILE_BREAKPOINT = 840;
 
+	const KONAMI_CODE = [
+		'ArrowUp',
+		'ArrowUp',
+		'ArrowDown',
+		'ArrowDown',
+		'ArrowLeft',
+		'ArrowRight',
+		'ArrowLeft',
+		'ArrowRight',
+		'b',
+		'a'
+	];
+
 	let { children } = $props();
+
+	const { isGameMode, abnormality, challengeStage } = useGameStore();
+	const { powerCycle, underGlass } = useCRT();
 
 	let width = $state(0);
 	let height = $state(0);
 	let mounted = $state(false);
+	let sequence: string[] = $state([]);
+	let konamiTimer = $state<ReturnType<typeof setTimeout>>();
 
 	const isDesktop = $derived(width > MOBILE_BREAKPOINT);
 	const showCombined = $derived(mounted && !isDesktop);
@@ -29,12 +53,23 @@
 	let observer: Observer | undefined;
 	let lastDirection: 1 | -1 = 1;
 
+	// Modal <dialog>s (game options, codex) sit above the viewport but the wheel Observer
+	// listens on window, so a scroll inside them would still page-switch underneath.
+	// `toggle` doesn't bubble, but a capture-phase listener on document still sees it.
+	let dialogOpen = $state(false);
+
+	function syncDialogState() {
+		dialogOpen = !!document.querySelector('dialog[open]');
+	}
+
 	let sectionObserver: IntersectionObserver | undefined;
 	let sectionEls: HTMLElement[] = [];
 	let currentSectionKey: PageKey | null = null;
 
 	function resolveTarget(direction: 1 | -1) {
-		const hrefs = pageOrder.map((key) => pageHref(key, getLocale()));
+		const hrefs = pageOrder
+			.filter((key) => $isGameMode || key !== 'blank')
+			.map((key) => pageHref(key, getLocale()));
 		const currentIndex = hrefs.findIndex((href) => href === page.url.pathname);
 		if (currentIndex === -1) return null;
 
@@ -46,8 +81,30 @@
 
 	function switchPage(direction: 1 | -1) {
 		const href = resolveTarget(direction);
-		if (!href) return;
+		if ($isGameMode) {
+			if (href && !href.includes('blank')) {
+				performPageSwitch(direction, href);
+			} else {
+				handleGameStageSwitch(direction, () => {
+					if (direction === 1) {
+						performPageSwitch(direction, `/${getLocale()}`);
+					} else {
+						setTimeout(() => {
+							performPageSwitch(direction, `/${getLocale()}`);
+						}, 400);
+					}
+				});
+			}
+		} else {
+			if (!href) {
+				return;
+			}
 
+			performPageSwitch(direction, href);
+		}
+	}
+
+	function performPageSwitch(direction: 1 | -1, href: `/${string}`) {
 		lastDirection = direction;
 
 		observer?.disable();
@@ -61,10 +118,61 @@
 		});
 	}
 
+	async function handleGameStageSwitch(direction: 1 | -1, onFinish: () => void) {
+		if (direction === -1) {
+			observer?.disable();
+			performPageSwitch(direction, `/${getLocale()}/blank`);
+			observer?.disable();
+			// sleep for 400ms to allow the page transition to complete before challenging the stage
+			await new Promise((resolve) => setTimeout(resolve, 400));
+		}
+		await challengeStage(direction);
+		onFinish();
+	}
+
+	const isPrefix = (keys: string[]) => keys.every((key, i) => key === KONAMI_CODE[i]);
+
+	// True once the key belongs to the konami code rather than to page navigation,
+	// so the arrows stop paging the site out from under the sequence.
+	function konamiConsumes(event: KeyboardEvent) {
+		const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+
+		const next = [...sequence, key];
+		while (next.length && !isPrefix(next)) next.shift();
+		sequence = next;
+
+		if (konamiTimer) clearTimeout(konamiTimer);
+		konamiTimer = setTimeout(() => {
+			sequence = [];
+		}, 1500);
+
+		if (sequence.length === KONAMI_CODE.length) {
+			clearTimeout(konamiTimer);
+			sequence = [];
+			startGameMode();
+			return true;
+		}
+
+		return sequence.length >= 3;
+	}
+
 	function handleKeyNavigation(event: KeyboardEvent) {
-		if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+		if (event.altKey || event.ctrlKey || event.metaKey) return;
+
+		if (konamiConsumes(event)) {
+			event.preventDefault();
+			return;
+		}
+
+		if (event.shiftKey) return;
 
 		switch (event.key) {
+			case 's':
+			case 'd':
+				if (!$isGameMode) break;
+				event.preventDefault();
+				switchPage(1);
+				break;
 			case 'ArrowDown':
 			case 'ArrowRight':
 			case 'Enter':
@@ -73,6 +181,12 @@
 				event.preventDefault();
 				switchPage(1);
 				break;
+			case 'w':
+			case 'a':
+				if (!$isGameMode) break;
+				event.preventDefault();
+				switchPage(-1);
+				break;
 			case 'ArrowUp':
 			case 'ArrowLeft':
 			case 'PageUp':
@@ -80,6 +194,13 @@
 				switchPage(-1);
 				break;
 		}
+	}
+
+	function startGameMode() {
+		observer?.disable();
+		gsap.killTweensOf('.intro-content');
+
+		void powerCycle(() => goto(resolve(`/${getLocale()}/game`)));
 	}
 
 	function animateIn() {
@@ -225,6 +346,76 @@
 		}, 300);
 	}
 
+	let readyForScreenEffect = $state<Abnormality | false>(false);
+
+	$effect(() => {
+		if (
+			$isGameMode &&
+			$abnormality &&
+			[
+				Abnormality.AN18,
+				Abnormality.AN19,
+				Abnormality.AN20,
+				Abnormality.AN21,
+				Abnormality.AN22,
+				Abnormality.AN23
+			].includes($abnormality)
+		) {
+			if (page.url.pathname === pageHref('experience', getLocale())) {
+				readyForScreenEffect = $abnormality;
+			}
+		} else {
+			readyForScreenEffect = false;
+		}
+
+		if (
+			$isGameMode &&
+			(readyForScreenEffect !== $abnormality ||
+				page.url.pathname === pageHref('blank', getLocale()))
+		) {
+			gsap.set('.viewport-wrapper', { clearProps: 'all' });
+			readyForScreenEffect = false;
+		}
+	});
+
+	const showRedScreen = $derived(
+		$isGameMode && $abnormality === Abnormality.AN18 && readyForScreenEffect
+	);
+	const showMonochromeScreen = $derived(
+		$isGameMode && $abnormality === Abnormality.AN19 && readyForScreenEffect
+	);
+
+	const showInvertScreen = $derived(
+		$isGameMode && $abnormality === Abnormality.AN20 && readyForScreenEffect
+	);
+
+	const showNoiseScreen = $derived(
+		$isGameMode && $abnormality === Abnormality.AN21 && readyForScreenEffect
+	);
+
+	const turnOffScreen = $derived(
+		$isGameMode && $abnormality === Abnormality.AN22 && readyForScreenEffect
+	);
+
+	const showBreakScreen = $derived(
+		$isGameMode && $abnormality === Abnormality.AN23 && readyForScreenEffect
+	);
+
+	$effect(() => {
+		if (showRedScreen) redScreenEffect();
+	});
+
+	let resumeFromTurnOff: (() => void) | undefined;
+
+	$effect(() => {
+		if (turnOffScreen) {
+			turnOffScreenEffect();
+		} else if (resumeFromTurnOff) {
+			resumeFromTurnOff();
+			resumeFromTurnOff = undefined;
+		}
+	});
+
 	afterNavigate(({ type }) => {
 		if (type === 'enter') return;
 
@@ -235,6 +426,37 @@
 		}
 	});
 
+	function redScreenEffect() {
+		const tl = gsap.timeline();
+		tl.set('.red-screen', { opacity: 0 })
+			.to('.red-screen', { opacity: 1, delay: 3, duration: 0.01 })
+			.to('.red-screen', { opacity: 0, duration: 1 })
+			.to('.red-screen', { opacity: 0.4, duration: 0.01 })
+			.to('.red-screen', { opacity: 0, duration: 1 })
+			.to('.red-screen', { opacity: 0.9, duration: 0.05 })
+			.to('.red-screen', { opacity: 0.4, duration: 0.1 })
+			.to('.red-screen', { opacity: 0.3, duration: 0.3 })
+			.to('.red-screen', { opacity: 0.4, duration: 0.1 })
+			.to('.red-screen', { opacity: 0, duration: 0.3 })
+			.to('.red-screen', { opacity: 0.4, duration: 0.1 })
+			.to('.red-screen', { opacity: 0.9, duration: 0.05 })
+			.to('.red-screen', { opacity: 0.4, duration: 0.01 })
+			.to('.red-screen', { opacity: 0.9, duration: 0.03 })
+			.to('.red-screen', { opacity: 0.2, duration: 0.01 })
+			.to('.red-screen', { opacity: 0.7, duration: 0.03 })
+			.to('.red-screen', { opacity: 0, duration: 0.1 })
+			.to('.red-screen', { opacity: 1, duration: 0.1, 'mix-blend-mode': 'normal' });
+	}
+
+	function turnOffScreenEffect() {
+		void powerCycle(
+			() =>
+				new Promise<void>((resolve) => {
+					resumeFromTurnOff = resolve;
+				})
+		);
+	}
+
 	$effect(() => {
 		if (!mounted) return;
 
@@ -243,7 +465,7 @@
 				target: window,
 				type: 'wheel,touch',
 				wheelSpeed: -1,
-				tolerance: 10,
+				tolerance: $isGameMode ? 100 : 10,
 				preventDefault: true,
 				onUp: () => switchPage(1),
 				onDown: () => switchPage(-1)
@@ -252,6 +474,16 @@
 			observer?.kill();
 			observer = undefined;
 		}
+
+		return () => {
+			observer?.kill();
+			observer = undefined;
+		};
+	});
+
+	$effect(() => {
+		if (dialogOpen) observer?.disable();
+		else observer?.enable();
 	});
 
 	let didInitialScroll = false;
@@ -284,6 +516,8 @@
 	onMount(() => {
 		mounted = true;
 
+		document.addEventListener('toggle', syncDialogState, true);
+
 		if (showCombined) {
 			if (pageKeyFromPath(page.url.pathname) === 'home') {
 				startAnimation();
@@ -296,13 +530,23 @@
 			startAnimation();
 		}
 
-		return () => observer?.kill();
+		return () => {
+			document.removeEventListener('toggle', syncDialogState, true);
+			observer?.kill();
+		};
 	});
 </script>
 
 <svelte:window bind:innerWidth={width} bind:innerHeight={height} onkeydown={handleKeyNavigation} />
 
-<div class="viewport-wrapper">
+<div
+	class="
+		viewport-wrapper
+		{$isGameMode && 'game-mode'}
+		{showInvertScreen && 'invert-screen'}
+		{showMonochromeScreen && 'monochrome-screen'}
+	"
+>
 	<main class="intro-container" class:combined={showCombined}>
 		<div class="intro-avatar">
 			<Avatar {width} {height} />
@@ -315,8 +559,19 @@
 			{/if}
 		</div>
 	</main>
-	{#if !showCombined}
+	{#if $isGameMode && isDesktop}
+		<ScrollIndicator />
+	{:else if !showCombined}
 		<Menu />
+	{/if}
+	{#if $isGameMode}
+		{#if showRedScreen}
+			<div class="red-screen"></div>
+		{:else if showNoiseScreen}
+			<div class="noise-screen"></div>
+		{:else if showBreakScreen}
+			<div class="break-screen" popover="manual" use:underGlass></div>
+		{/if}
 	{/if}
 </div>
 
@@ -328,11 +583,90 @@
 		place-items: center;
 		place-content: center;
 		overflow: hidden;
+		transition: filter 1s ease;
 
 		@media (max-width: 840px) {
 			place-items: start;
 			place-content: start;
 			overflow: visible;
+		}
+
+		&.game-mode {
+			filter: blur(0.4px);
+		}
+
+		&.invert-screen {
+			filter: blur(0.4px) invert(80%);
+			transform: scale(-1);
+		}
+
+		&.monochrome-screen {
+			filter: blur(0.4px) grayscale(100%);
+			transition: filter 10s cubic-bezier(0.53, 0.2, 0.53, 0.2);
+		}
+
+		> .red-screen,
+		> .noise-screen,
+		> .break-screen {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			pointer-events: none;
+			z-index: 9999999;
+		}
+
+		> .red-screen {
+			opacity: 0;
+			mix-blend-mode: multiply;
+			background: #f00;
+		}
+
+		> .noise-screen {
+			background-color: #000;
+			background-image: url('/src/lib/assets/crt-noise.svg');
+			background-size: 75%;
+			background-repeat: repeat;
+			animation: noiseAnimation 0.1s infinite steps(10);
+		}
+
+		> .break-screen {
+			margin: 0;
+			border: 0;
+			overflow: hidden;
+			background-color: transparent;
+			background-image: url('/src/lib/assets/breaked-screen.png');
+			background-size: cover;
+			background-position: center;
+			background-repeat: no-repeat;
+			backdrop-filter: blur(1px);
+			z-index: 999999999;
+
+			&::before {
+				content: '';
+				mix-blend-mode: multiply;
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				opacity: 0.1;
+				background-color: #000;
+				background-image: url('/src/lib/assets/crt-noise.svg');
+				background-size: 75%;
+				background-repeat: repeat;
+				animation: noiseAnimation 0.1s infinite steps(10);
+			}
+		}
+
+		@keyframes noiseAnimation {
+			0% {
+				background-position: 0 0;
+			}
+			100% {
+				background-position: 100% 100%;
+			}
 		}
 	}
 

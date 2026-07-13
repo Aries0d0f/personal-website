@@ -7,13 +7,20 @@
 	import { browser } from '$app/environment';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { useGameStore } from '$lib/store/game';
+	import { useCRT } from '$lib/helpers/crt.svelte';
 	import avatarImgNoBg from '$lib/assets/avatar-nbg.png';
+	import avatarImgGameMode from '$lib/assets/avatar-nbg-gamemode.png';
+	import avatarImgGameModeCreepy from '$lib/assets/avatar-nbg-gamemode-creepy.png';
 	import avatarImg from '$lib/assets/avatar.jpg';
+	import { Abnormality } from '$lib/game/abnoramlity';
 
 	let { width, height } = $props<{
 		width: number;
 		height: number;
 	}>();
+
+	const { isGameMode, abnormality } = useGameStore();
 
 	const BASE_IMG_WIDTH = 423;
 
@@ -170,6 +177,50 @@
 			);
 	}
 
+	function switchGameModeAvatar(skipTransition = false, creepyMode = false) {
+		if (skipTransition) {
+			gsap.set('#image-source-no-bg', {
+				attr: { 'xlink:href': creepyMode ? avatarImgGameModeCreepy : avatarImgGameMode }
+			});
+			return;
+		}
+
+		const tl = gsap.timeline();
+		tl.to('#image-source-no-bg', {
+			attr: { 'xlink:href': creepyMode ? avatarImgGameModeCreepy : avatarImgGameMode },
+			duration: 0.3,
+			ease: 'power3.out',
+			delay: 0.36
+		})
+			.to('#image-source-no-bg', {
+				attr: { 'xlink:href': avatarImgNoBg },
+				duration: 0.5,
+				ease: 'power3.out'
+			})
+			.to('#image-source-no-bg', {
+				attr: { 'xlink:href': creepyMode ? avatarImgGameModeCreepy : avatarImgGameMode },
+				duration: 0.5,
+				ease: 'power3.out',
+				delay: 0.36
+			});
+	}
+
+	const crt = useCRT();
+
+	$effect(() => {
+		if (crt.isRunning) {
+			switchGameModeAvatar();
+		}
+
+		if ($isGameMode) {
+			if ($abnormality === Abnormality.AN14) {
+				switchGameModeAvatar(true, true);
+			} else {
+				switchGameModeAvatar(true, false);
+			}
+		}
+	});
+
 	onMount(() => {
 		startAnimation();
 		gsap.registerPlugin(Observer);
@@ -242,7 +293,13 @@
 					startOffset={width >= 320 ? '49%' : '35.75%'}
 					text-anchor="left"
 				>
-					{m.components_avatar_slogan()}
+					{#if $isGameMode && $abnormality === Abnormality.AN15}
+						{m.game_components_avatar_slogan_creepy()}
+					{:else if $isGameMode}
+						{m.game_components_avatar_slogan()}
+					{:else}
+						{m.components_avatar_slogan()}
+					{/if}
 				</textPath>
 			</text>
 			<circle
@@ -360,7 +417,7 @@
 				width="2732"
 				height="4096"
 				preserveAspectRatio="none"
-				xlink:href={avatarImgNoBg}
+				xlink:href={$isGameMode ? avatarImgGameMode : avatarImgNoBg}
 			/>
 		</defs>
 	</svg>
@@ -370,7 +427,7 @@
 	<svelte:element this={visualOnly ? 'div' : 'header'} class={visualOnly ? 'visual-only' : ''}>
 		<h1 lang={currentLang}>
 			<ParaglideMessage
-				message={m.components_avatar_title}
+				message={$isGameMode ? m.game_components_avatar_title : m.components_avatar_title}
 				inputs={{
 					name: m.noun_general_name()
 				}}

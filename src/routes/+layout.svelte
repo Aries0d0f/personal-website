@@ -3,10 +3,24 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { syncLocale } from '$lib/i18n.svelte';
+	import { useNavigationLock } from '$lib/helpers/navigation-lock.svelte';
+	import { useGameStore } from '$lib/store/game';
 	import Viewport from '$lib/layout/Viewport.svelte';
+	import CrtScreen from '$lib/components/CrtScreen.svelte';
+	import GameOptions from '$lib/components/GameOptions.svelte';
+	import GameClear from '$lib/components/GameClear.svelte';
+	import { onMount } from 'svelte';
 
-	let { children } = $props();
+	let { children, data } = $props();
 
+	let screenEl = $state<HTMLDivElement>();
+
+	const { isGameMode, isGameCleared, syncFromServer } = useGameStore();
+
+	syncFromServer(data?.game);
+
+	// No escaping the game through the browser chrome.
+	useNavigationLock(() => $isGameMode);
 	const currentLang = $derived(getLocale());
 	const accentFill = $derived.by(() => {
 		switch (currentLang) {
@@ -19,9 +33,14 @@
 		}
 	});
 
-	// Keep the reactive locale aligned with the URL after client-side switches.
 	$effect(() => {
 		syncLocale(page.url);
+		syncFromServer(data?.game);
+	});
+
+	onMount(() => {
+		// Clear sessionStorage on page load to reset the game temporary data
+		sessionStorage.clear();
 	});
 </script>
 
@@ -51,7 +70,7 @@
 	<link rel="icon" type="image/gif" href="/avatar.gif" />
 </svelte:head>
 
-<div class="viewport-container" style="--accent-fill: {accentFill}">
+<div class="viewport-container" bind:this={screenEl} style="--accent-fill: {accentFill}">
 	{#if page.status >= 400}
 		{@render children()}
 	{:else}
@@ -59,7 +78,16 @@
 			{@render children()}
 		</Viewport>
 	{/if}
+	{#if $isGameMode}
+		<GameOptions />
+	{/if}
+	{#if $isGameCleared}
+		<GameClear />
+	{/if}
 </div>
+
+<!-- Sibling, not child, so the overlay skips the collapse transform. -->
+<CrtScreen screen={screenEl} active={$isGameMode} />
 
 <style lang="scss">
 	:global {

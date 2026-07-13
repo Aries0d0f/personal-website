@@ -1,10 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { useCRT } from '$lib/helpers/crt.svelte';
+	import { useGameScript } from '$lib/helpers/game-script.svelte';
+	import { useGameStore } from '$lib/store/game';
+
+	const { isGameMode, isCaught, backButtonClickedTimes, clearStage, markClicked } = useGameStore();
+	const { interference } = useCRT();
 
 	const currentLang = $derived(getLocale());
-	const headTitle = $derived([page.status, page.error?.message].filter(Boolean).join(' '));
+	const headTitle = $derived(
+		$isGameMode ? m.game_mode_title() : [page.status, page.error?.message].filter(Boolean).join(' ')
+	);
 	const title = $derived(
 		page.status === 404
 			? m.pages_error_404_title()
@@ -20,54 +30,188 @@
 			.map((s) => s.trim());
 		return messages[Math.floor(Math.random() * messages.length)];
 	});
+
+	//#region Game Mode Only Logic
+	let gameStatus = $state(page.status);
+	let sequence: string[] = $state([]);
+	let sequenceTimer = $state<ReturnType<typeof setTimeout>>();
+	const isFirstStageClear = $derived(gameStatus === 200);
+
+	const {
+		gameDescription,
+		gameBackButton,
+		firstStageClearTitle,
+		firstStageClearDescription,
+		immediateFireMessage
+	} = useGameScript({
+		isFirstStageClear: () => isFirstStageClear,
+		onFirstStageClear: nextGameStage
+	});
+
+	const VIM_EXIT_CODE = ['Escape', 'Shift', ':', 'q'];
+	const isPrefix = (keys: string[]) => keys.every((key, i) => key === VIM_EXIT_CODE[i]);
+
+	function vimExitConsumes(event: KeyboardEvent) {
+		const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+
+		const next = [...sequence, key];
+		while (next.length && !isPrefix(next)) next.shift();
+		sequence = next;
+
+		if (sequenceTimer) clearTimeout(sequenceTimer);
+		sequenceTimer = setTimeout(() => {
+			sequence = [];
+		}, 1500);
+
+		if (sequence.length === VIM_EXIT_CODE.length) {
+			clearTimeout(sequenceTimer);
+			sequence = [];
+			return true;
+		}
+
+		return sequence.length >= 3;
+	}
+
+	function handleKeyEvent(event: KeyboardEvent) {
+		if (vimExitConsumes(event)) {
+			immediateFireMessage(m.game_mode_description_script_after_vim_quit);
+			return;
+		}
+
+		if (event.ctrlKey && event.key === 'c') {
+			immediateFireMessage(m.game_mode_description_script_after_ctrl_c);
+			return;
+		}
+	}
+
+	function handleGameButtonClick() {
+		if (gameDescription.isTyping) {
+			// Only skip the typing effect if the user has clicked the back button 3 or more times
+			// (Stage performing necessary)
+			if ($backButtonClickedTimes >= 3) {
+				gameDescription.skip();
+			}
+			return;
+		} else {
+			backButtonClickedTimes.update((n) => n + 1);
+
+			markClicked();
+		}
+	}
+
+	async function nextGameStage() {
+		await clearStage(1);
+
+		goto(resolve(`/${currentLang}`), { replaceState: true });
+	}
+
+	$effect(() => {
+		if (!$isCaught) return;
+
+		const twitch = setTimeout(() => interference(), 750);
+		return () => clearTimeout(twitch);
+	});
+	//#endregion
 </script>
+
+<svelte:window on:keydown={handleKeyEvent} />
 
 <svelte:head>
 	<title>{headTitle} | {m.noun_general_name()}</title>
 </svelte:head>
 
 <div class="error-container">
-	<div class="error-wrapper">
+	<div class="error-wrapper" data-game-mode={$isGameMode}>
 		<img src="/avatar.gif" alt="Avatar" />
 		<article>
-			<h1>{page.status}</h1>
-			<h2>{title}</h2>
-			<p>{description}</p>
+			{#if isFirstStageClear}
+				<h1>200</h1>
+				<h2>{firstStageClearTitle.current}</h2>
+				<p>{firstStageClearDescription.current}</p>
+			{:else}
+				{#if $isGameMode}
+					<input bind:value={gameStatus} type="number" step="1" />
+				{:else}
+					<h1>{page.status}</h1>
+				{/if}
+				<h2>{title}</h2>
+				{#if $isGameMode}
+					<p>{gameDescription.current}</p>
+				{:else}
+					<p>{description}</p>
+				{/if}
+			{/if}
 		</article>
 	</div>
-	<a href="/{currentLang}" rel="external">
-		<svg
-			class="deco-vertical"
-			width="10"
-			height="147"
-			viewBox="0 0 10 147"
-			fill="none"
-			xmlns="http://www.w3.org/2000/svg"
-		>
-			<path
-				d="M0.5 145.629V144.629M0.5 135.629L0.500488 0.129395L9.47679 33.6294"
-				stroke="white"
-				stroke-linecap="round"
-			/>
-		</svg>
+	{#if $isGameMode}
+		<button class="link" onclick={handleGameButtonClick}>
+			<svg
+				class="deco-vertical"
+				width="10"
+				height="147"
+				viewBox="0 0 10 147"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M0.5 145.629V144.629M0.5 135.629L0.500488 0.129395L9.47679 33.6294"
+					stroke="white"
+					stroke-linecap="round"
+				/>
+			</svg>
 
-		<svg
-			class="deco-horizontal"
-			width="93"
-			height="10"
-			viewBox="0 0 93 10"
-			fill="none"
-			xmlns="http://www.w3.org/2000/svg"
-		>
-			<path
-				d="M92.3911 9.47656L91.3911 9.47656M82.3911 9.47656L0.129395 9.47654L33.6294 0.50024"
-				stroke="white"
-				stroke-linecap="round"
-			/>
-		</svg>
+			<svg
+				class="deco-horizontal"
+				width="93"
+				height="10"
+				viewBox="0 0 93 10"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M92.3911 9.47656L91.3911 9.47656M82.3911 9.47656L0.129395 9.47654L33.6294 0.50024"
+					stroke="white"
+					stroke-linecap="round"
+				/>
+			</svg>
 
-		{m.pages_error_back_to_home()}
-	</a>
+			{gameBackButton.current}
+		</button>
+	{:else}
+		<a href="/{currentLang}" rel="external">
+			<svg
+				class="deco-vertical"
+				width="10"
+				height="147"
+				viewBox="0 0 10 147"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M0.5 145.629V144.629M0.5 135.629L0.500488 0.129395L9.47679 33.6294"
+					stroke="white"
+					stroke-linecap="round"
+				/>
+			</svg>
+
+			<svg
+				class="deco-horizontal"
+				width="93"
+				height="10"
+				viewBox="0 0 93 10"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M92.3911 9.47656L91.3911 9.47656M82.3911 9.47656L0.129395 9.47654L33.6294 0.50024"
+					stroke="white"
+					stroke-linecap="round"
+				/>
+			</svg>
+
+			{m.pages_error_back_to_home()}
+		</a>
+	{/if}
 </div>
 
 <style lang="scss">
@@ -88,7 +232,8 @@
 			color: #fff;
 			gap: 4rem;
 
-			> a {
+			> a,
+			> button {
 				display: flex;
 				flex-direction: row;
 				place-items: center;
@@ -118,11 +263,21 @@
 				}
 			}
 
+			> button {
+				appearance: none;
+				font-family: inherit;
+				cursor: pointer;
+				margin: 0;
+				background: none;
+				border: none;
+			}
+
 			@media (max-width: 700px) {
 				flex-direction: column;
 				gap: 0rem;
 
-				> a {
+				> a,
+				> button {
 					writing-mode: horizontal-tb;
 					text-orientation: initial;
 					position: relative;
@@ -151,6 +306,26 @@
 			gap: 2rem;
 			padding: 2rem;
 
+			&[data-game-mode='true'] {
+				background-color: #000;
+				border-radius: 100rem;
+
+				> img {
+					border-radius: 100rem;
+				}
+
+				> article {
+					width: 40rem;
+					max-width: 100%;
+
+					> p {
+						font-family: 'Courier New', Courier, monospace;
+						white-space: pre-wrap;
+						height: 1rem;
+					}
+				}
+			}
+
 			> img {
 				filter: brightness(150%);
 				height: 16rem;
@@ -170,10 +345,30 @@
 				border-left: 1px solid rgba(255, 255, 255, 0.2);
 				padding: 0 4rem;
 
-				h1 {
+				h1,
+				input {
 					font-size: 8rem;
 					font-weight: 500;
 					font-variant-numeric: tabular-nums;
+				}
+
+				input {
+					appearance: none;
+					background: none;
+					border: none;
+					padding: 0;
+					margin: 0;
+					outline: none;
+					color: inherit;
+					caret-color: rgba(255, 255, 255, 0.05);
+					font-family: inherit;
+					-moz-appearance: textfield;
+
+					&::-webkit-outer-spin-button,
+					&::-webkit-inner-spin-button {
+						appearance: none;
+						margin: 0;
+					}
 				}
 
 				h2 {
