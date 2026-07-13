@@ -45,7 +45,13 @@
 	}
 </script>
 
-<button class="game-dialog" command="show-modal" commandfor="game-options">
+<button
+	class="game-dialog {$abnormality &&
+		[Abnormality.AN18, Abnormality.AN21].includes($abnormality) &&
+		'hide'}"
+	command="show-modal"
+	commandfor="game-options"
+>
 	{#if $abnormality === Abnormality.AN24}
 		<Icon class="icon" icon="fa7-solid:eye" />
 	{:else}
@@ -70,7 +76,6 @@
 			<h1>
 				{#if $abnormality === Abnormality.AN26}
 					{m.game_components_options_give_up()}
-					<i>({ACCELERATOR.giveUp})</i>
 				{:else}
 					{m.game_components_options_title()}
 				{/if}
@@ -342,6 +347,10 @@
 		transform-origin: center;
 		transform: matrix(1.2, -0.6, 0.45, 1.1, 10, 0);
 		outline: none;
+
+		&.hide {
+			opacity: 0;
+		}
 	}
 
 	.game-dialog-body .game-dialog-field {

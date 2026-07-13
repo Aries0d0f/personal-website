@@ -432,7 +432,6 @@
 			.to('.red-screen', { opacity: 0.4, duration: 0.1 })
 			.to('.red-screen', { opacity: 0.9, duration: 0.05 })
 			.to('.red-screen', { opacity: 0.4, duration: 0.01 })
-			.to('.game-dialog', { color: 'transparent' }, '<')
 			.to('.red-screen', { opacity: 0.9, duration: 0.03 })
 			.to('.red-screen', { opacity: 0.2, duration: 0.01 })
 			.to('.red-screen', { opacity: 0.7, duration: 0.03 })
@@ -574,7 +573,6 @@
 		}
 
 		&.game-mode {
-			
 			filter: blur(0.4px);
 		}
 
