@@ -39,6 +39,7 @@
 	"game_mode_description_script_stage_1_clear": "啊，等等！等等啦！！\n那不是出口啦！\n這樣弄人家會壞掉啦！！！",
 	"game_components_avatar_title": "{#span}哈摟，{/span}\n{#strong}我是遊戲。{/strong}",
 	"game_components_avatar_slogan": "In front of you :)",
+	"game_components_avatar_slogan_creepy": "Behind you :D",
 	"game_components_options_title": "遊戲選項",
 	"game_components_options_language": "選擇語言",
 	"game_components_options_back_to_game": "回到遊戲",

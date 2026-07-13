@@ -39,6 +39,7 @@
 	"game_mode_description_script_stage_1_clear": "Wait, wait!, wait!!\nThat's not the way out!\nThat will break me!!!",
 	"game_components_avatar_title": "{#span}Here’s{/span}\n{#strong}GAME.{/strong}",
 	"game_components_avatar_slogan": "In front of you :)",
+	"game_components_avatar_slogan_creepy": "Behind you :D",
 	"game_components_options_title": "Game Options",
 	"game_components_options_language": "Choose Language",
 	"game_components_options_back_to_game": "Back to Game",

@@ -39,6 +39,7 @@
 	"game_mode_description_script_stage_1_clear": "待って、待って！、待って！！\nそれは出口じゃない！\n私が壊れちゃう！！！",
 	"game_components_avatar_title": "{#strong}ゲーム{/strong}\n{#span}でーす{/span}",
 	"game_components_avatar_slogan": "In front of you :)",
+	"game_components_avatar_slogan_creepy": "Behind you :D",
 	"game_components_options_title": "ゲームオプション",
 	"game_components_options_language": "言語を選択",
 	"game_components_options_back_to_game": "ゲームに戻る",
