@@ -68,7 +68,7 @@
 
 	function resolveTarget(direction: 1 | -1) {
 		const hrefs = pageOrder
-			.filter((key) => $isGameMode || key !== 'blank')
+			.filter((key) => $isGameMode || !key.includes('blank'))
 			.map((key) => pageHref(key, getLocale()));
 		const currentIndex = hrefs.findIndex((href) => href === page.url.pathname);
 		if (currentIndex === -1) return null;
@@ -122,6 +122,12 @@
 		if (direction === -1) {
 			observer?.disable();
 			performPageSwitch(direction, `/${getLocale()}/blank`);
+			observer?.disable();
+			// sleep for 400ms to allow the page transition to complete before challenging the stage
+			await new Promise((resolve) => setTimeout(resolve, 400));
+		} else if (direction === 1) {
+			observer?.disable();
+			performPageSwitch(direction, `/${getLocale()}/blank-after`);
 			observer?.disable();
 			// sleep for 400ms to allow the page transition to complete before challenging the stage
 			await new Promise((resolve) => setTimeout(resolve, 400));
@@ -371,9 +377,12 @@
 		if (
 			$isGameMode &&
 			(readyForScreenEffect !== $abnormality ||
-				page.url.pathname === pageHref('blank', getLocale()))
+				page.url.pathname === pageHref('blank', getLocale()) ||
+				page.url.pathname === pageHref('blank-after', getLocale()))
 		) {
+			gsap.globalTimeline.getById('red-screen')?.kill();
 			gsap.set('.viewport-wrapper', { clearProps: 'all' });
+			gsap.set('.game-dialog', { clearProps: 'all' });
 			readyForScreenEffect = false;
 		}
 	});
@@ -405,6 +414,12 @@
 		if (showRedScreen) redScreenEffect();
 	});
 
+	$effect(() => {
+		if (showNoiseScreen) {
+			gsap.set('.game-dialog', { opacity: 0 });
+		}
+	})
+
 	let resumeFromTurnOff: (() => void) | undefined;
 
 	$effect(() => {
@@ -427,7 +442,7 @@
 	});
 
 	function redScreenEffect() {
-		const tl = gsap.timeline();
+		const tl = gsap.timeline({ id: 'red-screen' });
 		tl.set('.red-screen', { opacity: 0 })
 			.to('.red-screen', { opacity: 1, delay: 3, duration: 0.01 })
 			.to('.red-screen', { opacity: 0, duration: 1 })
@@ -440,6 +455,7 @@
 			.to('.red-screen', { opacity: 0, duration: 0.3 })
 			.to('.red-screen', { opacity: 0.4, duration: 0.1 })
 			.to('.red-screen', { opacity: 0.9, duration: 0.05 })
+			.to('.game-dialog', { opacity: 0, duration: 0.1 }, '<')
 			.to('.red-screen', { opacity: 0.4, duration: 0.01 })
 			.to('.red-screen', { opacity: 0.9, duration: 0.03 })
 			.to('.red-screen', { opacity: 0.2, duration: 0.01 })
@@ -602,7 +618,7 @@
 
 		&.monochrome-screen {
 			filter: blur(0.4px) grayscale(100%);
-			transition: filter 10s cubic-bezier(0.53, 0.2, 0.53, 0.2);
+			transition: filter 5s cubic-bezier(0.53, 0.2, 0.53, 0.2);
 		}
 
 		> .red-screen,

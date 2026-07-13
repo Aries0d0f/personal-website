@@ -47,9 +47,7 @@
 </script>
 
 <button
-	class="game-dialog {$abnormality &&
-		[Abnormality.AN18, Abnormality.AN21].includes($abnormality) &&
-		'hide'}"
+	class="game-dialog"
 	command="show-modal"
 	commandfor="game-options"
 >
