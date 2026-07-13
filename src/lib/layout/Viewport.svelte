@@ -39,7 +39,7 @@
 	let { children } = $props();
 
 	const { isGameMode, abnormality, challengeStage } = useGameStore();
-	const { powerCycle } = useCRT();
+	const { powerCycle, underGlass } = useCRT();
 
 	let width = $state(0);
 	let height = $state(0);
@@ -348,7 +348,8 @@
 				Abnormality.AN19,
 				Abnormality.AN20,
 				Abnormality.AN21,
-				Abnormality.AN22
+				Abnormality.AN22,
+				Abnormality.AN23
 			].includes($abnormality)
 		) {
 			if (page.url.pathname === pageHref('experience', getLocale())) {
@@ -385,6 +386,10 @@
 
 	const turnOffScreen = $derived(
 		$isGameMode && $abnormality === Abnormality.AN22 && readyForScreenEffect
+	);
+
+	const showBreakScreen = $derived(
+		$isGameMode && $abnormality === Abnormality.AN23 && readyForScreenEffect
 	);
 
 	$effect(() => {
@@ -519,6 +524,7 @@
 <div
 	class="
 		viewport-wrapper
+		{$isGameMode && 'game-mode'}
 		{showInvertScreen && 'invert-screen'}
 		{showMonochromeScreen && 'monochrome-screen'}
 	"
@@ -545,6 +551,8 @@
 			<div class="red-screen"></div>
 		{:else if showNoiseScreen}
 			<div class="noise-screen"></div>
+		{:else if showBreakScreen}
+			<div class="break-screen" popover="manual" use:underGlass></div>
 		{/if}
 	{/if}
 </div>
@@ -565,18 +573,24 @@
 			overflow: visible;
 		}
 
+		&.game-mode {
+			
+			filter: blur(0.4px);
+		}
+
 		&.invert-screen {
-			filter: invert(80%);
+			filter: blur(0.4px) invert(80%);
 			transform: scale(-1);
 		}
 
 		&.monochrome-screen {
-			filter: grayscale(100%);
+			filter: blur(0.4px) grayscale(100%);
 			transition: filter 10s cubic-bezier(0.53, 0.2, 0.53, 0.2);
 		}
 
 		> .red-screen,
-		> .noise-screen {
+		> .noise-screen,
+		> .break-screen {
 			position: fixed;
 			top: 0;
 			left: 0;
@@ -598,6 +612,35 @@
 			background-size: 75%;
 			background-repeat: repeat;
 			animation: noiseAnimation 0.1s infinite steps(10);
+		}
+
+		> .break-screen {
+			margin: 0;
+			border: 0;
+			overflow: hidden;
+			background-color: transparent;
+			background-image: url('/src/lib/assets/breaked-screen.png');
+			background-size: cover;
+			background-position: center;
+			background-repeat: no-repeat;
+			backdrop-filter: blur(1px);
+			z-index: 999999999;
+
+			&::before {
+				content: '';
+				mix-blend-mode: multiply;
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				opacity: 0.1;
+				background-color: #000;
+				background-image: url('/src/lib/assets/crt-noise.svg');
+				background-size: 75%;
+				background-repeat: repeat;
+				animation: noiseAnimation 0.1s infinite steps(10);
+			}
 		}
 
 		@keyframes noiseAnimation {

@@ -1,3 +1,5 @@
+import { SvelteSet } from "svelte/reactivity";
+
 type Swap = () => void | Promise<void>;
 type Cycle = (swap: Swap) => Promise<void>;
 
@@ -18,6 +20,16 @@ const noop = () => {};
 
 let routines: Routines | null = null;
 let running = $state(false);
+
+// Screen-effect overlays that have to reach over a modal dialog, but stay under the
+// tube's glass. They live in the top layer with everything else, so ordering is a
+// matter of promotion order: layers first, tube last.
+const layers = new SvelteSet<HTMLElement>();
+
+const repromote = (el: HTMLElement) => {
+	if (el.matches(':popover-open')) el.hidePopover();
+	el.showPopover();
+};
 
 export const useCRT = () => {
 	const register = (fns: Routines) => {
@@ -64,16 +76,36 @@ export const useCRT = () => {
 		}
 	};
 
+	// An action for the overlays: promote the element on mount, keep the tube above it,
+	// and take it back out of the top layer when the effect goes away.
+	const underGlass = (el: HTMLElement) => {
+		layers.add(el);
+		el.showPopover();
+		routines?.promote();
+
+		return {
+			destroy: () => {
+				layers.delete(el);
+				if (el.matches(':popover-open')) el.hidePopover();
+			}
+		};
+	};
+
 	return {
 		register,
 		prefersReducedMotion,
 		powerCycle: (swap: Swap) => run('powerCycle', swap),
 		burnOut: (swap: Swap) => run('burnOut', swap),
 		interference: () => run('interference', noop, false),
+		underGlass,
 		// The tube is in the top layer, which paints in the order things were added to it —
 		// z-index buys nothing there. Anything promoted after it (a modal dialog) lands on
-		// top of the picture, so it has to be put back up once that thing is in.
-		promote: () => routines?.promote(),
+		// top of the picture, so everything has to be put back up once that thing is in:
+		// the effect layers first, the tube last.
+		promote: () => {
+			for (const el of layers) repromote(el);
+			routines?.promote();
+		},
 		get isRunning() {
 			return running;
 		}
