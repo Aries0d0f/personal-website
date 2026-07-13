@@ -82,7 +82,7 @@ const abnormalityLottery = (
 			}
 		}
 	}
-	if (discoveredSet.size < 2) {
+	if (discoveredSet.size < 10) {
 		for (const code of abnormalityCodeSet) {
 			if (isGameOptionsAbnormality(code)) excluded.add(code);
 		}
