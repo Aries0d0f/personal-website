@@ -9,6 +9,80 @@ layout: bento
   let { currentAbnormality }: { currentAbnormality: Abnormality } = $props();
 </script>
 
+{#if currentAbnormality === Abnormality.AN11}
+
+<section>
+
+## ニャー
+
+ニャー、ニャー
+
+ニャー、ニャー、ニャー、ニャー、ニャー、ニャー、ニャー、ニャー、ニャー、ニャー
+
+</section>
+
+<section>
+
+## ニャー、ニャーニャー
+
+ニャー、ニャー
+
+ニャー、ニャー、ニャー、ニャー、ニャー、ニャー、ニャー
+
+</section>
+
+<section size="full">
+
+## ニャー
+
+ニャー、ニャー
+
+ニャー、ニャー、ニャー、ニャー、ニャー、ニャー
+
+</section>
+
+<section>
+
+## ニャー、ニャーニャー
+
+ニャー、ニャー
+
+ニャー、ニャー、ニャー、ニャー、ニャー、ニャー
+
+</section>
+
+<section>
+
+## ニャー、ニャーニャー
+
+ニャー、ニャー
+
+ニャー、ニャー、ニャー、ニャー、ニャー、ニャー
+
+</section>
+
+<section size="full">
+
+## ニャー、ニャーニャー
+
+ニャー、ニャー
+
+ニャー、ニャー、ニャー、ニャー、ニャー、ニャー
+
+</section>
+
+<section size="full">
+
+## ニャー、ニャーニャー
+
+ニャー、ニャー
+
+ニャー、ニャー、ニャー、ニャー、ニャー、ニャー
+
+</section>
+
+{:else}
+
 <section>
 
 ## フロントエンド
@@ -101,3 +175,5 @@ VMware ESXi, Proxmox VE, RouterOS, Figma
 コンピュータ設備の調達と導入
 
 </section>
+
+{/if}

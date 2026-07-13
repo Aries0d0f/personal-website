@@ -9,6 +9,80 @@ layout: bento
   let { currentAbnormality }: { currentAbnormality: Abnormality } = $props();
 </script>
 
+{#if currentAbnormality === Abnormality.AN11}
+
+<section>
+
+## Meow
+
+Meow, Meow, Meow
+
+Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow
+
+</section>
+
+<section>
+
+## Meow, Meow Meow
+
+Meow, Meow, Meow
+
+Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow
+
+</section>
+
+<section size="full">
+
+## Meow
+
+Meow, Meow, Meow
+
+Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow
+
+</section>
+
+<section>
+
+## Meow, Meow Meow
+
+Meow, Meow, Meow
+
+Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow
+
+</section>
+
+<section>
+
+## Meow, Meow Meow
+
+Meow, Meow, Meow
+
+Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow
+
+</section>
+
+<section size="full">
+
+## Meow, Meow Meow
+
+Meow, Meow, Meow
+
+Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow
+
+</section>
+
+<section size="full">
+
+## Meow, Meow Meow
+
+Meow, Meow, Meow
+
+Meow, Meow, Meow, Meow, Meow, Meow, Meow, Meow
+
+</section>
+
+{:else}
+
 <section>
 
 ## Frontend
@@ -101,3 +175,5 @@ Computer Hardware Repair,
 Procurement & Deployment of Computer Facilities
 
 </section>
+
+{/if}
