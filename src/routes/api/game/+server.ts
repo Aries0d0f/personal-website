@@ -13,7 +13,11 @@ import { error, json } from '@sveltejs/kit';
 import { MAX_STAGE, type GameState } from '$lib/game/state';
 import { computeStageProof } from '$lib/game/proof';
 import { clearGameState, writeGameState } from '$lib/server/game';
-import { abnormalityCodeSet } from '$lib/game/abnoramlity';
+import {
+	abnormalityCodeSet,
+	isGameOptionsAbnormality,
+	isScreenAbnormality
+} from '$lib/game/abnoramlity';
 
 import type { RequestHandler } from './$types';
 import type { AbnormalityCode } from '$lib/game/abnoramlity';
@@ -43,9 +47,31 @@ const randomFromSet = <T>(set: Set<T>): T | null => {
 	return arr[randomIndex];
 };
 
-const abnormalityLottery = (discovered: AbnormalityCode[]): AbnormalityCode | null => {
+const abnormalityLottery = (
+	discovered: AbnormalityCode[],
+	previous: AbnormalityCode | null
+): AbnormalityCode | null => {
 	const discoveredSet = new Set(discovered);
-	const undiscovered = abnormalityCodeSet.difference(discoveredSet);
+
+	// Never deal the same abnormality twice in a row, never chain two screen
+	// effects back-to-back (consecutive screen glitches blur into one long one),
+	// and hold the subtle game-options ones until the player has found a couple.
+	const excluded = new Set<AbnormalityCode>();
+	if (previous) {
+		excluded.add(previous);
+		if (isScreenAbnormality(previous)) {
+			for (const code of abnormalityCodeSet) {
+				if (isScreenAbnormality(code)) excluded.add(code);
+			}
+		}
+	}
+	if (discoveredSet.size < 2) {
+		for (const code of abnormalityCodeSet) {
+			if (isGameOptionsAbnormality(code)) excluded.add(code);
+		}
+	}
+	const undiscovered = abnormalityCodeSet.difference(discoveredSet).difference(excluded);
+	const rediscoverable = discoveredSet.difference(excluded);
 
 	const randomSeed = Math.random();
 
@@ -57,7 +83,7 @@ const abnormalityLottery = (discovered: AbnormalityCode[]): AbnormalityCode | nu
 	) {
 		return randomFromSet(undiscovered);
 	} else {
-		return randomFromSet(discoveredSet);
+		return randomFromSet(rediscoverable);
 	}
 };
 
@@ -135,7 +161,10 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 	const abnormals: Pick<GameState, 'currentAbnormality' | 'discoveredAbnormalities'> =
 		stage > 1
 			? {
-					currentAbnormality: abnormalityLottery(current.discoveredAbnormalities ?? []),
+					currentAbnormality: abnormalityLottery(
+						current.discoveredAbnormalities ?? [],
+						current.currentAbnormality ?? null
+					),
 					discoveredAbnormalities: current.currentAbnormality
 						? Array.from(new Set(current.discoveredAbnormalities).add(current.currentAbnormality))
 						: (current.discoveredAbnormalities ?? [])

@@ -36,6 +36,14 @@ export const abnormalityCodeSet = new Set(Object.keys(Abnormality) as (keyof typ
 
 export type AbnormalityCode = keyof typeof Abnormality;
 
+const abnormalityCategoryOf = (code: AbnormalityCode): string => Abnormality[code].split('_')[1];
+
+export const isScreenAbnormality = (code: AbnormalityCode): boolean =>
+	abnormalityCategoryOf(code) === 'screen';
+
+export const isGameOptionsAbnormality = (code: AbnormalityCode): boolean =>
+	abnormalityCategoryOf(code) === 'gameoptions';
+
 export const castAbnormalityCodeToEnum = (code: AbnormalityCode): Abnormality => {
 	return Abnormality[code];
 };
