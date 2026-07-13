@@ -48,5 +48,6 @@
 	"game_components_options_give_up_confirm_description": "If you give up, you will lose all progress and return to the normal site.\nAre you sure you want to give up?",
 	"game_components_options_give_up_confirm_yes": "Yes",
 	"game_components_options_give_up_confirm_no": "No",
-	"game_pages_home_profile_intro": "{#li}{#strong}Scroll{/strong} or use {#keyCode}←{/keyCode}{#keyCode}→{/keyCode}{#keyCode}↑{/keyCode}{#keyCode}↓{/keyCode} keys to navigate.{/li}{#li}Don't overlook any {#strong}abnormalities.{/strong}{/li}{#li}If you find any abnormalities, {#strong}go back immediately.{/strong}{/li}{#li}If you don't find any abnormalities, {#strong}continue to the next page.{/strong}{/li}{#li}Try to go back to the normal site.{/li}"
+	"game_pages_home_profile_intro": "{#li}{#strong}Scroll{/strong} or use {#keyCode}←{/keyCode}{#keyCode}→{/keyCode}{#keyCode}↑{/keyCode}{#keyCode}↓{/keyCode} keys to navigate.{/li}{#li}Don't overlook any {#strong}abnormalities.{/strong}{/li}{#li}If you find any abnormalities, {#strong}go back immediately.{/strong}{/li}{#li}If you don't find any abnormalities, {#strong}continue to the next page.{/strong}{/li}{#li}Try to go back to the normal site.{/li}",
+	"game_mode_creepy_footer_alt": "Hell"
 }

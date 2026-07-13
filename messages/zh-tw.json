@@ -48,5 +48,6 @@
 	"game_components_options_give_up_confirm_description": "如果你選擇放棄，所有的遊戲進度都會遺失，並且會回到一般網站。\n你確定要放棄嗎？",
 	"game_components_options_give_up_confirm_yes": "是",
 	"game_components_options_give_up_confirm_no": "否",
-	"game_pages_home_profile_intro": "{#li}{#strong}捲動{/strong}或使用 {#keyCode}←{/keyCode}{#keyCode}→{/keyCode}{#keyCode}↑{/keyCode}{#keyCode}↓{/keyCode} 鍵來移動。{/li}{#li}注意別錯過任何{#strong}異常。{/strong}{/li}{#li}如果發現任何異常，{#strong}請馬上回頭。{/strong}{/li}{#li}如果沒有發現任何異常，{#strong}請繼續前往下一頁。{/strong}{/li}{#li}試著回到正常的網站吧。{/li}"
+	"game_pages_home_profile_intro": "{#li}{#strong}捲動{/strong}或使用 {#keyCode}←{/keyCode}{#keyCode}→{/keyCode}{#keyCode}↑{/keyCode}{#keyCode}↓{/keyCode} 鍵來移動。{/li}{#li}注意別錯過任何{#strong}異常。{/strong}{/li}{#li}如果發現任何異常，{#strong}請馬上回頭。{/strong}{/li}{#li}如果沒有發現任何異常，{#strong}請繼續前往下一頁。{/strong}{/li}{#li}試著回到正常的網站吧。{/li}",
+	"game_mode_creepy_footer_alt": "滾"
 }
