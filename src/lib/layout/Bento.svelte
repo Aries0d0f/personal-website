@@ -23,6 +23,24 @@
 				background-color: #f9f9f9;
 				border-radius: 4px;
 
+				&.noise {
+					&::before {
+						content: '';
+						mix-blend-mode: multiply;
+						position: absolute;
+						top: 0;
+						left: 0;
+						width: 100%;
+						height: 100%;
+						opacity: 0.1;
+						background-color: #000;
+						background-image: url('/src/lib/assets/crt-noise.svg');
+						background-size: 1000%;
+						background-repeat: repeat;
+						animation: noiseAnimation 0.1s infinite steps(10);
+					}
+				}
+
 				&[size='full'] {
 					flex: 1 100%;
 				}
@@ -122,6 +140,15 @@
 			to {
 				opacity: 1;
 				transform: translateY(0);
+			}
+		}
+
+		@keyframes noiseAnimation {
+			0% {
+				background-position: 0 0;
+			}
+			100% {
+				background-position: 100% 100%;
 			}
 		}
 	</style>

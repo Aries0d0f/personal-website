@@ -38,7 +38,7 @@
 
 	let { children } = $props();
 
-	const { isGameMode, abnormality, challengeStage } = useGameStore();
+	const { isGameMode, isGameCleared, abnormality, challengeStage } = useGameStore();
 	const { powerCycle, underGlass } = useCRT();
 
 	let width = $state(0);
@@ -82,6 +82,11 @@
 	function switchPage(direction: 1 | -1) {
 		const href = resolveTarget(direction);
 		if ($isGameMode) {
+			if ($isGameCleared || document.querySelector('dialog[open]')) {
+				observer?.disable();
+				return;
+			}
+
 			if (href && !href.includes('blank')) {
 				performPageSwitch(direction, href);
 			} else {
@@ -527,6 +532,16 @@
 			sectionObserver?.disconnect();
 			sectionObserver = undefined;
 		};
+	});
+
+	$effect(() => {
+		if ($isGameCleared) {
+			observer?.disable();
+
+			setTimeout(() => {
+				syncDialogState();
+			}, 1000);
+		}
 	});
 
 	onMount(() => {

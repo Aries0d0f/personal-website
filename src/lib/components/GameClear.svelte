@@ -38,6 +38,7 @@
 		isChoosing = true;
 
 		await continueChallenge();
+		window.location.assign(`/${getLocale()}`);
 	}
 
 	function handleLeave() {
@@ -55,6 +56,7 @@
 
 <dialog
 	bind:this={dialog}
+	open
 	class="game-dialog-container"
 	ontoggle={keepUnderGlass}
 	oncancel={(event) => event.preventDefault()}
@@ -139,6 +141,9 @@
 			outline: none;
 
 			&[open] {
+				position: fixed;
+				top: 0;
+				left: 0;
 				height: 100dvh;
 				width: 100dvw;
 				max-height: none;
@@ -146,6 +151,7 @@
 				display: flex;
 				place-items: center;
 				place-content: center;
+				z-index: 999999;
 			}
 
 			&::backdrop {
