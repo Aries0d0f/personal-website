@@ -8,6 +8,7 @@
 	import Viewport from '$lib/layout/Viewport.svelte';
 	import CrtScreen from '$lib/components/CrtScreen.svelte';
 	import GameOptions from '$lib/components/GameOptions.svelte';
+	import { onMount } from 'svelte';
 
 	let { children, data } = $props();
 
@@ -34,6 +35,11 @@
 	$effect(() => {
 		syncLocale(page.url);
 		syncFromServer(data?.game);
+	});
+
+	onMount(() => {
+		// Clear sessionStorage on page load to reset the game temporary data
+		sessionStorage.clear();
 	});
 </script>
 
