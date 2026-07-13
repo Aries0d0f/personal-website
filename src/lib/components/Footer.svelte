@@ -75,8 +75,8 @@
 				<button
 					class="contact"
 					aria-label="Exit"
-					aria-disabled={$isGameMode && $stage < 6}
-					data-forbidden={$isGameMode && $stage < 6}
+					aria-disabled={$isGameMode && $stage < 7}
+					data-forbidden={$isGameMode && $stage < 7}
 				>
 					{#if $isGameMode && $abnormality === Abnormality.AN16}
 						<span>{m.game_mode_creepy_footer_alt()}</span>
