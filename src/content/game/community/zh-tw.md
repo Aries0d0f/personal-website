@@ -27,7 +27,7 @@ layout: timeline
 <hgroup>
 
 {#if currentAbnormality === Abnormality.AN06}
-    
+
 ## 臺灣<s>光明會</s>支部
 
 {:else}

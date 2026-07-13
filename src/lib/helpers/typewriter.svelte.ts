@@ -86,11 +86,6 @@ export const useTypewriter = (message: () => string, options: Options = {}) => {
 		};
 	});
 
-	// Jumping to the end still has to *arrive* at the end. A message can carry \b — the
-	// script uses it to make a line rewrite itself ("Back to Home\b\b\b\bGame") — and the
-	// animation applies those as it types. Assigning the raw string would leave the
-	// control characters sitting in the DOM, which is exactly what a returning player sees
-	// on `skipFirst`, since their first message is already the rewritten one.
 	const settled = (message: string) => {
 		let result = '';
 

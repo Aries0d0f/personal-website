@@ -27,7 +27,7 @@ layout: timeline
 <hgroup>
 
 {#if currentAbnormality === Abnormality.AN06}
-    
+
 ## <s>イルミナティ</s> Taiwan
 
 {:else}
