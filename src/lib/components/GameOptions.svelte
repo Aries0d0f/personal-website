@@ -5,11 +5,12 @@
 	import { useCRT } from '$lib/helpers/crt.svelte';
 	import { useGameStore } from '$lib/store/game';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
+	import { Abnormality } from '$lib/game/abnoramlity';
 
 	const ACCELERATOR = { giveUp: 'G', backToGame: 'B', yes: 'Y', no: 'N' };
 
 	const { promote } = useCRT();
-	const { giveUp } = useGameStore();
+	const { abnormality, giveUp } = useGameStore();
 
 	let giveUpButton = $state<HTMLButtonElement>();
 	let backToGameButton = $state<HTMLButtonElement>();
@@ -45,7 +46,11 @@
 </script>
 
 <button class="game-dialog" command="show-modal" commandfor="game-options">
-	<Icon class="icon" icon="fa7-solid:gear" />
+	{#if $abnormality === Abnormality.AN24}
+		<Icon class="icon" icon="fa7-solid:eye" />
+	{:else}
+		<Icon class="icon" icon="fa7-solid:gear" />
+	{/if}
 </button>
 
 <dialog
@@ -62,12 +67,25 @@
 		<div class="game-dialog-title-bar">
 			<button class="game-dialog-close" command="close" commandfor="game-options" aria-label="Close"
 			></button>
-			<h1>{m.game_components_options_title()}</h1>
+			<h1>
+				{#if $abnormality === Abnormality.AN26}
+					{m.game_components_options_give_up()}
+					<i>({ACCELERATOR.giveUp})</i>
+				{:else}
+					{m.game_components_options_title()}
+				{/if}
+			</h1>
 		</div>
 		<div class="game-dialog-body">
-			<h2>{m.game_components_options_language()}</h2>
+			<h2>
+				{#if $abnormality === Abnormality.AN26}
+					{m.game_components_options_give_up()}
+				{:else}
+					{m.game_components_options_language()}
+				{/if}
+			</h2>
 			<div class="game-dialog-field">
-				<LanguageSwitcher fullLangName />
+				<LanguageSwitcher fullLangName abnormal={$abnormality} />
 			</div>
 		</div>
 		<footer>
@@ -81,8 +99,13 @@
 				command="close"
 				commandfor="game-options"
 			>
-				{m.game_components_options_back_to_game()}
-				<i>({ACCELERATOR.backToGame})</i>
+				{#if $abnormality === Abnormality.AN26}
+					{m.game_components_options_give_up()}
+					<i>({ACCELERATOR.giveUp})</i>
+				{:else}
+					{m.game_components_options_back_to_game()}
+					<i>({ACCELERATOR.backToGame})</i>
+				{/if}
 			</button>
 		</footer>
 	</div>
@@ -317,7 +340,7 @@
 		color: #aaa;
 		z-index: 1000;
 		transform-origin: center;
-		transform: matrix(1.2, -0.8, 0.45, 1.1, 10, 0);
+		transform: matrix(1.2, -0.6, 0.45, 1.1, 10, 0);
 		outline: none;
 	}
 

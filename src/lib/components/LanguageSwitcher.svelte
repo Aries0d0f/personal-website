@@ -1,19 +1,35 @@
 <script lang="ts">
 	import gsap from 'gsap';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale, locales, localizeHref } from '$lib/paraglide/runtime';
+
+	import type { Locale } from '$lib/paraglide/runtime';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { getLocale, locales, localizeHref, type Locale } from '$lib/paraglide/runtime';
+	import { Abnormality } from '$lib/game/abnoramlity';
 
 	import type { ResolvedPathname } from '$app/types';
 
-	let { mobile, fullLangName }: { mobile?: boolean; fullLangName?: boolean } = $props();
+	let {
+		mobile,
+		fullLangName,
+		abnormal
+	}: { mobile?: boolean; fullLangName?: boolean; abnormal?: Abnormality | false } = $props();
 
-	const labels: Record<Locale, string> = $derived({
-		en: fullLangName ? 'English' : 'EN',
-		'zh-tw': fullLangName ? '繁體中文' : '漢',
-		ja: fullLangName ? '日本語' : '日'
-	});
+	const labels: Record<Locale, string> = $derived(
+		abnormal === Abnormality.AN26
+			? {
+					en: m.game_components_options_give_up(),
+					'zh-tw': m.game_components_options_give_up(),
+					ja: m.game_components_options_give_up()
+				}
+			: {
+					en: fullLangName ? 'English' : 'EN',
+					'zh-tw': fullLangName ? '繁體中文' : '漢',
+					ja: fullLangName ? '日本語' : '日'
+				}
+	);
 
 	const current = $derived(getLocale());
 
@@ -57,13 +73,16 @@
 		<button
 			type="button"
 			lang={locale}
-			aria-current={locale === current ? 'true' : undefined}
+			aria-current={abnormal !== Abnormality.AN25 && locale === current ? 'true' : undefined}
 			disabled={locale === current}
 			onclick={() => switchTo(locale)}
 		>
 			{labels[locale]}
 		</button>
 	{/each}
+	{#if abnormal === Abnormality.AN25}
+		<button type="button" lang={current} aria-current="true" disabled> ☍⟒⌰⌿⟒⍀ </button>
+	{/if}
 </nav>
 
 <style lang="scss">
