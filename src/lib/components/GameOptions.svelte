@@ -11,7 +11,7 @@
 	const ACCELERATOR = { giveUp: 'G', backToGame: 'B', yes: 'Y', no: 'N' };
 
 	const { promote } = useCRT();
-	const { abnormality, giveUp } = useGameStore();
+	const { stage, abnormality, discoveredAbnormalities, giveUp } = useGameStore();
 
 	let giveUpButton = $state<HTMLButtonElement>();
 	let backToGameButton = $state<HTMLButtonElement>();
@@ -87,6 +87,7 @@
 			<div class="game-dialog-field">
 				<LanguageSwitcher fullLangName abnormal={$abnormality} />
 			</div>
+			{#if $stage > 0 || $discoveredAbnormalities.size > 0}
 			<h2>
 				{#if $abnormality === Abnormality.AN26}
 					{m.game_components_options_give_up()}
@@ -94,9 +95,10 @@
 					{m.game_components_codex_title()}
 				{/if}
 			</h2>
-			<div class="game-dialog-field">
-				<Codex />
-			</div>
+				<div class="game-dialog-field">
+					<Codex />
+				</div>
+			{/if}
 		</div>
 		<footer>
 			<button bind:this={giveUpButton} command="show-modal" commandfor="game-confirm-give-up">
