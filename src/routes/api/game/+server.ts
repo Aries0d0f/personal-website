@@ -1,13 +1,3 @@
-// The only place the game cookie is ever written after the initial mint.
-//
-// The client cannot sign a token, so it cannot promote itself: it can only ask
-// the server to record a stage, and the server decides whether that request
-// makes any sense. What it cannot do is verify that the player *actually solved*
-// stage N — that puzzle lives in the browser, and a determined cheat can always
-// POST the request the honest client would have sent. What it can do, and does,
-// is enforce that stages fall in order, one at a time, from a token we signed.
-// Skipping ahead is the tell, and it gets recorded.
-
 import { error, json } from '@sveltejs/kit';
 
 import { IDLE_GAME_STATE, MAX_STAGE, type GameState } from '$lib/game/state';
