@@ -26,7 +26,7 @@
 	const lang = $derived(getLocale());
 </script>
 
-{#each pageOrder as key (key)}
+{#each pageOrder.filter((page) => !page.includes('blank')) as key (key)}
 	<section id="section-{key}" class="page-section">
 		{#if key === 'home'}
 			<HomeContent />
