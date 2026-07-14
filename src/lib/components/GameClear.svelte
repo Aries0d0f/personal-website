@@ -4,6 +4,7 @@
 	import { useCRT } from '$lib/helpers/crt.svelte';
 	import { useGameStore } from '$lib/store/game';
 	import { abnormalityCodeSet } from '$lib/game/abnoramlity';
+	import Codex from './Codex.svelte';
 
 	const ACCELERATOR = { continue: 'C', leave: 'B' };
 
@@ -56,7 +57,7 @@
 
 <dialog
 	bind:this={dialog}
-	open
+	id="game-clear"
 	class="game-dialog-container"
 	ontoggle={keepUnderGlass}
 	oncancel={(event) => event.preventDefault()}
@@ -77,15 +78,25 @@
 					total: abnormalityCodeSet.size
 				})}
 			</p>
+			<Codex />
+			<button class="game-dialog" command="show-modal" commandfor="game-options">
+				{m.game_components_options_title()}
+			</button>
 		</div>
+		<hr />
 		<footer>
-			<button bind:this={continueButton} onclick={handleContinue} disabled={isChoosing}>
+			<button
+				class={['ja', 'zh-TW'].includes(getLocale()) ? 'nowrap' : ''}
+				bind:this={continueButton}
+				onclick={handleContinue}
+				disabled={isChoosing}
+			>
 				{m.game_components_clear_continue()}
 				<i>({ACCELERATOR.continue})</i>
 			</button>
 			<button
 				bind:this={leaveButton}
-				class="is-default"
+				class="is-default {['ja', 'zh-TW'].includes(getLocale()) ? 'nowrap' : ''}"
 				onclick={handleLeave}
 				disabled={isChoosing}
 			>
@@ -141,7 +152,7 @@
 			outline: none;
 
 			&[open] {
-				position: fixed;
+				position: absolute;
 				top: 0;
 				left: 0;
 				height: 100dvh;
@@ -174,24 +185,32 @@
 				display: flex;
 				justify-content: flex-end;
 				gap: 0.75rem;
-				padding: 0 1rem 1rem;
+				padding: 1rem;
+			}
 
-				> button {
-					@include push-button;
-
-					&.is-default {
-						box-shadow:
-							1px 1px 0 $ink,
-							0 0 0 2px $paper,
-							0 0 0 5px $ink;
-						margin: 3px;
-						font-weight: 700;
-					}
-				}
+			> hr {
+				border-width: 0;
+				border-top-width: 2px;
 			}
 
 			button {
+				@include push-button;
+
 				font-family: inherit;
+				width: 100%;
+
+				&.nowrap {
+					white-space: nowrap;
+				}
+
+				&.is-default {
+					box-shadow:
+						1px 1px 0 $ink,
+						0 0 0 2px $paper,
+						0 0 0 5px $ink;
+					margin: 3px;
+					font-weight: 700;
+				}
 
 				> i {
 					text-transform: uppercase;
@@ -260,13 +279,18 @@
 		}
 
 		&-body {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
 			padding: 1rem;
 
 			> p {
+				font-weight: 500;
 				margin: 0;
 				font-size: 0.8125rem;
 				line-height: 1.5;
 				white-space: pre-line;
+				text-align: center;
 			}
 		}
 	}

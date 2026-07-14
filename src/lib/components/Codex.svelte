@@ -7,6 +7,9 @@
 	const { promote } = useCRT();
 	const { abnormality, discoveredAbnormalities } = useGameStore();
 
+	const uid = $props.id();
+	const dialogId = `game-codex-${uid}`;
+
 	const messages = m as unknown as Record<string, () => string>;
 
 	const entries = [...abnormalityCodeSet].map((code) => {
@@ -23,7 +26,7 @@
 	}
 </script>
 
-<button class="game-dialog-field-trigger" command="show-modal" commandfor="game-codex">
+<button class="game-dialog-field-trigger" command="show-modal" commandfor={dialogId}>
 	{#if $abnormality === Abnormality.AN26}
 		{m.game_components_options_give_up()}
 	{:else}
@@ -31,10 +34,10 @@
 	{/if}
 </button>
 
-<dialog id="game-codex" class="game-dialog-container" ontoggle={keepUnderGlass}>
+<dialog id={dialogId} class="game-dialog-container" ontoggle={keepUnderGlass}>
 	<div class="game-dialog-window">
 		<div class="game-dialog-title-bar">
-			<button class="game-dialog-close" command="close" commandfor="game-codex" aria-label="Close"
+			<button class="game-dialog-close" command="close" commandfor={dialogId} aria-label="Close"
 			></button>
 			<h1>
 				{#if $abnormality === Abnormality.AN26}
@@ -77,7 +80,7 @@
 			</ul>
 		</div>
 		<footer>
-			<button class="is-default" command="close" commandfor="game-codex">
+			<button class="is-default" command="close" commandfor={dialogId}>
 				{#if $abnormality === Abnormality.AN26}
 					{m.game_components_options_give_up()}
 				{:else}
