@@ -164,7 +164,7 @@
 			return true;
 		}
 
-		return sequence.length >= 3;
+		return sequence.length >= 5;
 	}
 
 	function handleKeyNavigation(event: KeyboardEvent) {
