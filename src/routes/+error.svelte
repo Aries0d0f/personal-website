@@ -353,6 +353,7 @@
 				}
 
 				input {
+					width: 40rem;
 					appearance: none;
 					background: none;
 					border: none;
@@ -391,6 +392,10 @@
 					text-align: center;
 					border: none;
 					padding: 0;
+
+					input {
+						text-align: center;
+					}
 
 					> h2 {
 						font-size: 1.8rem;
