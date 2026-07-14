@@ -622,17 +622,13 @@
 			overflow: visible;
 		}
 
-		&.game-mode {
-			filter: blur(0.4px);
-		}
-
 		&.invert-screen {
-			filter: blur(0.4px) invert(80%);
+			filter: invert(80%);
 			transform: scale(-1);
 		}
 
 		&.monochrome-screen {
-			filter: blur(0.4px) grayscale(100%);
+			filter: grayscale(100%);
 			transition: filter 5s cubic-bezier(0.53, 0.2, 0.53, 0.2);
 		}
 
