@@ -168,7 +168,7 @@
 	}
 
 	function handleKeyNavigation(event: KeyboardEvent) {
-		if (event.altKey || event.ctrlKey || event.metaKey) return;
+		if (!isDesktop || event.altKey || event.ctrlKey || event.metaKey) return;
 
 		if (konamiConsumes(event)) {
 			event.preventDefault();
