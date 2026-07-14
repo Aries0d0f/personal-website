@@ -203,11 +203,13 @@ export const useGameStore = () => {
 			}
 		},
 
-		markClicked: () => {
+		markClicked: async () => {
 			if (get(state.clicked)) return;
 
 			state.clicked.set(true);
-			void post({ intent: 'button-clicked' });
+			
+			const next = await post({ intent: 'button-clicked' });
+			if (next) adopt(next);
 		},
 
 		giveUp: async () => {
