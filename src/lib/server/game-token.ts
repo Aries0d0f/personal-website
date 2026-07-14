@@ -38,6 +38,13 @@ const encoder = new TextEncoder();
  * only a parked token may restart straight at stage 1, skipping the front door.
  * Omitted while false, to keep the token short.
  *
+ * `n` (clear times) counts how many times this player has ever reached a game clear.
+ * Signed in for the same reason `d` is — a plain cookie could be edited to fake veteran
+ * status and skip the first-play abnormality restriction. Omitted while 0, to keep the
+ * token short. This doubles as the migration for tokens minted before this claim
+ * existed: they simply have no `n`, `claims.n ?? 0` reads that the same as an honest
+ * zero, and the holder is treated as a first-time player rather than rejected.
+ *
  * Getting caught cheating is deliberately *not* a claim. It is an event, not a property
  * of the player, and signing it in would make it survive every reload — pinning them to
  * the same accusation for the rest of the run. It lives in a one-shot cookie instead
@@ -51,6 +58,7 @@ export interface GameClaims {
 	a?: AbnormalityCode;
 	d?: AbnormalityCode[];
 	w?: boolean;
+	n?: number;
 	iat: number;
 	exp: number;
 }
@@ -134,6 +142,7 @@ export async function signGameToken(
 		currentAbnormality?: AbnormalityCode | null;
 		discoveredAbnormalities?: AbnormalityCode[];
 		cleared?: boolean;
+		clearTimes?: number;
 		issuedAt?: number;
 	},
 	secret: string
@@ -146,6 +155,7 @@ export async function signGameToken(
 		...(input.currentAbnormality ? { a: input.currentAbnormality } : {}),
 		...(input.discoveredAbnormalities?.length ? { d: input.discoveredAbnormalities } : {}),
 		...(input.cleared ? { w: true } : {}),
+		...(input.clearTimes ? { n: input.clearTimes } : {}),
 		iat,
 		exp: iat + GAME_MAX_AGE_SECONDS
 	};
@@ -233,6 +243,10 @@ export async function verifyGameToken(token: string, secret: string): Promise<Ve
 
 	// We only ever sign `w` as literally true; anything else is not our writing.
 	if (claims.w !== undefined && claims.w !== true) {
+		return { ok: false, reason: 'forged' };
+	}
+
+	if (claims.n !== undefined && (!Number.isInteger(claims.n) || claims.n < 0)) {
 		return { ok: false, reason: 'forged' };
 	}
 

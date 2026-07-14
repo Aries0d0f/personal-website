@@ -26,8 +26,13 @@ export const GAME_CAUGHT_COOKIE = 'game_caught';
  * anything; it exists so a future migration can distinguish "old but compatible"
  * tokens from "old and needs upgrading" without another round of retiring everyone's
  * progress. Patch is unused and always 0.
+ *
+ * Bumped to 1.2.0 when `n` (clearTimes) joined the claim shape: still the same major,
+ * so pre-1.2.0 tokens decode as "old but compatible" rather than being retired. They
+ * simply lack `n`, which readGameState treats as 0 — an old token reads the same as a
+ * genuine first-time player, which is the intended migration (see game-token.ts).
  */
-export const GAME_TOKEN_VERSION = '1.1.0';
+export const GAME_TOKEN_VERSION = '1.2.0';
 
 /** A game session outlives the browser session, but not by much. */
 export const GAME_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
@@ -76,6 +81,12 @@ export interface GameState {
 	 * (via the `restart` intent or the front door).
 	 */
 	cleared: boolean;
+	/**
+	 * How many times this player has ever reached a game clear, across every run that
+	 * carried on from a parked token. 0 until the first clear. Giving up does not carry
+	 * this forward — it tears up the token, same as `discoveredAbnormalities`.
+	 */
+	clearTimes: number;
 }
 
 export const IDLE_GAME_STATE: GameState = {
@@ -87,5 +98,6 @@ export const IDLE_GAME_STATE: GameState = {
 	proofSeed: null,
 	currentAbnormality: null,
 	discoveredAbnormalities: [],
-	cleared: false
+	cleared: false,
+	clearTimes: 0
 };

@@ -114,7 +114,8 @@ const handleGame: Handle = async ({ event, resolve }) => {
 			proofSeed: null,
 			currentAbnormality: null,
 			discoveredAbnormalities: state.discoveredAbnormalities,
-			cleared: false
+			cleared: false,
+			clearTimes: state.clearTimes
 		};
 		event.locals.game.proofSeed = await writeGameState(
 			event.cookies,

@@ -80,7 +80,8 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 			proofSeed: await hashGameToken(token),
 			currentAbnormality: result.claims.a ?? null,
 			discoveredAbnormalities: result.claims.d ?? [],
-			cleared
+			cleared,
+			clearTimes: result.claims.n ?? 0
 		};
 	}
 
@@ -105,7 +106,8 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 		proofSeed: null,
 		currentAbnormality: null,
 		discoveredAbnormalities: [],
-		cleared: false
+		cleared: false,
+		clearTimes: 0
 	};
 	reset.proofSeed = await writeGameState(event.cookies, event.platform, reset);
 
@@ -129,6 +131,7 @@ export async function writeGameState(
 			currentAbnormality: state.currentAbnormality,
 			discoveredAbnormalities: state.discoveredAbnormalities,
 			cleared: state.cleared,
+			clearTimes: state.clearTimes,
 			issuedAt: state.startedAt ? Math.floor(state.startedAt / 1000) : undefined
 		},
 		getGameSecret(platform)

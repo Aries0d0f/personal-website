@@ -64,10 +64,36 @@ const randomFromSet = <T>(set: Set<T>): T | null => {
 	return arr[randomIndex];
 };
 
+// Game balance adjust: first playthrough only draws from this easier subset.
+const FIRST_PLAY_ABNORMALITY_CODES: AbnormalityCode[] = [
+	'AN04',
+	'AN05',
+	'AN06',
+	'AN07',
+	'AN08',
+	'AN09',
+	'AN10',
+	'AN11',
+	'AN12',
+	'AN14',
+	'AN15',
+	'AN17',
+	'AN18',
+	'AN19',
+	'AN20',
+	'AN21',
+	'AN22',
+	'AN23',
+	'AN24'
+];
+const firstPlayAbnormalitySet = new Set<AbnormalityCode>(FIRST_PLAY_ABNORMALITY_CODES);
+
 const abnormalityLottery = (
 	discovered: AbnormalityCode[],
-	previous: AbnormalityCode | null
+	previous: AbnormalityCode | null,
+	clearTimes: number
 ): AbnormalityCode | null => {
+	const pool = clearTimes > 0 ? abnormalityCodeSet : firstPlayAbnormalitySet;
 	const discoveredSet = new Set(discovered);
 
 	// Never deal the same abnormality twice in a row, never chain two screen
@@ -77,27 +103,24 @@ const abnormalityLottery = (
 	if (previous) {
 		excluded.add(previous);
 		if (isScreenAbnormality(previous)) {
-			for (const code of abnormalityCodeSet) {
+			for (const code of pool) {
 				if (isScreenAbnormality(code)) excluded.add(code);
 			}
 		}
 	}
 	if (discoveredSet.size < 10) {
-		for (const code of abnormalityCodeSet) {
+		for (const code of pool) {
 			if (isGameOptionsAbnormality(code)) excluded.add(code);
 		}
 	}
-	const undiscovered = abnormalityCodeSet.difference(discoveredSet).difference(excluded);
+	const undiscovered = pool.difference(discoveredSet).difference(excluded);
 	const rediscoverable = discoveredSet.difference(excluded);
 
 	const randomSeed = Math.random();
 
 	if (randomSeed < 0.1) {
 		return null;
-	} else if (
-		randomSeed < 0.99 - 0.15 * (discoveredSet.size / abnormalityCodeSet.size) &&
-		undiscovered.size > 0
-	) {
+	} else if (randomSeed < 0.99 - 0.15 * (discoveredSet.size / pool.size) && undiscovered.size > 0) {
 		return randomFromSet(undiscovered);
 	} else {
 		return randomFromSet(rediscoverable);
@@ -124,7 +147,8 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 			proofSeed: null,
 			currentAbnormality: null,
 			discoveredAbnormalities: [],
-			cleared: false
+			cleared: false,
+			clearTimes: 0
 		} satisfies GameState);
 	}
 
@@ -141,7 +165,8 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 			active: true,
 			stage: 1,
 			startedAt: Date.now(),
-			discoveredAbnormalities: locals.game.discoveredAbnormalities
+			discoveredAbnormalities: locals.game.discoveredAbnormalities,
+			clearTimes: locals.game.clearTimes
 		};
 		next.proofSeed = await writeGameState(cookies, platform, next);
 
@@ -206,7 +231,8 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 		const next: GameState = {
 			...IDLE_GAME_STATE,
 			cleared: true,
-			discoveredAbnormalities: current.discoveredAbnormalities ?? []
+			discoveredAbnormalities: current.discoveredAbnormalities ?? [],
+			clearTimes: (current.clearTimes ?? 0) + 1
 		};
 		next.proofSeed = await writeGameState(cookies, platform, next);
 
@@ -218,7 +244,8 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 			? {
 					currentAbnormality: abnormalityLottery(
 						current.discoveredAbnormalities ?? [],
-						current.currentAbnormality ?? null
+						current.currentAbnormality ?? null,
+						current.clearTimes ?? 0
 					),
 					discoveredAbnormalities: current.currentAbnormality
 						? Array.from(new Set(current.discoveredAbnormalities).add(current.currentAbnormality))
