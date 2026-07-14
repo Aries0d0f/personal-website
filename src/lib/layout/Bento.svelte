@@ -24,6 +24,8 @@
 				border-radius: 4px;
 
 				&.noise {
+					box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+
 					&::before {
 						content: '';
 						mix-blend-mode: multiply;
