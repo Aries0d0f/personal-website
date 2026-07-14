@@ -23,7 +23,7 @@
 		},
 		{
 			name: 'Telegram',
-			url: 'https://aries0d0f.me/s/t.me',
+			url: 'https://aries0d0f.me/s/telegram.me',
 			icon: 'fa7-brands:telegram'
 		},
 		{
