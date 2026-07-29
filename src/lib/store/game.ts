@@ -207,7 +207,7 @@ export const useGameStore = () => {
 			if (get(state.clicked)) return;
 
 			state.clicked.set(true);
-			
+
 			const next = await post({ intent: 'button-clicked' });
 			if (next) adopt(next);
 		},

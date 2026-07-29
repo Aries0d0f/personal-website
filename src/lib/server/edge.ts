@@ -245,7 +245,7 @@ function checkEasterEggs(userAgent: string): string | null {
 
 function extractQuery({ pathname, search }: URL): string | null {
 	if (search) return search;
-	
+
 	const pathMatch = pathname.match(/.*\/([\w@#?=+]+)$/);
 	if (pathMatch) return pathMatch[1];
 

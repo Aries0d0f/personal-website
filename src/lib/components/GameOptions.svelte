@@ -88,13 +88,13 @@
 				<LanguageSwitcher fullLangName abnormal={$abnormality} />
 			</div>
 			{#if $stage > 0 || $discoveredAbnormalities.size > 0}
-			<h2>
-				{#if $abnormality === Abnormality.AN26}
-					{m.game_components_options_give_up()}
-				{:else}
-					{m.game_components_codex_title()}
-				{/if}
-			</h2>
+				<h2>
+					{#if $abnormality === Abnormality.AN26}
+						{m.game_components_options_give_up()}
+					{:else}
+						{m.game_components_codex_title()}
+					{/if}
+				</h2>
 				<div class="game-dialog-field">
 					<Codex />
 				</div>
