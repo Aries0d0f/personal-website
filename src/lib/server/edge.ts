@@ -244,11 +244,12 @@ function checkEasterEggs(userAgent: string): string | null {
 // ─── Query Extraction ────────────────────────────────────────────────────────
 
 function extractQuery({ pathname, search }: URL): string | null {
-	const pathMatch = pathname.match(/.*\/([\w+]+)$/);
+	if (search) return search;
+	
+	const pathMatch = pathname.match(/.*\/([\w@#?=+]+)$/);
 	if (pathMatch) return pathMatch[1];
 
-	const params = new URLSearchParams(search);
-	return params.get('q') ?? null;
+	return null;
 }
 
 // ─── Parsers ─────────────────────────────────────────────────────────────────
