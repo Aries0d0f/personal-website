@@ -42,6 +42,65 @@ const easterEggs: Record<string, { reg: RegExp; msg: string }> = {
 		msg: "# Hello, fellow robot.\n# Just so you know, robots.txt is over there... (not that you're listening)"
 	}
 };
+const GEOIP_FIELDS = [
+	'status',
+	'message',
+	'continent',
+	'continentCode',
+	'country',
+	'countryCode',
+	'region',
+	'regionName',
+	'city',
+	'district',
+	'zip',
+	'lat',
+	'lon',
+	'timezone',
+	'offset',
+	'isp',
+	'org',
+	'as',
+	'asname',
+	'mobile',
+	'proxy',
+	'hosting',
+	'query'
+] as const;
+
+// ─── Types ─────────────────────────────────────────────────────────────────
+
+interface GeoDataPayload {
+	status: 'success' | 'fail';
+	message: string;
+	continent: string;
+	continentCode: string;
+	country: string;
+	countryCode: string;
+	region: string;
+	regionName: string;
+	city: string;
+	district: string;
+	zip: string;
+	lat: number;
+	lon: number;
+	timezone: string;
+	offset: number;
+	currency: string;
+	isp: string;
+	org: string;
+	as: string;
+	asname: string;
+	reverse: string;
+	mobile: boolean;
+	proxy: boolean;
+	hosting: boolean;
+	query: string;
+}
+
+type ActivedGeoDataKey = (typeof GEOIP_FIELDS)[number];
+
+type GeoData = Pick<GeoDataPayload, ActivedGeoDataKey>;
 
 // ─── Entry Point ─────────────────────────────────────────────────────────────
 
@@ -83,7 +142,7 @@ function isIPLookup({ pathname, hostname }: URL, userAgent: string): boolean {
 		pathname.startsWith('/ip') ||
 		hostname === 'ip.aries0d0f.me' ||
 		CLI_UA.test(userAgent) ||
-		(/^\/(whois|abuse).?(whois|abuse)?$/.test(pathname) && !NATIVE_UA.test(userAgent))
+		(/^\/(whois|abuse|geo).?(whois|abuse|geo)?$/.test(pathname) && !NATIVE_UA.test(userAgent))
 	);
 }
 
@@ -109,10 +168,12 @@ async function handleIPLookup(
 
 	const needsAbuse = query && /abuse/i.test(query);
 	const needsWhois = query && /whois/i.test(query);
+	const needsGeo = query && /geo/i.test(query);
 
-	const [abuseData, whoisRaw] = await Promise.all([
+	const [abuseData, whoisRaw, geoData] = await Promise.all([
 		needsAbuse ? fetchAbuse(clientIP) : null,
-		needsWhois ? fetchWhois(clientIP) : null
+		needsWhois ? fetchWhois(clientIP) : null,
+		needsGeo ? fetchGeo(clientIP) : null
 	]);
 
 	const whoisData = whoisRaw ? parseWhois(whoisRaw) : null;
@@ -125,18 +186,24 @@ async function handleIPLookup(
 			ip: clientIP,
 			protocol,
 			...(abuseData && { abuse: abuseData }),
-			...(whoisData && { whois: whoisData })
+			...(whoisData && { whois: whoisData }),
+			...(geoData && { geo: geoData })
 		});
 	}
 
 	const lines = [
 		`IP:       ${clientIP}`,
 		`Protocol: ${protocol}`,
-		abuseData || whoisData ? '\r' : null,
-		abuseData ? formatAbuse(abuseData) : null,
-		abuseData && whoisData ? '\r' : null,
-		whoisData ? formatWhois(whoisRaw) : null,
-		easterEggMessage ? `\n\n${easterEggMessage}` : '\n'
+		abuseData || whoisData || geoData ? '\r' : null,
+		[
+			abuseData ? formatAbuse(abuseData) : null,
+			whoisData ? formatWhois(whoisRaw) : null,
+			geoData ? formatGeo(geoData) : null,
+			easterEggMessage
+		]
+			.filter(Boolean)
+			.join('\n\n'),
+		'\n'
 	].filter(Boolean);
 
 	return new Response(!fromCLI || query || easterEggMessage ? lines.join('\n') : clientIP, {
@@ -155,6 +222,12 @@ function fetchAbuse(ip: string | null): Promise<any> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function fetchWhois(ip: string | null): Promise<any> {
 	return fetch(`https://wq.apnic.net/query?searchtext=${ip}`).then((r) => r.json());
+}
+
+function fetchGeo(ip: string | null): Promise<GeoData> {
+	return fetch(`http://ip-api.com/json/${ip}?fields=${GEOIP_FIELDS.join(',')}`).then((r) =>
+		r.json()
+	);
 }
 
 // ─── Easter Egg Handler ──────────────────────────────────────────────────────
@@ -345,6 +418,52 @@ function formatAbuse(data: any): string | null {
 	}
 
 	lines.push(DIVIDER, `  Query completed in ${elapsed_ms} ms`, SEPARATOR);
+
+	return lines.join('\n');
+}
+
+function formatGeo(data: GeoData): string | null {
+	if (!data) return null;
+
+	const PAD = 24;
+	const lines: string[] = [];
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const row = (label: string, value: any) => {
+		if (value == null || value === '') return;
+		lines.push(`${(label + ':').padEnd(PAD)} ${value}`);
+	};
+	const bool = (v: unknown) => (v ? 'Yes' : 'No');
+	const head = (title: string) => {
+		lines.push(DIVIDER, `  ${title}`, DIVIDER);
+	};
+
+	lines.push(SEPARATOR, '  GeoIP Report', SEPARATOR);
+
+	head('Location');
+	row('Status', data.status);
+	row('Message', data.message);
+	row('Continent', `${data.continent} (${data.continentCode})`);
+	row('Country', `${data.country} (${data.countryCode})`);
+	row('Region', `${data.region} (${data.regionName})`);
+	row('City', data.city);
+	row('District', data.district);
+	row('ZIP', data.zip);
+	row('Coordinates', `${data.lat}, ${data.lon}`);
+	row('Timezone', data.timezone);
+	row('UTC Offset', data.offset);
+
+	head('Network');
+	row('ISP', data.isp);
+	row('Organization', data.org);
+	row('AS', data.as);
+	row('AS Name', data.asname);
+	row('Mobile', bool(data.mobile));
+	row('Proxy', bool(data.proxy));
+	row('Hosting', bool(data.hosting));
+	row('Query IP', data.query);
+
+	lines.push(DIVIDER, `  Query completed`, SEPARATOR);
 
 	return lines.join('\n');
 }
