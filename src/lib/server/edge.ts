@@ -162,6 +162,7 @@ async function handleIPLookup(
 	fromCLI = false,
 	easterEggMessage: string | null = null
 ): Promise<Response> {
+	const corsHeaders = { 'Access-Control-Allow-Origin': '*' };
 	const query = extractQuery(url);
 	const wantsJSON = /json/i.test(request.headers.get('Accept') ?? '');
 	const protocol = clientIP?.includes(':') ? 'IPv6' : 'IPv4';
@@ -188,7 +189,7 @@ async function handleIPLookup(
 			...(abuseData && { abuse: abuseData }),
 			...(whoisData && { whois: whoisData }),
 			...(geoData && { geo: geoData })
-		});
+		}, { headers: corsHeaders });
 	}
 
 	const lines = [
@@ -208,7 +209,7 @@ async function handleIPLookup(
 
 	return new Response(!fromCLI || query || easterEggMessage ? lines.join('\n') : clientIP, {
 		status: 200,
-		headers: { 'Content-Type': 'text/plain' }
+		headers: { 'Content-Type': 'text/plain', ...corsHeaders }
 	});
 }
 
