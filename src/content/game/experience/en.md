@@ -26,7 +26,7 @@ layout: timeline
 	});
 
 	function lookupInfoToStr(lookupInfo: any): string {
-		return [lookupInfo?.abuse?.location?.city, lookupInfo?.abuse?.location?.state, lookupInfo?.abuse?.location?.country].filter(Boolean).join(`, `) || `WHO ARE YOU?`;
+		return Array.from(new Set([lookupInfo?.geo?.district, lookupInfo?.geo?.city, lookupInfo?.geo?.regionName, lookupInfo?.geo?.country].filter(Boolean))).join(`, `) || `WHO ARE YOU?`;
 	}
 
 	$effect(() => {

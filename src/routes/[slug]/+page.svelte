@@ -30,7 +30,7 @@
 	const currentAbnormality = $derived($abnormality);
 	const lookupInfo = $derived.by(async () => {
 		if (currentAbnormality === Abnormality.AN04) {
-			return await fetch('/ip+abuse', {
+			return await fetch('/ip?q=geo', {
 				headers: {
 					Accept: 'application/json'
 				}
