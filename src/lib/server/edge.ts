@@ -162,7 +162,7 @@ async function handleIPLookup(
 	fromCLI = false,
 	easterEggMessage: string | null = null
 ): Promise<Response> {
-	const corsHeaders = { 'Access-Control-Allow-Origin': '*' };
+	const headers = new Headers({ 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-cache' });
 	const query = extractQuery(url);
 	const wantsJSON = /json/i.test(request.headers.get('Accept') ?? '');
 	const protocol = clientIP?.includes(':') ? 'IPv6' : 'IPv4';
@@ -180,16 +180,19 @@ async function handleIPLookup(
 	const whoisData = whoisRaw ? parseWhois(whoisRaw) : null;
 
 	if (wantsJSON) {
-		return Response.json({
-			...(easterEggMessage && {
-				$comment: easterEggMessage.replaceAll('# ', '').replaceAll('\n', ' ')
-			}),
-			ip: clientIP,
-			protocol,
-			...(abuseData && { abuse: abuseData }),
-			...(whoisData && { whois: whoisData }),
-			...(geoData && { geo: geoData })
-		}, { headers: corsHeaders });
+		return Response.json(
+			{
+				...(easterEggMessage && {
+					$comment: easterEggMessage.replaceAll('# ', '').replaceAll('\n', ' ')
+				}),
+				ip: clientIP,
+				protocol,
+				...(abuseData && { abuse: abuseData }),
+				...(whoisData && { whois: whoisData }),
+				...(geoData && { geo: geoData })
+			},
+			{ headers: headers }
+		);
 	}
 
 	const lines = [
@@ -209,7 +212,7 @@ async function handleIPLookup(
 
 	return new Response(!fromCLI || query || easterEggMessage ? lines.join('\n') : clientIP, {
 		status: 200,
-		headers: { 'Content-Type': 'text/plain', ...corsHeaders }
+		headers: { 'Content-Type': 'text/plain', ...headers }
 	});
 }
 
