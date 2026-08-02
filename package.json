@@ -17,6 +17,7 @@
 		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts"
 	},
 	"devDependencies": {
+		"@aries0d0f/fetch-worker": "^0.1.0",
 		"@eslint/js": "^10.0.1",
 		"@iconify/svelte": "^5.2.2",
 		"@inlang/paraglide-js": "^2.15.2",
