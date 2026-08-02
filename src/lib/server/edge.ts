@@ -162,7 +162,7 @@ async function handleIPLookup(
 	fromCLI = false,
 	easterEggMessage: string | null = null
 ): Promise<Response> {
-	const headers = new Headers({ 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-cache' });
+	const headers = new Headers({ 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Cache-Control': 'no-cache', 'Access-Control-Allow-Methods': 'GET, OPTIONS' });
 	const query = extractQuery(url);
 	const wantsJSON = /json/i.test(request.headers.get('Accept') ?? '');
 	const protocol = clientIP?.includes(':') ? 'IPv6' : 'IPv4';
