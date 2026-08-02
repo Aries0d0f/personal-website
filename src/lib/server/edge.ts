@@ -119,6 +119,17 @@ export async function handleEdge(event: RequestEvent): Promise<Response | null> 
 	}
 
 	if (isIPLookup(url, userAgent)) {
+		if (event.request.method === 'OPTIONS') {
+			return new Response(null, {
+				status: 204,
+				headers: {
+					'Access-Control-Allow-Origin': '*',
+					'Access-Control-Allow-Headers': '*',
+					'Access-Control-Allow-Methods': 'GET, OPTIONS'
+				}
+			});
+		}
+
 		return handleIPLookup(
 			event.request,
 			url,
@@ -162,7 +173,12 @@ async function handleIPLookup(
 	fromCLI = false,
 	easterEggMessage: string | null = null
 ): Promise<Response> {
-	const headers = new Headers({ 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Cache-Control': 'no-cache', 'Access-Control-Allow-Methods': 'GET, OPTIONS' });
+	const headers = new Headers({
+		'Access-Control-Allow-Origin': '*',
+		'Access-Control-Allow-Headers': '*',
+		'Cache-Control': 'no-cache',
+		'Access-Control-Allow-Methods': 'GET, OPTIONS'
+	});
 	const query = extractQuery(url);
 	const wantsJSON = /json/i.test(request.headers.get('Accept') ?? '');
 	const protocol = clientIP?.includes(':') ? 'IPv6' : 'IPv4';
@@ -210,9 +226,11 @@ async function handleIPLookup(
 		'\n'
 	].filter(Boolean);
 
+	headers.set('Content-Type', 'text/plain');
+
 	return new Response(!fromCLI || query || easterEggMessage ? lines.join('\n') : clientIP, {
 		status: 200,
-		headers: { 'Content-Type': 'text/plain', ...headers }
+		headers
 	});
 }
 
