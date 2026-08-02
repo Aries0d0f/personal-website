@@ -69,7 +69,11 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 佛利蒙, 加州, 美國_
 ## 資深前端工程師 - 盧氪賽忒股份有限公司
 
 {#if currentAbnormality === Abnormality.AN04}
-{#await lookupInfo then lookupInfo}
+{#await lookupInfo}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> 臺北，臺灣_
+
+{:then lookupInfo}
 
 _<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.ip}_
 
@@ -105,9 +109,13 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 臺北，臺灣_
 ## 資訊組志工 - 李梅樹紀念館
 
 {#if currentAbnormality === Abnormality.AN04}
-{#await lookupInfo then lookupInfo}
+{#await lookupInfo}
 
-_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)}_
+_<Icon class="icon" icon="fa7-solid:location-dot" /> 新北，臺灣_
+
+{:then lookupInfo}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)} ({lookupInfo.geo.lat}, {lookupInfo.geo.lon})_
 
 {/await}
 

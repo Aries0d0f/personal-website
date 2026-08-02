@@ -69,7 +69,10 @@ Built and led cyborg project for cloner, turning complex neural networks for Sky
 ## Senior Frontend Enginner - Leukocyte-Lab
 
 {#if currentAbnormality === Abnormality.AN04}
-{#await lookupInfo then lookupInfo}
+{#await lookupInfo}
+_<Icon class="icon" icon="fa7-solid:location-dot" /> Taipei, Taiwan_
+
+{:then lookupInfo}
 
 _<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.ip}_
 
@@ -105,9 +108,13 @@ Built and led frontend work for cybersecurity products, turning complex security
 ## Volunteer - Li Mei-Shu Memorial Gallery
 
 {#if currentAbnormality === Abnormality.AN04}
-{#await lookupInfo then lookupInfo}
+{#await lookupInfo}
 
-_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)}_
+_<Icon class="icon" icon="fa7-solid:location-dot" /> New Taipei, Taiwan_
+
+{:then lookupInfo}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)} ({lookupInfo.geo.lat}, {lookupInfo.geo.lon})_
 
 {/await}
 

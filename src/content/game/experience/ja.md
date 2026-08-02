@@ -69,7 +69,11 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> フリーモント、カリ
 ## シニアフロントエンドエンジニア - <br />Leukocyte-Lab Co., Ltd.
 
 {#if currentAbnormality === Abnormality.AN04}
-{#await lookupInfo then lookupInfo}
+{#await lookupInfo}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> 台北，台湾_
+
+{:then lookupInfo}
 
 _<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.ip}_
 
@@ -105,9 +109,13 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 台北，台湾_
 ## ボランティア - 李梅樹記念館
 
 {#if currentAbnormality === Abnormality.AN04}
-{#await lookupInfo then lookupInfo}
+{#await lookupInfo}
 
-_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)}_
+_<Icon class="icon" icon="fa7-solid:location-dot" /> 新北，台湾_
+
+{:then lookupInfo}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)} ({lookupInfo.geo.lat}, {lookupInfo.geo.lon})_
 
 {/await}
 
