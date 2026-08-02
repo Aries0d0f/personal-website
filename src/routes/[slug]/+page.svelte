@@ -1,4 +1,6 @@
 <script lang="ts">
+	import http from '@aries0d0f/fetch-worker';
+
 	import type { Component, Snippet } from 'svelte';
 	import type { PageData } from './$types';
 
@@ -30,11 +32,12 @@
 	const currentAbnormality = $derived($abnormality);
 	const lookupInfo = $derived.by(async () => {
 		if (currentAbnormality === Abnormality.AN04) {
-			return await fetch('/ip?q=geo', {
-				headers: {
-					Accept: 'application/json'
-				}
-			})
+			return await http
+				.get('/ip?q=geo', {
+					headers: {
+						Accept: 'application/json'
+					}
+				})
 				.then((res) => res.json())
 				.then((data) => {
 					return data;

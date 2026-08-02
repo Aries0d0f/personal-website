@@ -1,5 +1,6 @@
 import { getContext, hasContext, setContext } from 'svelte';
 import { writable, derived, readable, get } from 'svelte/store';
+import http from '@aries0d0f/fetch-worker';
 
 import type { Writable } from 'svelte/store';
 
@@ -58,15 +59,14 @@ const getStoreContext = () => {
 
 /** Ask the server to change the game state, and take its answer as the truth. */
 const post = async (body: Record<string, unknown>): Promise<GameState | null> => {
-	const response = await fetch('/api/game', {
-		method: 'POST',
-		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify(body)
-	});
-
-	if (!response.ok) return null;
-
-	return response.json();
+	return http
+		.post<GameState, Record<string, unknown>>('/api/game', body, {
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		})
+		.then((res) => res.json())
+		.catch(() => null);
 };
 
 export const useGameStore = () => {
