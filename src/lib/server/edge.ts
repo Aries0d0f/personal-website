@@ -181,7 +181,8 @@ async function handleSocialRedirect(
 		tld: tld.slice(1),
 		path: path || '/',
 		target,
-		clientId
+		clientId,
+		clientIP
 	});
 
 	const headers = new Headers({ Location: target });
@@ -242,7 +243,14 @@ async function deriveDeviceClientId(
 
 function reportSocialRedirect(
 	event: RequestEvent,
-	data: { brand: string; tld: string; path: string; target: string; clientId: string }
+	data: {
+		brand: string;
+		tld: string;
+		path: string;
+		target: string;
+		clientId: string;
+		clientIP: string | null;
+	}
 ): void {
 	// Skip if GA4 credentials are missing
 	const credentials = getGA4Credentials(event.platform);
@@ -252,14 +260,24 @@ function reportSocialRedirect(
 	endpoint.searchParams.set('measurement_id', credentials.measurementId);
 	endpoint.searchParams.set('api_secret', credentials.apiSecret);
 
+	// Cloudflare already resolves the visitor's real geo per request.
+	const geo = event.platform?.cf;
+
 	const report = fetch(endpoint, {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'User-Agent': event.request.headers.get('User-Agent') ?? ''
-		},
+		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({
 			client_id: data.clientId,
+			// MP fields, not headers: developers.google.com/analytics/devguides/collection/protocol/ga4/reference
+			user_agent: event.request.headers.get('User-Agent') ?? undefined,
+			ip_override: data.clientIP ?? undefined,
+			user_location: geo?.country
+				? {
+						country_id: geo.country,
+						region_id: geo.regionCode ? `${geo.country}-${geo.regionCode}` : undefined,
+						city: geo.city
+					}
+				: undefined,
 			events: [
 				{
 					name: 'social_redirect',
@@ -270,7 +288,9 @@ function reportSocialRedirect(
 						tld: data.tld,
 						path: data.path,
 						destination: data.target,
-						page_location: event.url.toString()
+						page_location: event.url.toString(),
+						page_referrer: event.request.headers.get('Referer') ?? undefined,
+						page_title: `Social Redirect · ${data.brand}.${data.tld}`
 					}
 				}
 			]
