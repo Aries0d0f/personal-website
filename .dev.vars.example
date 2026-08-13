@@ -12,3 +12,16 @@
 # stage 0 and are flagged as tampered, since a token signed with the old key is
 # indistinguishable from a forgery. Rotate when nobody is mid-game, or not at all.
 GAME_SECRET=dev-only-game-secret-not-used-in-production
+
+# GA4 Measurement Protocol credentials for /s/* social-redirect reporting
+# (src/lib/server/edge.ts). Separate from the GTM container in src/app.html —
+# that one instruments the site itself; this reports redirect clicks that
+# never render a page, so there's no client-side gtag.js to fire the hit.
+#
+# Leave both unset locally and the redirect just skips reporting. In
+# production, set them as Cloudflare secrets:
+#
+#   wrangler secret put GA4_MEASUREMENT_ID
+#   wrangler secret put GA4_API_SECRET
+GA4_MEASUREMENT_ID=
+GA4_API_SECRET=
