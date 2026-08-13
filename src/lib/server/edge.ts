@@ -264,6 +264,8 @@ function reportSocialRedirect(
 				{
 					name: 'social_redirect',
 					params: {
+						session_id: `${Math.floor(Date.now() / 1000)}`,
+						engagement_time_msec: 1,
 						brand: data.brand,
 						tld: data.tld,
 						path: data.path,
