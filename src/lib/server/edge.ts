@@ -15,6 +15,8 @@
 
 import type { RequestEvent } from '@sveltejs/kit';
 
+import { UAParser } from 'ua-parser-js';
+
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 
@@ -262,9 +264,11 @@ function reportSocialRedirect(
 
 	// Cloudflare already resolves the visitor's real geo per request.
 	const geo = event.platform?.cf;
+	const continent = geo?.continent as ContinentCode | undefined;
 	const referer = event.request.headers.get('Referer');
 	const { source, medium } = resolveReferralSource(referer);
 	const sessionId = `${Math.floor(Date.now() / 1000)}`;
+	const device = buildDeviceInfo(event);
 
 	const report = fetch(endpoint, {
 		method: 'POST',
@@ -272,13 +276,14 @@ function reportSocialRedirect(
 		body: JSON.stringify({
 			client_id: data.clientId,
 			// MP fields, not headers: developers.google.com/analytics/devguides/collection/protocol/ga4/reference
-			user_agent: event.request.headers.get('User-Agent') ?? undefined,
+			device,
 			ip_override: data.clientIP ?? undefined,
 			user_location: geo?.country
 				? {
 						country_id: geo.country,
 						region_id: geo.regionCode ? `${geo.country}-${geo.regionCode}` : undefined,
-						city: geo.city
+						city: geo.city,
+						continent_id: continent && UN_M49_CONTINENT[continent]
 					}
 				: undefined,
 			events: [
@@ -322,6 +327,42 @@ function resolveReferralSource(referer: string | null): { source: string; medium
 	} catch {
 		return { source: '(direct)', medium: '(none)' };
 	}
+}
+
+function buildDeviceInfo(event: RequestEvent) {
+	const { browser, os, device } = UAParser(
+		event.request.headers.get('User-Agent') ?? '',
+		event.request.headers
+	);
+
+	return {
+		category: device.type === 'tablet' || device.type === 'mobile' ? device.type : 'desktop',
+		language: primaryLanguage(event.request.headers.get('Accept-Language')),
+		operating_system: os.name,
+		operating_system_version: os.version,
+		browser: browser.name,
+		browser_version: browser.version,
+		model: device.model,
+		brand: device.vendor
+	};
+}
+
+// UN M49 continent groupings (developers.google.com/analytics/devguides/collection/protocol/ga4/reference#payload_geo_info).
+// Only the continent level: M49 splits the Americas into Northern/Latin
+// America+Caribbean at the sub-region level, which needs a per-country lookup
+// Cloudflare's continent code alone can't provide, so subcontinent_id is left unset.
+const UN_M49_CONTINENT: Partial<Record<ContinentCode, string>> = {
+	AF: '002',
+	AS: '142',
+	EU: '150',
+	NA: '019',
+	SA: '019',
+	OC: '009'
+};
+
+// "en-US,en;q=0.9,zh-TW;q=0.8" -> "en-us"
+function primaryLanguage(acceptLanguage: string | null): string | undefined {
+	return acceptLanguage?.split(',')[0]?.trim().toLowerCase() || undefined;
 }
 
 async function handleIPLookup(
