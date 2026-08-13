@@ -285,6 +285,16 @@ function reportSocialRedirect(
 				// Sets source/medium for this session; must precede social_redirect.
 				{ name: 'campaign_details', params: { session_id: sessionId, source, medium } },
 				{
+					name: 'page_view',
+					params: {
+						session_id: sessionId,
+						engagement_time_msec: 1,
+						page_location: event.url.toString(),
+						page_referrer: referer ?? undefined,
+						page_title: `Social Redirect · ${data.brand}.${data.tld}`
+					}
+				},
+				{
 					name: 'social_redirect',
 					params: {
 						session_id: sessionId,
@@ -292,10 +302,7 @@ function reportSocialRedirect(
 						brand: data.brand,
 						tld: data.tld,
 						path: data.path,
-						destination: data.target,
-						page_location: event.url.toString(),
-						page_referrer: referer ?? undefined,
-						page_title: `Social Redirect · ${data.brand}.${data.tld}`
+						destination: data.target
 					}
 				}
 			]
