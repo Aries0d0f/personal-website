@@ -43,6 +43,7 @@
 		"svelte-check": "^4.4.6",
 		"typescript": "^6.0.2",
 		"typescript-eslint": "^8.58.1",
+		"ua-parser-js": "^2.0.10",
 		"vite": "^8.0.7",
 		"wrangler": "^4.81.0"
 	}
