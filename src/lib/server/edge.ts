@@ -262,6 +262,9 @@ function reportSocialRedirect(
 
 	// Cloudflare already resolves the visitor's real geo per request.
 	const geo = event.platform?.cf;
+	const referer = event.request.headers.get('Referer');
+	const { source, medium } = resolveReferralSource(referer);
+	const sessionId = `${Math.floor(Date.now() / 1000)}`;
 
 	const report = fetch(endpoint, {
 		method: 'POST',
@@ -279,17 +282,19 @@ function reportSocialRedirect(
 					}
 				: undefined,
 			events: [
+				// Sets source/medium for this session; must precede social_redirect.
+				{ name: 'campaign_details', params: { session_id: sessionId, source, medium } },
 				{
 					name: 'social_redirect',
 					params: {
-						session_id: `${Math.floor(Date.now() / 1000)}`,
+						session_id: sessionId,
 						engagement_time_msec: 1,
 						brand: data.brand,
 						tld: data.tld,
 						path: data.path,
 						destination: data.target,
 						page_location: event.url.toString(),
-						page_referrer: event.request.headers.get('Referer') ?? undefined,
+						page_referrer: referer ?? undefined,
 						page_title: `Social Redirect · ${data.brand}.${data.tld}`
 					}
 				}
@@ -300,6 +305,16 @@ function reportSocialRedirect(
 	});
 
 	event.platform?.ctx.waitUntil(report);
+}
+
+function resolveReferralSource(referer: string | null): { source: string; medium: string } {
+	if (!referer) return { source: '(direct)', medium: '(none)' };
+
+	try {
+		return { source: new URL(referer).hostname, medium: 'referral' };
+	} catch {
+		return { source: '(direct)', medium: '(none)' };
+	}
 }
 
 async function handleIPLookup(
