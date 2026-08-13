@@ -15,10 +15,17 @@
 
 import type { RequestEvent } from '@sveltejs/kit';
 
+import { dev } from '$app/environment';
+import { env } from '$env/dynamic/private';
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const SEPARATOR = '='.repeat(52);
 const DIVIDER = '-'.repeat(52);
+const GA4_ENDPOINT = 'https://www.google-analytics.com/mp/collect';
+const GA_COOKIE_NAME = '_ga';
+const GA_COOKIE_MAX_AGE = 60 * 60 * 24 * 730; // ~2 years, GA's own default
+const encoder = new TextEncoder();
 const NATIVE_UA =
 	/MSIE|WebKit|WKWebView|safari|edge|chrom(e|ium)|firefox|html|khtml|gecko|anthropic-ai|Slurp|spider|bot|crawler|facebook|meta|externalagent|WhatsApp/i;
 const CLI_UA =
@@ -115,7 +122,7 @@ export async function handleEdge(event: RequestEvent): Promise<Response | null> 
 	const clientIP = event.request.headers.get('CF-Connecting-IP');
 
 	if (isSocialRedirect(url)) {
-		return handleSocialRedirect(url);
+		return handleSocialRedirect(event, clientIP);
 	}
 
 	if (isIPLookup(url, userAgent)) {
@@ -159,11 +166,118 @@ function isIPLookup({ pathname, hostname }: URL, userAgent: string): boolean {
 
 // ─── Route Handlers ──────────────────────────────────────────────────────────
 
-function handleSocialRedirect({ pathname }: URL): Response {
-	const [, atMark, brand, tld = '.com', path = ''] = pathname.match(
+async function handleSocialRedirect(
+	event: RequestEvent,
+	clientIP: string | null
+): Promise<Response> {
+	const [, atMark, brand, tld = '.com', path = ''] = event.url.pathname.match(
 		/^\/s\/(@?)(\w+)(\.\w+)?(\/\w+)?/
 	)!;
-	return Response.redirect(`https://${brand}${tld}${path}/${atMark ? '@' : ''}aries0d0f`, 301);
+	const target = `https://${brand}${tld}${path}/${atMark ? '@' : ''}aries0d0f`;
+
+	const { clientId, mintedCookie } = await resolveGA4ClientId(event, clientIP);
+	reportSocialRedirect(event, {
+		brand,
+		tld: tld.slice(1),
+		path: path || '/',
+		target,
+		clientId
+	});
+
+	const headers = new Headers({ Location: target });
+	if (mintedCookie) headers.append('Set-Cookie', mintedCookie);
+
+	return new Response(null, { status: 301, headers });
+}
+
+// ─── GA4 Reporting ───────────────────────────────────────────────────────────
+
+function getGA4Credentials(
+	platform: Readonly<App.Platform> | undefined
+): { measurementId: string; apiSecret: string } | null {
+	const fromPlatform = platform?.env as Record<string, string | undefined> | undefined;
+	const measurementId = fromPlatform?.GA4_MEASUREMENT_ID ?? env.GA4_MEASUREMENT_ID;
+	const apiSecret = fromPlatform?.GA4_API_SECRET ?? env.GA4_API_SECRET;
+
+	if (!measurementId || !apiSecret) return null;
+
+	return { measurementId, apiSecret };
+}
+
+// Reuses the existing `_ga` cookie's client_id when present; otherwise mints
+// one and writes it back as `_ga`, so a later real pageview inherits it too.
+async function resolveGA4ClientId(
+	event: RequestEvent,
+	clientIP: string | null
+): Promise<{ clientId: string; mintedCookie: string | null }> {
+	const existing = event.cookies.get(GA_COOKIE_NAME);
+	const clientId = existing?.match(/^GA\d\.\d\.(\d+\.\d+)$/)?.[1];
+
+	if (clientId) return { clientId, mintedCookie: null };
+
+	const minted = await deriveDeviceClientId(clientIP, event.request.headers.get('User-Agent'));
+	const mintedCookie = event.cookies.serialize(GA_COOKIE_NAME, `GA1.1.${minted}`, {
+		path: '/',
+		maxAge: GA_COOKIE_MAX_AGE,
+		sameSite: 'lax',
+		secure: !dev
+	});
+
+	return { clientId: minted, mintedCookie };
+}
+
+async function deriveDeviceClientId(
+	clientIP: string | null,
+	userAgent: string | null
+): Promise<string> {
+	const digest = await crypto.subtle.digest(
+		'SHA-256',
+		encoder.encode(`${clientIP ?? ''}::${userAgent ?? ''}`)
+	);
+	const view = new DataView(digest);
+
+	// Deterministic per IP+UA, so cookie-less repeats from the same device still match.
+	return `${view.getUint32(0) % 2147483647}.${view.getUint32(4) % 2147483647}`;
+}
+
+function reportSocialRedirect(
+	event: RequestEvent,
+	data: { brand: string; tld: string; path: string; target: string; clientId: string }
+): void {
+	// Skip if GA4 credentials are missing
+	const credentials = getGA4Credentials(event.platform);
+	if (!credentials) return;
+
+	const endpoint = new URL(GA4_ENDPOINT);
+	endpoint.searchParams.set('measurement_id', credentials.measurementId);
+	endpoint.searchParams.set('api_secret', credentials.apiSecret);
+
+	const report = fetch(endpoint, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'User-Agent': event.request.headers.get('User-Agent') ?? ''
+		},
+		body: JSON.stringify({
+			client_id: data.clientId,
+			events: [
+				{
+					name: 'social_redirect',
+					params: {
+						brand: data.brand,
+						tld: data.tld,
+						path: data.path,
+						destination: data.target,
+						page_location: event.url.toString()
+					}
+				}
+			]
+		})
+	}).catch(() => {
+		// Analytics must never surface as an error on the redirect it's reporting.
+	});
+
+	event.platform?.ctx.waitUntil(report);
 }
 
 async function handleIPLookup(
