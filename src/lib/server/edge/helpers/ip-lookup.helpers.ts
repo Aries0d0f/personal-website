@@ -324,7 +324,11 @@ function formatAbuse(data: any): string | null {
 		row(lines, 'Accuracy', location.accuracy);
 	}
 
-	lines.push(DIVIDER, `  Query completed in ${elapsed_ms} ms`, SEPARATOR);
+	lines.push(
+		DIVIDER,
+		elapsed_ms == null ? '  Query completed' : `  Query completed in ${elapsed_ms} ms`,
+		SEPARATOR
+	);
 
 	return lines.join('\n');
 }
