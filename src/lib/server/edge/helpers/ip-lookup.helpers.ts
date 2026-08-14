@@ -3,10 +3,8 @@
 // curl the site and you get your IP back, like ifconfig.me, with optional
 // WHOIS / abuse intelligence and UA easter eggs.
 
+import { bool, DIVIDER, flag, head, row, SEPARATOR } from './cui.helpers';
 import { CLI_UA, NATIVE_UA } from './user-agent.helpers';
-
-const SEPARATOR = '='.repeat(52);
-const DIVIDER = '-'.repeat(52);
 
 const GEOIP_FIELDS = [
 	'status',
@@ -217,7 +215,7 @@ function formatWhois(entries: any[]): string {
 		}
 
 		if (entry.type === 'object') {
-			lines.push(DIVIDER, `  [${entry.objectType}]  ${entry.primaryKey}`, DIVIDER);
+			head(lines, `[${entry.objectType}]  ${entry.primaryKey}`);
 
 			for (const attr of entry.attributes) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -256,86 +254,74 @@ function formatAbuse(data: any): string | null {
 		elapsed_ms
 	} = data;
 
-	const PAD = 24;
 	const lines: string[] = [];
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const row = (label: string, value: any) => {
-		if (value == null || value === '') return;
-		lines.push(`${(label + ':').padEnd(PAD)} ${value}`);
-	};
-	const bool = (v: unknown) => (v ? 'Yes' : 'No');
-	const flag = (v: unknown) => (v ? 'YES' : 'No');
-	const head = (title: string) => {
-		lines.push(DIVIDER, `  ${title}`, DIVIDER);
-	};
 
 	lines.push(SEPARATOR, '  IP Intelligence Report', SEPARATOR);
 
-	head('Identity');
-	row('IP Address', ip);
-	row('RIR', rir);
-	row('Bogon', flag(is_bogon));
-	row('Mobile', flag(is_mobile));
-	row('Satellite', flag(is_satellite));
-	row('Crawler', flag(is_crawler));
-	row('Datacenter', flag(is_datacenter));
-	row('Tor Exit Node', flag(is_tor));
-	row('Proxy', flag(is_proxy));
-	row('VPN', flag(is_vpn));
-	row('Known Abuser', flag(is_abuser));
+	head(lines, 'Identity');
+	row(lines, 'IP Address', ip);
+	row(lines, 'RIR', rir);
+	row(lines, 'Bogon', flag(is_bogon));
+	row(lines, 'Mobile', flag(is_mobile));
+	row(lines, 'Satellite', flag(is_satellite));
+	row(lines, 'Crawler', flag(is_crawler));
+	row(lines, 'Datacenter', flag(is_datacenter));
+	row(lines, 'Tor Exit Node', flag(is_tor));
+	row(lines, 'Proxy', flag(is_proxy));
+	row(lines, 'VPN', flag(is_vpn));
+	row(lines, 'Known Abuser', flag(is_abuser));
 
 	if (company) {
-		head('Company');
-		row('Name', company.name);
-		row('Abuse Score', company.abuser_score);
-		row('Domain', company.domain);
-		row('Type', company.type);
-		row('Network', company.network);
-		row('WHOIS', company.whois);
+		head(lines, 'Company');
+		row(lines, 'Name', company.name);
+		row(lines, 'Abuse Score', company.abuser_score);
+		row(lines, 'Domain', company.domain);
+		row(lines, 'Type', company.type);
+		row(lines, 'Network', company.network);
+		row(lines, 'WHOIS', company.whois);
 	}
 
 	if (abuse) {
-		head('Abuse Contact');
-		row('Name', abuse.name);
-		row('Address', abuse.address);
-		row('Email', abuse.email);
-		row('Phone', abuse.phone);
+		head(lines, 'Abuse Contact');
+		row(lines, 'Name', abuse.name);
+		row(lines, 'Address', abuse.address);
+		row(lines, 'Email', abuse.email);
+		row(lines, 'Phone', abuse.phone);
 	}
 
 	if (asn) {
-		head('ASN');
-		row('ASN', `AS${asn.asn}`);
-		row('Abuse Score', asn.abuser_score);
-		row('Route', asn.route);
-		row('Description', asn.descr);
-		row('Country', asn.country?.toUpperCase());
-		row('Active', bool(asn.active));
-		row('Organization', asn.org);
-		row('Domain', asn.domain);
-		row('Abuse Email', asn.abuse);
-		row('Type', asn.type);
-		row('Updated', asn.updated);
-		row('RIR', asn.rir);
-		row('WHOIS', asn.whois);
+		head(lines, 'ASN');
+		row(lines, 'ASN', `AS${asn.asn}`);
+		row(lines, 'Abuse Score', asn.abuser_score);
+		row(lines, 'Route', asn.route);
+		row(lines, 'Description', asn.descr);
+		row(lines, 'Country', asn.country?.toUpperCase());
+		row(lines, 'Active', bool(asn.active));
+		row(lines, 'Organization', asn.org);
+		row(lines, 'Domain', asn.domain);
+		row(lines, 'Abuse Email', asn.abuse);
+		row(lines, 'Type', asn.type);
+		row(lines, 'Updated', asn.updated);
+		row(lines, 'RIR', asn.rir);
+		row(lines, 'WHOIS', asn.whois);
 	}
 
 	if (location) {
-		head('Location');
-		row('Country', `${location.country} (${location.country_code})`);
-		row('State', location.state);
-		row('City', location.city);
-		row('Continent', location.continent);
-		row('Coordinates', `${location.latitude}, ${location.longitude}`);
-		row('ZIP', location.zip);
-		row('Timezone', location.timezone);
-		row('UTC Offset', location.utcoffset);
-		row('DST', bool(location.is_dst));
-		row('Local Time', location.local_time);
-		row('Calling Code', `+${location.calling_code}`);
-		row('Currency', location.currency_code);
-		row('EU Member', bool(location.is_eu_member));
-		row('Accuracy', location.accuracy);
+		head(lines, 'Location');
+		row(lines, 'Country', `${location.country} (${location.country_code})`);
+		row(lines, 'State', location.state);
+		row(lines, 'City', location.city);
+		row(lines, 'Continent', location.continent);
+		row(lines, 'Coordinates', `${location.latitude}, ${location.longitude}`);
+		row(lines, 'ZIP', location.zip);
+		row(lines, 'Timezone', location.timezone);
+		row(lines, 'UTC Offset', location.utcoffset);
+		row(lines, 'DST', bool(location.is_dst));
+		row(lines, 'Local Time', location.local_time);
+		row(lines, 'Calling Code', `+${location.calling_code}`);
+		row(lines, 'Currency', location.currency_code);
+		row(lines, 'EU Member', bool(location.is_eu_member));
+		row(lines, 'Accuracy', location.accuracy);
 	}
 
 	lines.push(DIVIDER, `  Query completed in ${elapsed_ms} ms`, SEPARATOR);
@@ -346,43 +332,32 @@ function formatAbuse(data: any): string | null {
 function formatGeo(data: GeoData): string | null {
 	if (!data) return null;
 
-	const PAD = 24;
 	const lines: string[] = [];
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const row = (label: string, value: any) => {
-		if (value == null || value === '') return;
-		lines.push(`${(label + ':').padEnd(PAD)} ${value}`);
-	};
-	const bool = (v: unknown) => (v ? 'Yes' : 'No');
-	const head = (title: string) => {
-		lines.push(DIVIDER, `  ${title}`, DIVIDER);
-	};
 
 	lines.push(SEPARATOR, '  GeoIP Report', SEPARATOR);
 
-	head('Location');
-	row('Status', data.status);
-	row('Message', data.message);
-	row('Continent', `${data.continent} (${data.continentCode})`);
-	row('Country', `${data.country} (${data.countryCode})`);
-	row('Region', `${data.region} (${data.regionName})`);
-	row('City', data.city);
-	row('District', data.district);
-	row('ZIP', data.zip);
-	row('Coordinates', `${data.lat}, ${data.lon}`);
-	row('Timezone', data.timezone);
-	row('UTC Offset', data.offset);
+	head(lines, 'Location');
+	row(lines, 'Status', data.status);
+	row(lines, 'Message', data.message);
+	row(lines, 'Continent', `${data.continent} (${data.continentCode})`);
+	row(lines, 'Country', `${data.country} (${data.countryCode})`);
+	row(lines, 'Region', `${data.region} (${data.regionName})`);
+	row(lines, 'City', data.city);
+	row(lines, 'District', data.district);
+	row(lines, 'ZIP', data.zip);
+	row(lines, 'Coordinates', `${data.lat}, ${data.lon}`);
+	row(lines, 'Timezone', data.timezone);
+	row(lines, 'UTC Offset', data.offset);
 
-	head('Network');
-	row('ISP', data.isp);
-	row('Organization', data.org);
-	row('AS', data.as);
-	row('AS Name', data.asname);
-	row('Mobile', bool(data.mobile));
-	row('Proxy', bool(data.proxy));
-	row('Hosting', bool(data.hosting));
-	row('Query IP', data.query);
+	head(lines, 'Network');
+	row(lines, 'ISP', data.isp);
+	row(lines, 'Organization', data.org);
+	row(lines, 'AS', data.as);
+	row(lines, 'AS Name', data.asname);
+	row(lines, 'Mobile', bool(data.mobile));
+	row(lines, 'Proxy', bool(data.proxy));
+	row(lines, 'Hosting', bool(data.hosting));
+	row(lines, 'Query IP', data.query);
 
 	lines.push(DIVIDER, `  Query completed`, SEPARATOR);
 
