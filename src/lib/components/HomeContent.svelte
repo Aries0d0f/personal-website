@@ -30,8 +30,8 @@
 		</ol>
 	{:else}
 		<ParaglideMessage message={m.pages_home_profile_intro} inputs={{}}>
-			{#snippet strong({ children })}
-				<strong>
+			{#snippet strong({ children, options })}
+				<strong {...options}>
 					{@render children?.()}
 				</strong>
 			{/snippet}
