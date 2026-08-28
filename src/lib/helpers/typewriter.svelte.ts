@@ -61,7 +61,9 @@ export const useTypewriter = (message: () => string, options: Options = {}) => {
 			if (elapsed < nextTick) return;
 
 			const char = chars[index];
-			if (char === '\b') {
+			if (char === '\f') {
+				text = '';
+			} else if (char === '\b') {
 				text = text.slice(0, -1);
 			} else if (char === '\t') {
 				// skip tab, which is used to slow down typing speed here.
