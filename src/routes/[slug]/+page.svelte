@@ -8,7 +8,7 @@
 	import { Abnormality } from '$lib/game/abnoramlity';
 	import { dev } from '$app/env';
 
-	const { abnormality } = useGameStore();
+	const { abnormality, isGameMode } = useGameStore();
 
 	let { data }: { data: PageData & { metadata?: { layout?: string } } } = $props();
 
@@ -49,7 +49,7 @@
 
 {#if ViewportLayout}
 	{#await ViewportLayout then { default: Layout }}
-		{#if dev}
+		{#if dev && $isGameMode}
 			{currentAbnormality}
 		{/if}
 		<Layout {data}>
