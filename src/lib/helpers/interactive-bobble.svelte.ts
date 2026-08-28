@@ -1,3 +1,5 @@
+import { afterNavigate } from '$app/navigation';
+
 type Bobble = {
     message?: string;
     link?: string;
@@ -40,6 +42,11 @@ export const useInteractiveBobble = (ignore: () => boolean) => {
 		document.addEventListener('mouseover', handler);
 
 		return () => document.removeEventListener('mouseover', handler);
+	});
+
+	afterNavigate(() => {
+		clearTimeout(bobbleClearTimeout);
+		bobble = undefined;
 	});
 
     return {
