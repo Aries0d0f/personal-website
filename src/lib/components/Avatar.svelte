@@ -32,7 +32,8 @@
 		delayMap: {
 			'\b': 1,
 			'\f': 300,
-			'\n': 500,
+			'\n': 30,
+			'\t': 500,
 			'!': 300
 		}
 	});
@@ -468,25 +469,26 @@
 
 {#snippet bobble()}
 	{#if showBobble}
-		<svelte:element
-			this={bobbleLink ? 'a' : 'div'}
-			id="bobble"
-			class="bobble-container {(bobbleText.current === '' && bobbleIcon) ||
-			(bobbleText.current.length === 1 && !bobbleIcon)
-				? 'circle'
-				: ''}"
-			href={bobbleLink}
-			target="_blank"
-			rel="noopener noreferrer"
-			aria-label="Bobble Message"
-		>
-			{#if bobbleIcon}
-				<Icon class="icon" icon={bobbleIcon} />
-			{/if}
-			{#if bobbleText.current}
-				<p class="bobble">{bobbleText.current}</p>
-			{/if}
-		</svelte:element>
+		<div id="bobble" class="bobble-container">
+			<svelte:element
+				this={bobbleLink ? 'a' : 'div'}
+				class="bobble-instance {(bobbleText.current === '' && bobbleIcon) ||
+				(bobbleText.current.length === 1 && !bobbleIcon)
+					? 'circle'
+					: ''}"
+				href={bobbleLink}
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label="Bobble Message"
+			>
+				{#if bobbleIcon}
+					<Icon class="icon" icon={bobbleIcon} />
+				{/if}
+				{#if bobbleText.current}
+					<p class="bobble">{bobbleText.current}</p>
+				{/if}
+			</svelte:element>
+		</div>
 	{:else}
 		<!-- <div id="bobble" class="bobble-container">
 			<p class="bobble">TEST</p>
@@ -509,6 +511,10 @@
 			position: absolute;
 			bottom: 72.5%;
 			right: 60%;
+
+		}
+
+		&-instance {
 			display: flex;
 			flex-direction: row;
 			place-items: center;
@@ -537,7 +543,7 @@
 				pointer-events: none;
 			}
 
-			text-wrap: nowrap;
+			white-space: pre;
 
 			&::before {
 				content: '';
