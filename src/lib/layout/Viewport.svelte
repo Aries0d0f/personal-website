@@ -580,7 +580,7 @@
 >
 	<main class="intro-container" class:combined={showCombined}>
 		<div class="intro-avatar">
-			<Avatar {width} {height} />
+			<Avatar {width} {height} {showCombined} />
 		</div>
 		<div class="intro-content" style="opacity: 0">
 			{#if showCombined}
