@@ -12,10 +12,11 @@ export const useInteractiveBobble = (ignore: () => boolean) => {
         if (ignore()) return;
 
 		const hoveredElement = event.target as HTMLElement;
+        const attredElement = hoveredElement.closest('[data-bobble-msg], [data-bobble-icon], [data-bobble-link]') as HTMLElement;
         const newBobbleContent = {
-            message: hoveredElement.getAttribute('data-bobble-msg') || undefined,
-            icon: hoveredElement.getAttribute('data-bobble-icon') || undefined,
-            link: hoveredElement.getAttribute('data-bobble-link') || undefined
+            message: attredElement?.getAttribute('data-bobble-msg') || undefined,
+            icon: attredElement?.getAttribute('data-bobble-icon') || undefined,
+            link: attredElement?.getAttribute('data-bobble-link') || undefined
         }
 
         if (newBobbleContent.message || newBobbleContent.icon) {
@@ -25,7 +26,7 @@ export const useInteractiveBobble = (ignore: () => boolean) => {
                 return;
             }
             bobble = newBobbleContent;
-        } else if (hoveredElement.getAttribute('aria-label') === 'Bobble Message') {
+        } else if (attredElement?.getAttribute('aria-label') === 'Bobble Message') {
             clearTimeout(bobbleClearTimeout);
         } else {
             clearTimeout(bobbleClearTimeout);
