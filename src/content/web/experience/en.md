@@ -10,7 +10,7 @@ layout: timeline
 <section>
 <hgroup>
 
-**2026 SEP • Current**
+**2026 SEP - Now • Current**
 
 ## Software Engineer - Visban
 

@@ -39,7 +39,7 @@ layout: timeline
 <section>
 <hgroup>
 
-**2026/09 • 現職**
+**2026/09 - Now • 現職**
 
 ## ソフトウェアエンジニア - Visban
 
