@@ -31,6 +31,12 @@
 				}
 	);
 
+	const bobbleMessages: Record<Locale, string> = $derived({
+		en: m.hover_bobble_language_en(),
+		'zh-tw': m.hover_bobble_language_zh_tw(),
+		ja: m.hover_bobble_language_ja()
+	});
+
 	const current = $derived(getLocale());
 
 	async function switchTo(locale: Locale) {
@@ -76,6 +82,7 @@
 			aria-current={abnormal !== Abnormality.AN25 && locale === current ? 'true' : undefined}
 			disabled={locale === current}
 			onclick={() => switchTo(locale)}
+			data-bobble-msg={bobbleMessages[locale]}
 		>
 			{labels[locale]}
 		</button>
