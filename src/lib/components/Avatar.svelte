@@ -473,8 +473,8 @@
 {/snippet}
 
 {#snippet bobble()}
-	{#if showBobble}
-		<div id="bobble" class="bobble-container">
+	<div id="bobble" class="bobble-container">
+		{#if showBobble}
 			<svelte:element
 				this={bobbleLink ? 'a' : 'div'}
 				class="bobble-instance {(bobbleText.current === '' && bobbleIcon) ||
@@ -493,12 +493,10 @@
 					<p class="bobble">{bobbleText.current}</p>
 				{/if}
 			</svelte:element>
-		</div>
-	{:else}
-		<!-- <div id="bobble" class="bobble-container">
-			<p class="bobble">TEST</p>
-		</div> -->
-	{/if}
+		{:else}
+			<div id="bobble" class="bobble-instance cleaner"></div>
+		{/if}
+	</div>
 {/snippet}
 
 <div class="avatar-container">
@@ -516,7 +514,6 @@
 			position: absolute;
 			bottom: 72.5%;
 			right: 60%;
-
 		}
 
 		&-instance {
@@ -536,7 +533,6 @@
 			animation: bobble-fade-in 0.3s cubic-bezier(0.25, 0.46, 0.05, 1.44) forwards;
 			color: inherit;
 			text-decoration: none;
-			margin-left: -2rem;
 
 			&.circle {
 				place-content: center;
@@ -544,6 +540,12 @@
 				padding: 0.5rem;
 				width: 2.5rem;
 				height: 2.5rem;
+			}
+
+			&.cleaner {
+				opacity: 0;
+				animation: none;
+				pointer-events: none;
 			}
 
 			> * {
