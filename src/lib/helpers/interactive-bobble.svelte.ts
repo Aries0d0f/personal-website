@@ -12,7 +12,7 @@ export const useInteractiveBobble = (ignore: () => boolean) => {
         if (ignore()) return;
 
 		const hoveredElement = event.target as HTMLElement;
-        const attredElement = hoveredElement.closest('[data-bobble-msg], [data-bobble-icon], [data-bobble-link]') as HTMLElement;
+        const attredElement = hoveredElement.closest('[data-bobble-msg], [data-bobble-icon], [data-bobble-link], [aria-label]') as HTMLElement;
         const newBobbleContent = {
             message: attredElement?.getAttribute('data-bobble-msg') || undefined,
             icon: attredElement?.getAttribute('data-bobble-icon') || undefined,
