@@ -10,6 +10,21 @@ layout: timeline
 <section>
 <hgroup>
 
+**2026/09 • 現職**
+
+## 軟體工程師 - Visban
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> 東京，日本_
+
+</hgroup>
+
+為 AI 驅動的 mmWave 巢狀網路解決方案開發穩定可擴展的管理平台，將複雜的基建部署邏輯轉化為直覺的操作介面。
+
+</section>
+
+<section>
+<hgroup>
+
 **2019/07 - 2026/04 • 7 年**
 
 ## 資深前端工程師 - 盧氪賽忒股份有限公司

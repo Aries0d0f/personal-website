@@ -37,6 +37,35 @@ layout: timeline
 </script>
 
 <section>
+<hgroup>
+
+**2026/09 • 現職**
+
+## ソフトウェアエンジニア - Visban
+
+{#if currentAbnormality === Abnormality.AN04}
+{#await lookupInfo}
+_<Icon class="icon" icon="fa7-solid:location-dot" /> 東京・日本_
+
+{:then lookupInfo}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.ip}_
+
+{/await}
+
+{:else}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> 東京・日本_
+
+{/if}
+
+</hgroup>
+
+AI駆動のmmWaveメッシュネットワークソリューション向けに、信頼性と拡張性の高い管理プラットフォームを構築し、複雑なインフラ展開ロジックを直感的な操作UIへと落とし込みました。
+
+</section>
+
+<section>
 
 {#if currentAbnormality === Abnormality.AN03}
 
@@ -75,7 +104,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 台北，台湾_
 
 {:then lookupInfo}
 
-_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.ip}_
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.geo.lat}, {lookupInfo.geo.lon}_
 
 {/await}
 
@@ -115,7 +144,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 新北，台湾_
 
 {:then lookupInfo}
 
-_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)} ({lookupInfo.geo.lat}, {lookupInfo.geo.lon})_
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)}_
 
 {/await}
 

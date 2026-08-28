@@ -37,6 +37,35 @@ layout: timeline
 </script>
 
 <section>
+<hgroup>
+
+**2026 SEP • Current**
+
+## Software Engineer - Visban
+
+{#if currentAbnormality === Abnormality.AN04}
+{#await lookupInfo}
+_<Icon class="icon" icon="fa7-solid:location-dot" /> Tokyo, Japan_
+
+{:then lookupInfo}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.ip}_
+
+{/await}
+
+{:else}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> Tokyo, Japan_
+
+{/if}
+
+</hgroup>
+
+Built a reliable, scalable management platform for an AI-driven mmWave mesh network solution, turning complex infrastructure deployment logic into an intuitive UI.
+
+</section>
+
+<section>
 
 {#if currentAbnormality === Abnormality.AN03}
 
@@ -44,7 +73,7 @@ layout: timeline
 
 **2019 JUL - 2026 APR • 7 Years**
 
-## Senior Freak Enginner - Cyberdyne Systems
+## Senior Freak Engineer - Cyberdyne Systems
 
 _<Icon class="icon" icon="fa7-solid:location-dot" /> Fremont, California, USA_
 
@@ -66,7 +95,7 @@ Built and led cyborg project for cloner, turning complex neural networks for Sky
 
 {/if}
 
-## Senior Frontend Enginner - Leukocyte-Lab
+## Senior Frontend Engineer - Leukocyte-Lab
 
 {#if currentAbnormality === Abnormality.AN04}
 {#await lookupInfo}
@@ -74,7 +103,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> Taipei, Taiwan_
 
 {:then lookupInfo}
 
-_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.ip}_
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.geo.lat}, {lookupInfo.geo.lon}_
 
 {/await}
 
@@ -114,7 +143,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> New Taipei, Taiwan_
 
 {:then lookupInfo}
 
-_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)} ({lookupInfo.geo.lat}, {lookupInfo.geo.lon})_
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)}_
 
 {/await}
 

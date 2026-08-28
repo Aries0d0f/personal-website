@@ -10,9 +10,24 @@ layout: timeline
 <section>
 <hgroup>
 
+**2026 SEP • Current**
+
+## Software Engineer - Visban
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> Tokyo, Japan_
+
+</hgroup>
+
+Built a reliable, scalable management platform for an AI-driven mmWave mesh network solution, turning complex infrastructure deployment logic into an intuitive UI.
+
+</section>
+
+<section>
+<hgroup>
+
 **2019 JUL - 2026 APR • 7 Years**
 
-## Senior Frontend Enginner - Leukocyte-Lab
+## Senior Frontend Engineer - Leukocyte-Lab
 
 _<Icon class="icon" icon="fa7-solid:location-dot" /> Taipei, Taiwan_
 

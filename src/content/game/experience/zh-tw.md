@@ -37,6 +37,35 @@ layout: timeline
 </script>
 
 <section>
+<hgroup>
+
+**2026/09 • 現職**
+
+## 軟體工程師 - Visban
+
+{#if currentAbnormality === Abnormality.AN04}
+{#await lookupInfo}
+_<Icon class="icon" icon="fa7-solid:location-dot" /> 東京，日本_
+
+{:then lookupInfo}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.ip}_
+
+{/await}
+
+{:else}
+
+_<Icon class="icon" icon="fa7-solid:location-dot" /> 東京，日本_
+
+{/if}
+
+</hgroup>
+
+為 AI 驅動的 mmWave 巢狀網路解決方案開發穩定可擴展的管理平台，將複雜的基建部署邏輯轉化為直覺的操作介面。
+
+</section>
+
+<section>
 
 {#if currentAbnormality === Abnormality.AN03}
 
@@ -46,7 +75,7 @@ layout: timeline
 
 ## 資深瘋狂工程師 - 賽博坦公司
 
-_<Icon class="icon" icon="fa7-solid:location-dot" /> 佛利蒙, 加州, 美國_
+_<Icon class="icon" icon="fa7-solid:location-dot" /> 佛利蒙，加州，美國_
 
 </hgroup>
 
@@ -75,7 +104,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 臺北，臺灣_
 
 {:then lookupInfo}
 
-_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.ip}_
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfo.geo.lat}, {lookupInfo.geo.lon}_
 
 {/await}
 
@@ -115,7 +144,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 新北，臺灣_
 
 {:then lookupInfo}
 
-_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)} ({lookupInfo.geo.lat}, {lookupInfo.geo.lon})_
+_<Icon class="icon" icon="fa7-solid:location-dot" /> {lookupInfoToStr(lookupInfo)}_
 
 {/await}
 
