@@ -551,6 +551,7 @@
 			}
 
 			white-space: pre;
+			line-height: 1.4;
 
 			&::before {
 				content: '';
