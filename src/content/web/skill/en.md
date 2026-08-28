@@ -3,7 +3,7 @@ title: Skills
 layout: bento
 ---
 
-<section>
+<section data-bobble-msg="💡 It's always cool to try new things!">
 
 ## Frontend
 
@@ -13,7 +13,7 @@ Pinia, SvelteKit, Nuxt, React, Redux, Web Worker, GSAP, SASS, Tailwind, CSS-in-J
 
 </section>
 
-<section>
+<section data-bobble-msg="🫶 Comprehensive on both sides!">
 
 ## Backend & Integration
 
@@ -23,7 +23,7 @@ RESTful API, GraphQL, WebSocket, gRPC, Protobuf, GORM, OpenAPI, Nginx, Server Po
 
 </section>
 
-<section size="full">
+<section data-bobble-msg="🙌 I'm a polyglot programmer!" size="full">
 
 ## Programming Language
 
@@ -33,7 +33,7 @@ Node.js, Python, Shell Scripting
 
 </section>
 
-<section>
+<section data-bobble-msg="🤖 Automation is always sexy!">
 
 ## DevOps & Cloud Native
 
@@ -43,7 +43,7 @@ Helm, Terraform, Argo CD, GitHub Actions, Traefik, Istio, Jenkins
 
 </section>
 
-<section>
+<section data-bobble-msg="🧪 Testing is as important as tea time!">
 
 ## Testing & Quality
 
@@ -53,7 +53,7 @@ Cypress, Playwright, Chromatic, Sentry
 
 </section>
 
-<section size="full">
+<section size="full" data-bobble-msg="🔧 Good tools make life easier!">
 
 ## Platform & Tools
 
@@ -63,7 +63,7 @@ VMware ESXi, Proxmox VE, RouterOS, Figma
 
 </section>
 
-<section size="full">
+<section size="full" data-bobble-msg="🏗️ Building foundations!">
 
 ## Infrastructure
 

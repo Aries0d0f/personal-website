@@ -3,7 +3,7 @@ title: Contribution & Community Attendance
 layout: timeline
 ---
 
-<section>
+<section data-bobble-msg="{'I co-founded a community!\n\n#StructuredData #Community'}">
 <hgroup>
 
 ## WIKIDATA Taiwan
@@ -14,7 +14,7 @@ Community Co-founder
 
 </section>
 
-<section>
+<section data-bobble-msg="{'We know how to hack,\nso we know how to protect!\n\n#Hacker #CyberSecurity'}">
 <hgroup>
 
 ## HITCON 2020
@@ -27,7 +27,7 @@ System Development Team Member
 
 </section>
 
-<section>
+<section data-bobble-msg="{'Sharing is learning!\n\n#Education'}">
 <hgroup>
 
 ## SITCON 2019, 2020
@@ -40,7 +40,7 @@ Development Team Leader
 
 </section>
 
-<section>
+<section data-bobble-msg="{'Let\'s code around the campfire! ⛺️\n\n#SummerCamp #Education'}">
 <hgroup>
 
 ## SITCON Camp 2017
@@ -53,7 +53,7 @@ Course Activity Team & Cultural and Creative Team Member
 
 </section>
 
-<section>
+<section data-bobble-msg="{'Community project for community!\n\n#OpenSource #Community'}">
 <hgroup>
 
 ## Opass

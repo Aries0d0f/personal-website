@@ -7,7 +7,7 @@ layout: timeline
 	import Icon from '@iconify/svelte';
 </script>
 
-<section>
+<section data-bobble-msg="{'我在日本的第一份工作！\n\n#5G #mmWave'}">
 <hgroup>
 
 **2026/09 - Now • 現職**
@@ -22,7 +22,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 東京，日本_
 
 </section>
 
-<section>
+<section data-bobble-msg="{'我在這裡帶領了一個團隊！\n\n#CyberSecurity #BAS #RedTeam'}">
 <hgroup>
 
 **2019/07 - 2026/04 • 7 年**
@@ -37,7 +37,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 台北，臺灣_
 
 </section>
 
-<section>
+<section data-bobble-msg="{'專業志工服務\n\n#NPO #CulturalPreservation'}">
 <hgroup>
 
 **2016/06 - 2020/12 • 4 年**

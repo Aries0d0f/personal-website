@@ -14,26 +14,31 @@
 		{
 			name: 'Email',
 			url: 'mailto:aries0d0f@gmail.com',
+			realLink: 'aries0d0f@gmail.com',
 			icon: 'fa7-solid:envelope'
 		},
 		{
 			name: 'GitHub',
 			url: 'https://aries0d0f.me/s/github',
+			realLink: 'github.com/Aries0d0f',
 			icon: 'fa7-brands:github'
 		},
 		{
 			name: 'Telegram',
-			url: 'https://aries0d0f.me/s/telegram.me',
+			url: 'https://aries0d0f.me/s/t.me',
+			realLink: 't.me/Aries0d0f',
 			icon: 'fa7-brands:telegram'
 		},
 		{
 			name: 'Medium',
 			url: 'https://aries0d0f.me/s/@medium',
+			realLink: 'medium.com/@aries0d0f',
 			icon: 'fa7-brands:medium'
 		},
 		{
 			name: 'LinkedIn',
 			url: 'https://aries0d0f.me/s/linkedin/in',
+			realLink: 'linkedin.com/in/aries0d0f',
 			icon: 'fa7-brands:linkedin-in'
 		}
 	];
@@ -66,7 +71,18 @@
 					{:else}
 						<span>{contact.name}</span>
 					{/if}
-					<Icon class="icon" icon={contact.icon} />
+					<Icon
+						class="icon"
+						icon={contact.icon}
+						data-bobble-msg={contact.realLink}
+						data-bobble-icon="fa7-solid:link"
+						data-bobble-link={contact.url}
+					/>
+					<style>
+						.icon > path {
+							pointer-events: none;
+						}
+					</style>
 				</a>
 			</li>
 		{/each}
@@ -109,7 +125,7 @@
 				rel="external noopener noreferrer"
 				aria-label="Creative Commons Attribution-ShareAlike 4.0 International License"
 			>
-				<span>CC BY-SA 4.0</span>
+				<span data-bobble-msg={m.hover_bobble_home_license()}>CC BY-SA 4.0</span>
 			</a>
 		{/if}
 	</p>

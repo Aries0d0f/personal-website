@@ -3,7 +3,7 @@ title: 技能
 layout: bento
 ---
 
-<section>
+<section data-bobble-msg="💡 嘗試新技術永遠都很酷！">
 
 ## Frontend
 
@@ -13,7 +13,7 @@ Pinia, SvelteKit, Nuxt, React, Redux, Web Worker, GSAP, SASS, Tailwind, CSS-in-J
 
 </section>
 
-<section>
+<section data-bobble-msg="🫶 前後端都很全面！">
 
 ## Backend & Integration
 
@@ -23,7 +23,7 @@ RESTful API, GraphQL, WebSocket, gRPC, Protobuf, GORM, OpenAPI, Nginx, Server Po
 
 </section>
 
-<section size="full">
+<section data-bobble-msg="🙌 我是個多語言工程師！" size="full">
 
 ## Programming Language
 
@@ -33,7 +33,7 @@ Node.js, Python, Shell Scripting
 
 </section>
 
-<section>
+<section data-bobble-msg="🤖 自動化永遠是最棒的！">
 
 ## DevOps & Cloud Native
 
@@ -43,7 +43,7 @@ Helm, Terraform, Argo CD, GitHub Actions, Traefik, Istio, Jenkins
 
 </section>
 
-<section>
+<section data-bobble-msg="🧪 測試就跟吃飯一樣重要！">
 
 ## Testing & Quality
 
@@ -53,7 +53,7 @@ Cypress, Playwright, Chromatic, Sentry
 
 </section>
 
-<section size="full">
+<section size="full" data-bobble-msg="🔧 用對的工具，做起事來更輕鬆！">
 
 ## Platform & Tools
 
@@ -63,7 +63,7 @@ VMware ESXi, Proxmox VE, RouterOS, Figma
 
 </section>
 
-<section size="full">
+<section size="full" data-bobble-msg="🏗️ 從基礎開始打造！">
 
 ## Infrastructure
 

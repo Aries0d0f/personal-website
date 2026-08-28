@@ -7,7 +7,7 @@ layout: timeline
 	import Icon from '@iconify/svelte';
 </script>
 
-<section>
+<section data-bobble-msg="{'My first job in Japan!\n\n#5G #mmWave'}">
 <hgroup>
 
 **2026 SEP - Now • Current**
@@ -22,7 +22,7 @@ Built a reliable, scalable management platform for an AI-driven mmWave mesh netw
 
 </section>
 
-<section>
+<section data-bobble-msg="{'I led a team here!\n\n#CyberSecurity #BAS #RedTeam'}">
 <hgroup>
 
 **2019 JUL - 2026 APR • 7 Years**
@@ -37,7 +37,7 @@ Built and led frontend work for cybersecurity products, turning complex security
 
 </section>
 
-<section>
+<section data-bobble-msg="{'Professional volunteering\t\n\n#NPO #CulturalPreservation'}">
 <hgroup>
 
 **2016 JUN - 2020 DEC • 4 Years**

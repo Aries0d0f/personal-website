@@ -7,7 +7,7 @@ layout: timeline
 	import Icon from '@iconify/svelte';
 </script>
 
-<section>
+<section data-bobble-msg="{'日本での初めての仕事！\n\n#5G #mmWave'}">
 <hgroup>
 
 **2026/09 - Now • 現職**
@@ -22,7 +22,7 @@ AI駆動のmmWaveメッシュネットワークソリューション向けに、
 
 </section>
 
-<section>
+<section data-bobble-msg="{'ここでチームをリードしました！\n\n#CyberSecurity #BAS #RedTeam'}">
 <hgroup>
 
 **2019/07 - 2026/04 • 7 年**
@@ -37,7 +37,7 @@ _<Icon class="icon" icon="fa7-solid:location-dot" /> 台北・台湾_
 
 </section>
 
-<section>
+<section data-bobble-msg="{'本格的なボランティア活動\n\n#NPO #CulturalPreservation'}">
 <hgroup>
 
 **2016/06 - 2020/12 • 4 年**

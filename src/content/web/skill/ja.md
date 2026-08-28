@@ -3,7 +3,7 @@ title: スキル
 layout: bento
 ---
 
-<section>
+<section data-bobble-msg="{'新しいことに挑戦するのは\nいつもワクワクする！💡'}">
 
 ## フロントエンド
 
@@ -13,7 +13,7 @@ Pinia, SvelteKit, Nuxt, React, Redux, Web Worker, GSAP, SASS, Tailwind, CSS-in-J
 
 </section>
 
-<section>
+<section data-bobble-msg="両方ともしっかり対応！🫶">
 
 ## バックエンドと統合
 
@@ -23,7 +23,7 @@ RESTful API, GraphQL, WebSocket, gRPC, Protobuf, GORM, OpenAPI, Nginx, Server Po
 
 </section>
 
-<section size="full">
+<section data-bobble-msg="マルチ言語対応プログラマーです！🙌" size="full">
 
 ## プログラミング言語
 
@@ -33,7 +33,7 @@ Node.js, Python, Shell Scripting
 
 </section>
 
-<section>
+<section data-bobble-msg="自動化っていつも魅力的！🤖">
 
 ## DevOps、ｸﾗｳﾄﾞﾈﾃｨﾌﾞ
 
@@ -43,7 +43,7 @@ Helm, Terraform, Argo CD, GitHub Actions, Traefik, Istio, Jenkins
 
 </section>
 
-<section>
+<section data-bobble-msg="テストはご飯と同じくらい大切！🧪">
 
 ## テストと品質管理
 
@@ -53,7 +53,7 @@ Cypress, Playwright, Chromatic, Sentry
 
 </section>
 
-<section size="full">
+<section size="full" data-bobble-msg="良い道具は人生を楽にする！🔧">
 
 ## プラットフォームとツール
 
@@ -63,7 +63,7 @@ VMware ESXi, Proxmox VE, RouterOS, Figma
 
 </section>
 
-<section size="full">
+<section size="full" data-bobble-msg="基盤を築く！🏗️">
 
 ## インフラストラクチャー
 
