@@ -222,6 +222,11 @@
 			});
 	}
 
+	function getVisualLength(str: string) {
+		const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+		return [...segmenter.segment(str)].length;
+	}
+
 	const crt = useCRT();
 
 	$effect(() => {
@@ -473,7 +478,7 @@
 			<svelte:element
 				this={bobbleLink ? 'a' : 'div'}
 				class="bobble-instance {(bobbleText.current === '' && bobbleIcon) ||
-				(bobbleText.current.length === 1 && !bobbleIcon)
+				(getVisualLength(bobbleText.current) === 1 && !bobbleIcon)
 					? 'circle'
 					: ''}"
 				href={bobbleLink}
@@ -534,9 +539,11 @@
 			margin-left: -2rem;
 
 			&.circle {
+				place-content: center;
+				place-items: center;
 				padding: 0.5rem;
-				width: fit-content;
-				height: fit-content;
+				width: 2.5rem;
+				height: 2.5rem;
 			}
 
 			> * {
