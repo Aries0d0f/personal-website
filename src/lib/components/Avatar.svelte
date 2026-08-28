@@ -14,13 +14,29 @@
 	import avatarImgGameModeCreepy from '$lib/assets/avatar-nbg-gamemode-creepy.png';
 	import avatarImg from '$lib/assets/avatar.jpg';
 	import { Abnormality } from '$lib/game/abnoramlity';
+	import { useInteractiveBobble } from '$lib/helpers/interactive-bobble.svelte';
+	import Icon from '@iconify/svelte';
+	import { useTypewriter } from '$lib/helpers/typewriter.svelte';
 
-	let { width, height } = $props<{
+	let { width, height, showCombined } = $props<{
 		width: number;
 		height: number;
+		showCombined: boolean;
 	}>();
 
 	const { isGameMode, abnormality } = useGameStore();
+	const interactiveBobble = useInteractiveBobble(() => $isGameMode || showCombined);
+	const bobbleIcon = $derived(interactiveBobble.current?.icon);
+	const bobbleLink = $derived(interactiveBobble.current?.link);
+	const bobbleText = useTypewriter(() => interactiveBobble.current?.message || '', {
+		delayMap: {
+			'\b': 1,
+			'\f': 300,
+			'\n': 500,
+			'!': 300
+		}
+	});
+	const showBobble = $derived(bobbleText.current || interactiveBobble.current?.icon);
 
 	const BASE_IMG_WIDTH = 423;
 
@@ -231,10 +247,13 @@
 				const { x, y } = pointer;
 				const offsetX = ((x ?? 0) - width / 2) / width;
 				const offsetY = ((y ?? 0) - height / 2) / height;
-				gsap.to(['#morphing-image', '#morphing-group', '#mask-bottom-hemisphere-group'], {
-					translateX: offsetX * 10,
-					translateY: offsetY * 10
-				});
+				gsap.to(
+					['#morphing-image', '#morphing-group', '#mask-bottom-hemisphere-group', '#bobble'],
+					{
+						translateX: offsetX * 10,
+						translateY: offsetY * 10
+					}
+				);
 			}
 		});
 	});
@@ -438,7 +457,7 @@
 					</span>
 				{/snippet}
 				{#snippet strong({ children })}
-					<strong>
+					<strong data-bobble-msg={m.hover_bobble_avatar_name({ name: m.noun_general_name() })}>
 						{@render children?.()}
 					</strong>
 				{/snippet}
@@ -447,15 +466,107 @@
 	</svelte:element>
 {/snippet}
 
+{#snippet bobble()}
+	{#if showBobble}
+		<svelte:element
+			this={bobbleLink ? 'a' : 'div'}
+			id="bobble"
+			class="bobble-container {(bobbleText.current === '' && bobbleIcon) ||
+			(bobbleText.current.length === 1 && !bobbleIcon)
+				? 'circle'
+				: ''}"
+			href={bobbleLink}
+			target="_blank"
+			rel="noopener noreferrer"
+			aria-label="Bobble Message"
+		>
+			{#if bobbleIcon}
+				<Icon class="icon" icon={bobbleIcon} />
+			{/if}
+			{#if bobbleText.current}
+				<p class="bobble">{bobbleText.current}</p>
+			{/if}
+		</svelte:element>
+	{:else}
+		<!-- <div id="bobble" class="bobble-container">
+			<p class="bobble">TEST</p>
+		</div> -->
+	{/if}
+{/snippet}
+
 <div class="avatar-container">
 	{@render title()}
 	{#if browser}
 		{@render title(true)}
 	{/if}
 	{@render avatar()}
+	{@render bobble()}
 </div>
 
 <style lang="scss">
+	.bobble {
+		&-container {
+			position: absolute;
+			bottom: 72.5%;
+			right: 60%;
+			display: flex;
+			flex-direction: row;
+			place-items: center;
+			gap: 0.5rem;
+			width: fit-content;
+			height: fit-content;
+			border-radius: 1.2rem;
+			padding: 0.5rem 1rem;
+			background-color: #fff;
+			box-shadow:
+				inset 0 0 1px 0 rgba(0, 0, 0, 0.1),
+				inset 1px -1px 2px 1px rgba(130, 130, 255, 0.1),
+				0 0px 7px rgba(0, 0, 0, 0.1);
+			animation: bobble-fade-in 0.3s cubic-bezier(0.25, 0.46, 0.05, 1.44) forwards;
+			color: inherit;
+			text-decoration: none;
+			margin-left: -2rem;
+
+			&.circle {
+				padding: 0.5rem;
+				width: fit-content;
+				height: fit-content;
+			}
+
+			> * {
+				pointer-events: none;
+			}
+
+			text-wrap: nowrap;
+
+			&::before {
+				content: '';
+				position: absolute;
+				bottom: -0.25rem;
+				right: -0.75rem;
+				border-radius: 50%;
+				width: 0.75rem;
+				height: 0.75rem;
+				background-color: #fff;
+				box-shadow:
+					inset 0 0 1px 0 rgba(0, 0, 0, 0.1),
+					inset 1px -1px 2px 1px rgba(130, 130, 255, 0.1),
+					0 0px 7px rgba(0, 0, 0, 0.1);
+			}
+		}
+
+		@keyframes bobble-fade-in {
+			0% {
+				opacity: 0;
+				transform: translate(100%, 100%) scale(0);
+			}
+			100% {
+				opacity: 1;
+				transform: translate(0, 0) scale(1);
+			}
+		}
+	}
+
 	.avatar-container {
 		position: relative;
 		width: fit-content;
