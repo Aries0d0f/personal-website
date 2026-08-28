@@ -6,6 +6,7 @@ import {
 	extractLocaleFromRequestWithStrategies,
 	extractLocaleFromUrl,
 	getTextDirection,
+	locales,
 	localizeUrl
 } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
@@ -17,14 +18,24 @@ import { markCaught, readGameState, writeGameState } from '$lib/server/game';
 // edge worker too: isIPLookup() matches any CLI/unknown User-Agent, so without
 // this guard `curl /sitemap.xml` (or a crawler sending no UA) would get the
 // IP-lookup response instead of the sitemap.
-const NON_LOCALIZED_PATHS = new Set(['/sitemap.xml', '/robots.txt', '/api/game']);
+//
+// llms.txt is the exception: its base-locale version lives at the bare,
+// un-prefixed /llms.txt (a well-known path crawlers/LLMs expect, so it can't
+// live inside the i18n tree), but its other locales use the site's normal
+// /{locale}/path prefix and are handled by that same route via Paraglide's
+// own URL matching — extractLocaleFromUrl already resolves them, so they only
+// need to skip the edge worker below, not the locale redirect.
+const NON_LOCALIZED_PATHS = new Set(['/sitemap.xml', '/robots.txt', '/llms.txt', '/api/game']);
+const LOCALIZED_LLMS_TXT_PATHS = new Set(locales.map((locale) => `/${locale}/llms.txt`));
+const isNonLocalizedPath = (pathname: string) =>
+	NON_LOCALIZED_PATHS.has(pathname) || LOCALIZED_LLMS_TXT_PATHS.has(pathname);
 
 // Ported Cloudflare Worker logic (social redirects + IP lookup). Runs first so
 // it can short-circuit the request before routing/i18n; falls through to
 // SvelteKit when it returns null. Reserved paths skip the worker so they reach
 // their real handlers regardless of User-Agent.
 const handleWorker: Handle = async ({ event, resolve }) => {
-	if (NON_LOCALIZED_PATHS.has(event.url.pathname)) return resolve(event);
+	if (isNonLocalizedPath(event.url.pathname)) return resolve(event);
 
 	const response = await handleEdge(event);
 	if (response) return response;
@@ -60,7 +71,7 @@ const handleLocaleRedirect: Handle = ({ event, resolve }) => {
 
 	if (
 		wantsHtml &&
-		!NON_LOCALIZED_PATHS.has(event.url.pathname) &&
+		!isNonLocalizedPath(event.url.pathname) &&
 		extractLocaleFromUrl(event.url) === undefined
 	) {
 		const preferred = extractLocaleFromRequestWithStrategies(event.request, [
