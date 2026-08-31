@@ -254,7 +254,13 @@
 				const offsetX = ((x ?? 0) - width / 2) / width;
 				const offsetY = ((y ?? 0) - height / 2) / height;
 				gsap.to(
-					['#morphing-image', '#morphing-group', '#mask-bottom-hemisphere-group', '#bobble'],
+					[
+						'#morphing-image',
+						'#morphing-group',
+						'#mask-bottom-hemisphere-group',
+						'#bobble',
+						'#interactive-point-map'
+					],
 					{
 						translateX: offsetX * 10,
 						translateY: offsetY * 10
@@ -335,6 +341,22 @@
 				fill="var(--accent-fill)"
 				opacity="0"
 			/>
+			<g id="interactive-point-map">
+				<circle
+					cx="240"
+					cy="140"
+					r="5"
+					fill="rgba(0,0,0,0)"
+					data-bobble-msg={m.hover_bobble_avatar_achoo()}
+				/>
+				<circle
+					cx="230"
+					cy="140"
+					r="2"
+					fill="rgba(0,0,0,0)"
+					data-bobble-msg={m.hover_bobble_avatar_achoo()}
+				/>
+			</g>
 		</g>
 		<defs>
 			<mask
@@ -643,6 +665,14 @@
 					font-size: 4rem;
 					margin-top: 0.25rem;
 				}
+			}
+		}
+
+		> header {
+			pointer-events: none;
+
+			> * {
+				pointer-events: auto;
 			}
 		}
 

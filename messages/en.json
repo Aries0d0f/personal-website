@@ -16,6 +16,7 @@
 	"pages_error_general_description": "Well, this is embarrassing. | Oops! Something went wrong. | This is not what I expected either. | The server is having a bad day.",
 	"pages_error_back_to_home": "Back to Home",
 	"hover_bobble_avatar_name": "Hi! I'm {name}!\t\fNice to meet you!",
+	"hover_bobble_avatar_achoo": "\t\t\t\t\t\t\f...\t\t\fAh...\t\fAh...\t\tAh...\t\t\t\fAaachooooo!",
 	"hover_bobble_home_license": "This site is open source!\t\fSource code is\navailable on GitHub.",
 	"hover_bobble_language_en": "I scored 900 on the TOEIC!\nStill leveling up my English every day.",
 	"hover_bobble_language_ja": "I passed JLPT N2!\nStill polishing my Japanese skills.",
