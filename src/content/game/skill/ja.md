@@ -5,8 +5,28 @@ layout: bento
 
 <script lang="ts">
   import { Abnormality } from '$lib/game/abnoramlity';
-
+  import { zalgoGeneration } from '$lib/shared/zalgo';
+  
   let { currentAbnormality }: { currentAbnormality: Abnormality } = $props();
+
+  let an13OriginalText = 'Gobstone, Gargoyle, Pensieve, Elder Wands';
+  let an13Text = $state(an13OriginalText);
+  let an13CursedLevel = $state(-20);
+
+  $effect(() => {
+    if (currentAbnormality === Abnormality.AN13) {
+      const interval = setInterval(() => {
+        an13CursedLevel = an13CursedLevel + 1
+        if (an13CursedLevel > 100) {
+          clearInterval(interval);
+          return;
+        }
+        an13Text = zalgoGeneration(an13OriginalText, an13CursedLevel, 0, an13CursedLevel);
+      }, 100);
+
+      return () => clearInterval(interval);
+    }
+  });
 </script>
 
 {#if currentAbnormality === Abnormality.AN11}
@@ -151,13 +171,13 @@ Cypress, Playwright, Chromatic, Sentry
 
 {/if}
 
-<section size="full">
+<section style="z-index: 9999;" size="full">
 
 ## プラットフォームとツール
 
 {#if currentAbnormality === Abnormality.AN13}
 
-Gobstone, Gargoyle, Pensieve, Elder Wands
+<p style="font-family: Helvetica, Arial, sans-serif; z-index: 9999;">{an13Text}</p>
 
 Pensieve, Nimbus 2000, Model Dragon, Howler
 
