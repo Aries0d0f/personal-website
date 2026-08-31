@@ -34,7 +34,9 @@ const MARKUP_TOKENS: Record<string, string> = { strong: '**', em: '*' };
 
 function renderParts(parts: readonly { type: string; value?: string; name?: string }[]): string {
 	return parts
-		.map((part) => (part.type === 'text' ? (part.value ?? '') : (MARKUP_TOKENS[part.name ?? ''] ?? '')))
+		.map((part) =>
+			part.type === 'text' ? (part.value ?? '') : (MARKUP_TOKENS[part.name ?? ''] ?? '')
+		)
 		.join('');
 }
 
