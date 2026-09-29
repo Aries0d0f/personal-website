@@ -42,13 +42,7 @@ export async function handleEdge(event: RequestEvent): Promise<Response | null> 
 			});
 		}
 
-		return handleIPLookup(
-			event,
-			url,
-			clientIP,
-			CLI_UA.test(userAgent),
-			checkEasterEggs(userAgent)
-		);
+		return handleIPLookup(event, url, clientIP, CLI_UA.test(userAgent), checkEasterEggs(userAgent));
 	}
 
 	return null;

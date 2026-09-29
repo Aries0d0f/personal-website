@@ -237,7 +237,7 @@ function formatWhois(entries: any[]): string {
 
 function getIpApiCredentials(
 	platform: Readonly<App.Platform> | undefined
-): { apiKey: string; } | null {
+): { apiKey: string } | null {
 	const fromPlatform = platform?.env as Record<string, string | undefined> | undefined;
 	const apiKey = fromPlatform?.IPAPI_API_KEY ?? env.IPAPI_API_KEY;
 
