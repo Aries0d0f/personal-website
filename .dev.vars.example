@@ -25,3 +25,4 @@ GAME_SECRET=dev-only-game-secret-not-used-in-production
 #   wrangler secret put GA4_API_SECRET
 GA4_MEASUREMENT_ID=
 GA4_API_SECRET=
+IPAPI_API_KEY=
