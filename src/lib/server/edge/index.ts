@@ -43,7 +43,7 @@ export async function handleEdge(event: RequestEvent): Promise<Response | null> 
 		}
 
 		return handleIPLookup(
-			event.request,
+			event,
 			url,
 			clientIP,
 			CLI_UA.test(userAgent),

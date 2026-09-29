@@ -3,8 +3,11 @@
 // curl the site and you get your IP back, like ifconfig.me, with optional
 // WHOIS / abuse intelligence and UA easter eggs.
 
+import { env } from '$env/dynamic/private';
 import { bool, DIVIDER, flag, head, row, SEPARATOR } from './cui.helpers';
 import { CLI_UA, NATIVE_UA } from './user-agent.helpers';
+
+import type { RequestEvent } from '@sveltejs/kit';
 
 const GEOIP_FIELDS = [
 	'status',
@@ -74,7 +77,7 @@ export function isIPLookup({ pathname, hostname }: URL, userAgent: string): bool
 }
 
 export async function handleIPLookup(
-	request: Request,
+	event: RequestEvent,
 	url: URL,
 	clientIP: string | null,
 	fromCLI = false,
@@ -87,7 +90,7 @@ export async function handleIPLookup(
 		'Access-Control-Allow-Methods': 'GET, OPTIONS'
 	});
 	const query = extractQuery(url);
-	const wantsJSON = /json/i.test(request.headers.get('Accept') ?? '');
+	const wantsJSON = /json/i.test(event.request.headers.get('Accept') ?? '');
 	const protocol = clientIP?.includes(':') ? 'IPv6' : 'IPv4';
 
 	const needsAbuse = query && /abuse/i.test(query);
@@ -95,7 +98,7 @@ export async function handleIPLookup(
 	const needsGeo = query && /geo/i.test(query);
 
 	const [abuseData, whoisRaw, geoData] = await Promise.all([
-		needsAbuse ? fetchAbuse(clientIP) : null,
+		needsAbuse ? fetchAbuse(clientIP, event) : null,
 		needsWhois ? fetchWhois(clientIP) : null,
 		needsGeo ? fetchGeo(clientIP) : null
 	]);
@@ -144,8 +147,9 @@ export async function handleIPLookup(
 // ─── Fetch Helpers ───────────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fetchAbuse(ip: string | null): Promise<any> {
-	return fetch(`https://api.ipapi.is/?q=${ip}`).then((r) => r.json());
+function fetchAbuse(ip: string | null, event: RequestEvent): Promise<any> {
+	const { apiKey } = getIpApiCredentials(event.platform) ?? {};
+	return fetch(`https://api.ipapi.is/?q=${ip}&key=${apiKey ?? ''}`).then((r) => r.json());
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -229,6 +233,17 @@ function formatWhois(entries: any[]): string {
 
 	lines.push(SEPARATOR);
 	return lines.join('\n');
+}
+
+function getIpApiCredentials(
+	platform: Readonly<App.Platform> | undefined
+): { apiKey: string; } | null {
+	const fromPlatform = platform?.env as Record<string, string | undefined> | undefined;
+	const apiKey = fromPlatform?.IPAPI_API_KEY ?? env.IPAPI_API_KEY;
+
+	if (!apiKey) return null;
+
+	return { apiKey };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
