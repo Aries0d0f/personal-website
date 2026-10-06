@@ -4,7 +4,7 @@
 // WHOIS / abuse intelligence and UA easter eggs.
 
 import { env } from '$env/dynamic/private';
-import { bool, DIVIDER, flag, head, row, SEPARATOR } from './cui.helpers';
+import { renderScreen, useCuiHelper } from './cui.helpers';
 import { CLI_UA, NATIVE_UA } from './user-agent.helpers';
 
 import type { RequestEvent } from '@sveltejs/kit';
@@ -91,6 +91,7 @@ export async function handleIPLookup(
 	});
 	const query = extractQuery(url);
 	const wantsJSON = /json/i.test(event.request.headers.get('Accept') ?? '');
+	const wantsPlainText = /text\/(plain|html)/i.test(event.request.headers.get('Accept') ?? '');
 	const protocol = clientIP?.includes(':') ? 'IPv6' : 'IPv4';
 
 	const needsAbuse = query && /abuse/i.test(query);
@@ -121,24 +122,32 @@ export async function handleIPLookup(
 		);
 	}
 
-	const lines = [
-		`IP:       ${clientIP}`,
-		`Protocol: ${protocol}`,
+	const lines: string[] = [];
+	const { title, row } = useCuiHelper(lines, { plainText: wantsPlainText });
+
+	title(`guest@${url.hostname}`);
+	row('IP', clientIP, 9);
+	row('Protocol', protocol, 9);
+
+	const reports = [
+		...lines,
 		abuseData || whoisData || geoData ? '\r' : null,
 		[
-			abuseData ? formatAbuse(abuseData) : null,
-			whoisData ? formatWhois(whoisRaw) : null,
-			geoData ? formatGeo(geoData) : null,
-			easterEggMessage
+			abuseData ? formatAbuse(abuseData, wantsPlainText) : null,
+			whoisData ? formatWhois(whoisRaw, wantsPlainText) : null,
+			geoData ? formatGeo(geoData, wantsPlainText) : null,
+			easterEggMessage ? formatEasterEgg(easterEggMessage, wantsPlainText) : null
 		]
 			.filter(Boolean)
 			.join('\n\n'),
 		'\n'
 	].filter(Boolean);
 
+	const textOutput = renderScreen(reports.join('\n'), { plainText: wantsPlainText });
+
 	headers.set('Content-Type', 'text/plain');
 
-	return new Response(!fromCLI || query || easterEggMessage ? lines.join('\n') : clientIP, {
+	return new Response(!fromCLI || query || easterEggMessage ? textOutput : clientIP, {
 		status: 200,
 		headers
 	});
@@ -161,6 +170,17 @@ function fetchGeo(ip: string | null): Promise<GeoData> {
 	return fetch(`http://ip-api.com/json/${ip}?fields=${GEOIP_FIELDS.join(',')}`).then((r) =>
 		r.json()
 	);
+}
+
+function getIpApiCredentials(
+	platform: Readonly<App.Platform> | undefined
+): { apiKey: string } | null {
+	const fromPlatform = platform?.env as Record<string, string | undefined> | undefined;
+	const apiKey = fromPlatform?.IPAPI_API_KEY ?? env.IPAPI_API_KEY;
+
+	if (!apiKey) return null;
+
+	return { apiKey };
 }
 
 // ─── Query Extraction ────────────────────────────────────────────────────────
@@ -208,46 +228,43 @@ function parseWhois(entries: any[]): Record<string, any>[] {
 // ─── Formatters ──────────────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatWhois(entries: any[]): string {
+function formatWhois(entries: any[], wantsPlainText = false): string {
 	const ATTR_PAD = 20;
-	const lines = [SEPARATOR, '  WHOIS Report', SEPARATOR];
+
+	const lines: string[] = [];
+
+	const { banner, head, attr, text, footer } = useCuiHelper(lines, {
+		plainText: wantsPlainText
+	});
+
+	banner('WHOIS Report');
 
 	for (const entry of entries) {
 		if (entry.type === 'comments') {
-			lines.push(...entry.comments);
+			text(...entry.comments);
 			continue;
 		}
 
 		if (entry.type === 'object') {
-			head(lines, `[${entry.objectType}]  ${entry.primaryKey}`);
+			head(`[${entry.objectType}]  ${entry.primaryKey}`);
 
-			for (const attr of entry.attributes) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const vals = attr.values ?? attr.links?.map((l: any) => l.text) ?? [];
+			for (const attribute of entry.attributes) {
+				const vals =
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					attribute.values ?? attribute.links?.map((l: any) => l.text) ?? [];
 				for (const val of vals) {
-					lines.push(`${attr.name.padEnd(ATTR_PAD)} ${val}`);
+					attr(attribute.name, val, ATTR_PAD);
 				}
 			}
 		}
 	}
 
-	lines.push(SEPARATOR);
+	footer();
 	return lines.join('\n');
 }
 
-function getIpApiCredentials(
-	platform: Readonly<App.Platform> | undefined
-): { apiKey: string } | null {
-	const fromPlatform = platform?.env as Record<string, string | undefined> | undefined;
-	const apiKey = fromPlatform?.IPAPI_API_KEY ?? env.IPAPI_API_KEY;
-
-	if (!apiKey) return null;
-
-	return { apiKey };
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatAbuse(data: any): string | null {
+function formatAbuse(data: any, wantsPlainText = false): string | null {
 	if (!data) return null;
 
 	const {
@@ -271,114 +288,127 @@ function formatAbuse(data: any): string | null {
 
 	const lines: string[] = [];
 
-	lines.push(SEPARATOR, '  IP Intelligence Report', SEPARATOR);
+	const { banner, head, row, bool, flag, footer } = useCuiHelper(lines, {
+		plainText: wantsPlainText
+	});
 
-	head(lines, 'Identity');
-	row(lines, 'IP Address', ip);
-	row(lines, 'RIR', rir);
-	row(lines, 'Bogon', flag(is_bogon));
-	row(lines, 'Mobile', flag(is_mobile));
-	row(lines, 'Satellite', flag(is_satellite));
-	row(lines, 'Crawler', flag(is_crawler));
-	row(lines, 'Datacenter', flag(is_datacenter));
-	row(lines, 'Tor Exit Node', flag(is_tor));
-	row(lines, 'Proxy', flag(is_proxy));
-	row(lines, 'VPN', flag(is_vpn));
-	row(lines, 'Known Abuser', flag(is_abuser));
+	banner('IP Intelligence Report');
+
+	head('Identity');
+	row('IP Address', ip);
+	row('RIR', rir);
+	row('Bogon', flag(is_bogon));
+	row('Mobile', flag(is_mobile));
+	row('Satellite', flag(is_satellite));
+	row('Crawler', flag(is_crawler));
+	row('Datacenter', flag(is_datacenter));
+	row('Tor Exit Node', flag(is_tor));
+	row('Proxy', flag(is_proxy));
+	row('VPN', flag(is_vpn));
+	row('Known Abuser', flag(is_abuser));
 
 	if (company) {
-		head(lines, 'Company');
-		row(lines, 'Name', company.name);
-		row(lines, 'Abuse Score', company.abuser_score);
-		row(lines, 'Domain', company.domain);
-		row(lines, 'Type', company.type);
-		row(lines, 'Network', company.network);
-		row(lines, 'WHOIS', company.whois);
+		head('Company');
+		row('Name', company.name);
+		row('Abuse Score', company.abuser_score);
+		row('Domain', company.domain);
+		row('Type', company.type);
+		row('Network', company.network);
+		row('WHOIS', company.whois);
 	}
 
 	if (abuse) {
-		head(lines, 'Abuse Contact');
-		row(lines, 'Name', abuse.name);
-		row(lines, 'Address', abuse.address);
-		row(lines, 'Email', abuse.email);
-		row(lines, 'Phone', abuse.phone);
+		head('Abuse Contact');
+		row('Name', abuse.name);
+		row('Address', abuse.address);
+		row('Email', abuse.email);
+		row('Phone', abuse.phone);
 	}
 
 	if (asn) {
-		head(lines, 'ASN');
-		row(lines, 'ASN', `AS${asn.asn}`);
-		row(lines, 'Abuse Score', asn.abuser_score);
-		row(lines, 'Route', asn.route);
-		row(lines, 'Description', asn.descr);
-		row(lines, 'Country', asn.country?.toUpperCase());
-		row(lines, 'Active', bool(asn.active));
-		row(lines, 'Organization', asn.org);
-		row(lines, 'Domain', asn.domain);
-		row(lines, 'Abuse Email', asn.abuse);
-		row(lines, 'Type', asn.type);
-		row(lines, 'Updated', asn.updated);
-		row(lines, 'RIR', asn.rir);
-		row(lines, 'WHOIS', asn.whois);
+		head('ASN');
+		row('ASN', `AS${asn.asn}`);
+		row('Abuse Score', asn.abuser_score);
+		row('Route', asn.route);
+		row('Description', asn.descr);
+		row('Country', asn.country?.toUpperCase());
+		row('Active', bool(asn.active));
+		row('Organization', asn.org);
+		row('Domain', asn.domain);
+		row('Abuse Email', asn.abuse);
+		row('Type', asn.type);
+		row('Updated', asn.updated);
+		row('RIR', asn.rir);
+		row('WHOIS', asn.whois);
 	}
 
 	if (location) {
-		head(lines, 'Location');
-		row(lines, 'Country', `${location.country} (${location.country_code})`);
-		row(lines, 'State', location.state);
-		row(lines, 'City', location.city);
-		row(lines, 'Continent', location.continent);
-		row(lines, 'Coordinates', `${location.latitude}, ${location.longitude}`);
-		row(lines, 'ZIP', location.zip);
-		row(lines, 'Timezone', location.timezone);
-		row(lines, 'UTC Offset', location.utcoffset);
-		row(lines, 'DST', bool(location.is_dst));
-		row(lines, 'Local Time', location.local_time);
-		row(lines, 'Calling Code', `+${location.calling_code}`);
-		row(lines, 'Currency', location.currency_code);
-		row(lines, 'EU Member', bool(location.is_eu_member));
-		row(lines, 'Accuracy', location.accuracy);
+		head('Location');
+		row('Country', `${location.country} (${location.country_code})`);
+		row('State', location.state);
+		row('City', location.city);
+		row('Continent', location.continent);
+		row('Coordinates', `${location.latitude}, ${location.longitude}`);
+		row('ZIP', location.zip);
+		row('Timezone', location.timezone);
+		row('UTC Offset', location.utcoffset);
+		row('DST', bool(location.is_dst));
+		row('Local Time', location.local_time);
+		row('Calling Code', `+${location.calling_code}`);
+		row('Currency', location.currency_code);
+		row('EU Member', bool(location.is_eu_member));
+		row('Accuracy', location.accuracy);
 	}
 
-	lines.push(
-		DIVIDER,
-		elapsed_ms == null ? '  Query completed' : `  Query completed in ${elapsed_ms} ms`,
-		SEPARATOR
-	);
+	footer(elapsed_ms == null ? 'Query completed' : `Query completed in ${elapsed_ms} ms`);
 
 	return lines.join('\n');
 }
 
-function formatGeo(data: GeoData): string | null {
+function formatGeo(data: GeoData, wantsPlainText = false): string | null {
 	if (!data) return null;
 
 	const lines: string[] = [];
 
-	lines.push(SEPARATOR, '  GeoIP Report', SEPARATOR);
+	const { banner, head, row, bool, footer } = useCuiHelper(lines, {
+		plainText: wantsPlainText
+	});
 
-	head(lines, 'Location');
-	row(lines, 'Status', data.status);
-	row(lines, 'Message', data.message);
-	row(lines, 'Continent', `${data.continent} (${data.continentCode})`);
-	row(lines, 'Country', `${data.country} (${data.countryCode})`);
-	row(lines, 'Region', `${data.region} (${data.regionName})`);
-	row(lines, 'City', data.city);
-	row(lines, 'District', data.district);
-	row(lines, 'ZIP', data.zip);
-	row(lines, 'Coordinates', `${data.lat}, ${data.lon}`);
-	row(lines, 'Timezone', data.timezone);
-	row(lines, 'UTC Offset', data.offset);
+	banner('GeoIP Report');
 
-	head(lines, 'Network');
-	row(lines, 'ISP', data.isp);
-	row(lines, 'Organization', data.org);
-	row(lines, 'AS', data.as);
-	row(lines, 'AS Name', data.asname);
-	row(lines, 'Mobile', bool(data.mobile));
-	row(lines, 'Proxy', bool(data.proxy));
-	row(lines, 'Hosting', bool(data.hosting));
-	row(lines, 'Query IP', data.query);
+	head('Location');
+	row('Status', data.status);
+	row('Message', data.message);
+	row('Continent', `${data.continent} (${data.continentCode})`);
+	row('Country', `${data.country} (${data.countryCode})`);
+	row('Region', `${data.region} (${data.regionName})`);
+	row('City', data.city);
+	row('District', data.district);
+	row('ZIP', data.zip);
+	row('Coordinates', `${data.lat}, ${data.lon}`);
+	row('Timezone', data.timezone);
+	row('UTC Offset', data.offset);
 
-	lines.push(DIVIDER, `  Query completed`, SEPARATOR);
+	head('Network');
+	row('ISP', data.isp);
+	row('Organization', data.org);
+	row('AS', data.as);
+	row('AS Name', data.asname);
+	row('Mobile', bool(data.mobile));
+	row('Proxy', bool(data.proxy));
+	row('Hosting', bool(data.hosting));
+	row('Query IP', data.query);
+
+	footer('Query completed');
+
+	return lines.join('\n');
+}
+
+function formatEasterEgg(message: string, wantsPlainText = false): string {
+	const lines: string[] = [];
+	const { text } = useCuiHelper(lines, { plainText: wantsPlainText });
+
+	text(...message.split('\n'));
 
 	return lines.join('\n');
 }
