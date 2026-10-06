@@ -63,11 +63,19 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<meta http-equiv="x-ua-compatible" content="ie=edge" />
 	<meta property="og:url" content="https://aries0d0f.me" />
-	<meta property="og:image" content="https://aries0d0f.me/avatar.gif" />
+	<meta property="og:image" content="https://aries0d0f.me/favicon.png" />
 	<meta property="og:description" content={m.og_description({ name: m.noun_general_name() })} />
 	<meta name="description" content={m.og_description({ name: m.noun_general_name() })} />
 	<title>{m.noun_general_name()}</title>
-	<link rel="icon" type="image/gif" href="/avatar.gif" />
+	<link rel="apple-touch-icon" sizes="48x48" href="/favicon-48x48.png" />
+	<link rel="apple-touch-icon" sizes="72x72" href="/favicon-72x72.png" />
+	<link rel="apple-touch-icon" sizes="96x96" href="/favicon-96x96.png" />
+	<link rel="apple-touch-icon" sizes="256x256" href="/favicon-256x256.png" />
+	<link rel="apple-touch-icon" sizes="384x384" href="/favicon-384x384.png" />
+	<link rel="apple-touch-icon" sizes="512x512" href="/favicon-512x512.png" />
+	<link rel="manifest" href="/manifest.webmanifest" crossorigin="anonymous" />
+	<link rel="icon" type="image/png" href="/favicon-32x32.png" />
+	<link rel="icon" type="image/gif" href="/favicon.gif" />
 </svelte:head>
 
 <div class="viewport-container" bind:this={screenEl} style="--accent-fill: {accentFill}">
