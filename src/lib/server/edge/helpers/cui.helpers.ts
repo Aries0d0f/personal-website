@@ -172,6 +172,14 @@ export const useCuiHelper = (lines: string[] = [], options?: Options) => {
 		return v ? ANSI.green.bold('✔ YES') : ANSI.red.bold('✘ NO');
 	};
 
+	const custom = (s: string, fn: (s: string, ANSI: Ansis) => string): string => {
+		if (plainText) {
+			return s;
+		} else {
+			return fn(s, ANSI);
+		}
+	};
+
 	return {
 		SEPARATOR,
 		DIVIDER,
@@ -183,7 +191,8 @@ export const useCuiHelper = (lines: string[] = [], options?: Options) => {
 		text,
 		footer,
 		bool,
-		flag
+		flag,
+		custom
 	};
 };
 
