@@ -288,7 +288,7 @@ function formatAbuse(data: any, wantsPlainText = false): string | null {
 
 	const lines: string[] = [];
 
-	const { banner, head, row, bool, flag, footer } = useCuiHelper(lines, {
+	const { banner, head, row, bool, flag, footer, custom } = useCuiHelper(lines, {
 		plainText: wantsPlainText
 	});
 
@@ -307,10 +307,19 @@ function formatAbuse(data: any, wantsPlainText = false): string | null {
 	row('VPN', flag(is_vpn));
 	row('Known Abuser', flag(is_abuser));
 
+	const abuseScoreFormat = (score: string): string =>
+		custom(score, (s, ANSI) => {
+			return /high/i.test(s)
+				? ANSI.red.bold(s)
+				: /medium/i.test(s)
+					? ANSI.yellow.bold(s)
+					: ANSI.green.bold(s);
+		});
+
 	if (company) {
 		head('Company');
 		row('Name', company.name);
-		row('Abuse Score', company.abuser_score);
+		row('Abuse Score', abuseScoreFormat(company.abuser_score));
 		row('Domain', company.domain);
 		row('Type', company.type);
 		row('Network', company.network);
@@ -328,7 +337,7 @@ function formatAbuse(data: any, wantsPlainText = false): string | null {
 	if (asn) {
 		head('ASN');
 		row('ASN', `AS${asn.asn}`);
-		row('Abuse Score', asn.abuser_score);
+		row('Abuse Score', abuseScoreFormat(asn.abuser_score));
 		row('Route', asn.route);
 		row('Description', asn.descr);
 		row('Country', asn.country?.toUpperCase());
@@ -370,14 +379,19 @@ function formatGeo(data: GeoData, wantsPlainText = false): string | null {
 
 	const lines: string[] = [];
 
-	const { banner, head, row, bool, footer } = useCuiHelper(lines, {
+	const { banner, head, row, bool, footer, custom } = useCuiHelper(lines, {
 		plainText: wantsPlainText
 	});
 
 	banner('GeoIP Report');
 
 	head('Location');
-	row('Status', data.status);
+	row(
+		'Status',
+		custom(data.status.toUpperCase(), (s, ANSI) =>
+			s === 'SUCCESS' ? ANSI.green.bold(s) : ANSI.red.bold(s)
+		)
+	);
 	row('Message', data.message);
 	row('Continent', `${data.continent} (${data.continentCode})`);
 	row('Country', `${data.country} (${data.countryCode})`);
