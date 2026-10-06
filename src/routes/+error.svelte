@@ -11,20 +11,59 @@
 	const { isGameMode, isCaught, backButtonClickedTimes, clearStage, markClicked } = useGameStore();
 	const { interference } = useCRT();
 
+	const errorTitleMap: Record<number, () => string> = {
+		400: m.pages_error_400_title,
+		401: m.pages_error_401_title,
+		402: m.pages_error_402_title,
+		403: m.pages_error_403_title,
+		404: m.pages_error_404_title,
+		405: m.pages_error_405_title,
+		406: m.pages_error_406_title,
+		407: m.pages_error_407_title,
+		408: m.pages_error_408_title,
+		409: m.pages_error_409_title,
+		410: m.pages_error_410_title,
+		411: m.pages_error_411_title,
+		412: m.pages_error_412_title,
+		413: m.pages_error_413_title,
+		414: m.pages_error_414_title,
+		415: m.pages_error_415_title,
+		416: m.pages_error_416_title,
+		417: m.pages_error_417_title,
+		418: m.pages_error_418_title,
+		419: m.pages_error_419_title,
+		420: m.pages_error_420_title,
+		421: m.pages_error_421_title,
+		422: m.pages_error_422_title,
+		423: m.pages_error_423_title,
+		424: m.pages_error_424_title,
+		425: m.pages_error_425_title,
+		426: m.pages_error_426_title,
+		428: m.pages_error_428_title,
+		429: m.pages_error_429_title,
+		430: m.pages_error_430_title,
+		431: m.pages_error_431_title,
+		451: m.pages_error_451_title
+	};
+
 	const currentLang = $derived(getLocale());
 	const headTitle = $derived(
 		$isGameMode ? m.game_mode_title() : [page.status, page.error?.message].filter(Boolean).join(' ')
 	);
 	const title = $derived(
-		page.status === 404
-			? m.pages_error_404_title()
+		errorTitleMap[page.status]
+			? errorTitleMap[page.status]()
 			: page.status >= 500
 				? m.pages_error_5xx_title()
 				: m.pages_error_general_title()
 	);
 	const description = $derived.by(() => {
 		const messages = (
-			page.status === 404 ? m.pages_error_404_description() : m.pages_error_general_description()
+			page.status === 404
+				? m.pages_error_404_description()
+				: page.status >= 400 && page.status < 500
+					? m.pages_error_general_title()
+					: m.pages_error_general_description()
 		)
 			.split('|')
 			.map((s) => s.trim());
@@ -38,12 +77,14 @@
 	const isFirstStageClear = $derived(gameStatus === 200);
 
 	const {
+		gameTitle,
 		gameDescription,
 		gameBackButton,
 		firstStageClearTitle,
 		firstStageClearDescription,
 		immediateFireMessage
 	} = useGameScript({
+		gameStatus: () => gameStatus,
 		isFirstStageClear: () => isFirstStageClear,
 		onFirstStageClear: nextGameStage
 	});
@@ -122,7 +163,11 @@
 
 <div class="error-container">
 	<div class="error-wrapper" data-game-mode={$isGameMode}>
-		<img src="/avatar.gif" alt="Avatar" />
+		{#if $isGameMode && errorTitleMap[gameStatus] && gameStatus !== 404}
+			<img src="/favicon.gif" class="no-clip status-{gameStatus}" alt="Avatar" />
+		{:else}
+			<img src="/avatar.gif" alt="Avatar" />
+		{/if}
 		<article>
 			{#if isFirstStageClear}
 				<h1>200</h1>
@@ -134,7 +179,13 @@
 				{:else}
 					<h1>{page.status}</h1>
 				{/if}
-				<h2>{title}</h2>
+				<h2>
+					{#if $isGameMode}
+						{gameTitle.current}
+					{:else}
+						{title}
+					{/if}
+				</h2>
 				{#if $isGameMode}
 					<p>{gameDescription.current}</p>
 				{:else}
@@ -311,7 +362,13 @@
 				border-radius: 100rem;
 
 				> img {
-					border-radius: 100rem;
+					&.status-410 {
+						opacity: 0.05;
+					}
+
+					&:not(.no-clip) {
+						border-radius: 100rem;
+					}
 				}
 
 				> article {

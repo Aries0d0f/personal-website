@@ -8,6 +8,7 @@ import { m } from '$lib/paraglide/messages.js';
 import { useGameStore } from '$lib/store/game';
 
 interface Options {
+	gameStatus: () => number;
 	/** Whether the player has cleared stage 1 (i.e. forced the status code to 200). */
 	isFirstStageClear?: () => boolean;
 	/** Fires once the stage clear text has fully melted down, to hand over to the next stage. */
@@ -20,8 +21,135 @@ interface Options {
  */
 type ScriptLine = () => string;
 
-export const useGameScript = (options: Options = {}) => {
-	const { isFirstStageClear = () => false, onFirstStageClear } = options;
+const easterEggStrMap: Record<number, { title: ScriptLine; description: ScriptLine }> = {
+	400: {
+		title: m.pages_error_400_title,
+		description: m.game_mode_description_script_easter_egg_400
+	},
+	401: {
+		title: m.pages_error_401_title,
+		description: m.game_mode_description_script_easter_egg_401
+	},
+	402: {
+		title: m.pages_error_402_title,
+		description: m.game_mode_description_script_easter_egg_402
+	},
+	403: {
+		title: m.pages_error_403_title,
+		description: m.game_mode_description_script_easter_egg_403
+	},
+	405: {
+		title: m.pages_error_405_title,
+		description: m.game_mode_description_script_easter_egg_405
+	},
+	406: {
+		title: m.pages_error_406_title,
+		description: m.game_mode_description_script_easter_egg_406
+	},
+	407: {
+		title: m.pages_error_407_title,
+		description: m.game_mode_description_script_easter_egg_407
+	},
+	408: {
+		title: m.pages_error_408_title,
+		description: m.game_mode_description_script_easter_egg_408
+	},
+	409: {
+		title: m.pages_error_409_title,
+		description: m.game_mode_description_script_easter_egg_409
+	},
+	410: {
+		title: m.pages_error_410_title,
+		description: m.game_mode_description_script_easter_egg_410
+	},
+	411: {
+		title: m.pages_error_411_title,
+		description: m.game_mode_description_script_easter_egg_411
+	},
+	412: {
+		title: m.pages_error_412_title,
+		description: m.game_mode_description_script_easter_egg_412
+	},
+	413: {
+		title: m.pages_error_413_title,
+		description: m.game_mode_description_script_easter_egg_413
+	},
+	414: {
+		title: m.pages_error_414_title,
+		description: m.game_mode_description_script_easter_egg_414
+	},
+	415: {
+		title: m.pages_error_415_title,
+		description: m.game_mode_description_script_easter_egg_415
+	},
+	416: {
+		title: m.pages_error_416_title,
+		description: m.game_mode_description_script_easter_egg_416
+	},
+	417: {
+		title: m.pages_error_417_title,
+		description: m.game_mode_description_script_easter_egg_417
+	},
+	418: {
+		title: m.pages_error_418_title,
+		description: m.game_mode_description_script_easter_egg_418
+	},
+	419: {
+		title: m.pages_error_419_title,
+		description: m.game_mode_description_script_easter_egg_419
+	},
+	420: {
+		title: m.pages_error_420_title,
+		description: m.game_mode_description_script_easter_egg_420
+	},
+	421: {
+		title: m.pages_error_421_title,
+		description: m.game_mode_description_script_easter_egg_421
+	},
+	422: {
+		title: m.pages_error_422_title,
+		description: m.game_mode_description_script_easter_egg_422
+	},
+	423: {
+		title: m.pages_error_423_title,
+		description: m.game_mode_description_script_easter_egg_423
+	},
+	424: {
+		title: m.pages_error_424_title,
+		description: m.game_mode_description_script_easter_egg_424
+	},
+	425: {
+		title: m.pages_error_425_title,
+		description: m.game_mode_description_script_easter_egg_425
+	},
+	426: {
+		title: m.pages_error_426_title,
+		description: m.game_mode_description_script_easter_egg_426
+	},
+	428: {
+		title: m.pages_error_428_title,
+		description: m.game_mode_description_script_easter_egg_428
+	},
+	429: {
+		title: m.pages_error_429_title,
+		description: m.game_mode_description_script_easter_egg_429
+	},
+	430: {
+		title: m.pages_error_430_title,
+		description: m.game_mode_description_script_easter_egg_430
+	},
+	431: {
+		title: m.pages_error_431_title,
+		description: m.game_mode_description_script_easter_egg_431
+	},
+	451: {
+		title: m.pages_error_451_title,
+		description: m.game_mode_description_script_easter_egg_451
+	}
+};
+
+export const useGameScript = (options: Options) => {
+	const { gameStatus, isFirstStageClear = () => false, onFirstStageClear } = options;
 
 	const {
 		lastMessageUpdatedAt,
@@ -147,8 +275,17 @@ export const useGameScript = (options: Options = {}) => {
 	const descriptionLine = fromStore(gameDescriptionMessageWithFallbackHint);
 	const backButtonLine = fromStore(gameBackButtonText);
 
-	const descriptionText = $derived(descriptionLine.current());
+	const descriptionText = $derived(
+		easterEggStrMap[gameStatus()]?.description() ||
+			(gameStatus() >= 500 && gameStatus() < 600
+				? m.game_mode_description_script_easter_egg_5xx()
+				: '') ||
+			descriptionLine.current()
+	);
 	const backButtonText = $derived(backButtonLine.current());
+
+	const titleText = $derived(easterEggStrMap[gameStatus()]?.title() || m.pages_error_404_title());
+	const gameTitle = useTypewriter(() => titleText);
 
 	const gameDescription = useTypewriter(() => descriptionText);
 	const gameBackButton = useTypewriter(() => backButtonText, {
@@ -236,6 +373,7 @@ export const useGameScript = (options: Options = {}) => {
 
 	return {
 		immediateFireMessage,
+		gameTitle,
 		gameDescription,
 		gameBackButton,
 		firstStageClearTitle,
