@@ -309,11 +309,21 @@ function formatAbuse(data: any, wantsPlainText = false): string | null {
 
 	const abuseScoreFormat = (score: string): string =>
 		custom(score, (s, ANSI) => {
-			return /high/i.test(s)
-				? ANSI.red.bold(s)
-				: /medium/i.test(s)
-					? ANSI.yellow.bold(s)
-					: ANSI.green.bold(s);
+			switch (s.match(/\(([\w\s]+)\)/)?.[1].toLowerCase()) {
+				case 'very high':
+					return ANSI.red.dim.bold(s);
+				case 'high':
+					return ANSI.red.bold(s);
+				case 'medium':
+				case 'elevated':
+					return ANSI.yellow.bold(s);
+				case 'low':
+					return ANSI.green.bold(s);
+				case 'very low':
+					return ANSI.cyan.bold(s);
+				default:
+					return ANSI.white.bold(s);
+			}
 		});
 
 	if (company) {
@@ -366,7 +376,22 @@ function formatAbuse(data: any, wantsPlainText = false): string | null {
 		row('Calling Code', `+${location.calling_code}`);
 		row('Currency', location.currency_code);
 		row('EU Member', bool(location.is_eu_member));
-		row('Accuracy', location.accuracy);
+		row('Accuracy', custom(location.accuracy, (s, ANSI) => {
+			switch (s) {
+				case 'VERY_HIGH':
+					return ANSI.cyan.bold(s);
+				case 'HIGH':
+					return ANSI.green.bold(s);
+				case 'MEDIUM':
+					return ANSI.yellow.bold(s);
+				case 'LOW':
+					return ANSI.red.bold(s);
+				case 'VERY_LOW':
+					return ANSI.red.dim.bold(s);
+				default:
+					return s;
+			}
+		}));
 	}
 
 	footer(elapsed_ms == null ? 'Query completed' : `Query completed in ${elapsed_ms} ms`);
