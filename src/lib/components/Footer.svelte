@@ -108,7 +108,7 @@
 			</li>
 		{/if}
 	</ul>
-	<p>
+	<div>
 		{#if sideMode}
 			<LanguageSwitcher />
 		{/if}
@@ -128,7 +128,7 @@
 				<span data-bobble-msg={m.hover_bobble_home_license()}>CC BY-SA 4.0</span>
 			</a>
 		{/if}
-	</p>
+	</div>
 </footer>
 
 <style lang="scss">
@@ -144,7 +144,7 @@
 			padding-bottom: 2.5rem;
 		}
 
-		p {
+		> div {
 			display: flex;
 			gap: 0.25rem;
 			place-items: center;

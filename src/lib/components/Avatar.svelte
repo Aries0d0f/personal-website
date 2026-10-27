@@ -201,6 +201,30 @@
 				},
 				'<'
 			);
+
+		// Stop the SMIL loader and lift it to where the drop begins.
+		const loader = document.querySelector<SVGCircleElement>('#intro-loading-decorate');
+		if (loader) {
+			const from = {
+				cy: loader.cy.animVal.value,
+				r: loader.r.animVal.value,
+				opacity: Number(getComputedStyle(loader).opacity)
+			};
+
+			loader.querySelectorAll('animate').forEach((animation) => animation.remove());
+			// Freeze the CSS reveal as is, so a loader still hidden stays hidden.
+			gsap.set('.intro-loading', {
+				animation: 'none',
+				opacity: getComputedStyle(loader.parentElement!).opacity
+			});
+
+			tl.fromTo(
+				loader,
+				from,
+				{ cy: -10, r: 0, opacity: 0, duration: 0.6, ease: 'power2.out', lazy: false },
+				0
+			);
+		}
 	}
 
 	function switchGameModeAvatar(skipTransition = false, creepyMode = false) {
@@ -349,6 +373,37 @@
 				fill="var(--accent-fill)"
 				opacity="0"
 			></circle>
+			<g class="intro-loading">
+				<circle id="intro-loading-decorate" cx="211.088" cy="320" r="10" fill="var(--accent-fill)">
+					<animate
+						attributeName="cy"
+						values="320;160;375;320"
+						keyTimes="0;0.5;0.95;1"
+						calcMode="spline"
+						keySplines="0.165 0.84 0.44 1;0.895 0.03 0.685 0.22;0.165 0.84 0.44 1"
+						dur="1s"
+						repeatCount="indefinite"
+					/>
+					<animate
+						attributeName="opacity"
+						values="1;0.6;1;0.6;1"
+						keyTimes="0;0.25;0.5;0.75;1"
+						calcMode="spline"
+						keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"
+						dur="1s"
+						repeatCount="indefinite"
+					/>
+					<animate
+						attributeName="r"
+						values="10;8;12;10;5;10"
+						keyTimes="0;0.2;0.5;0.75;0.9;1"
+						calcMode="spline"
+						keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"
+						dur="1s"
+						repeatCount="indefinite"
+					/>
+				</circle>
+			</g>
 			<g id="interactive-point-map">
 				<circle
 					cx="240"
@@ -722,5 +777,17 @@
 
 	#mask-bottom-hemisphere-group {
 		opacity: 0;
+	}
+
+	// Hidden for the first second, so a fast network never flashes the loader.
+	.intro-loading {
+		opacity: 0;
+		animation: intro-loading-reveal 0s 1s forwards;
+	}
+
+	@keyframes intro-loading-reveal {
+		to {
+			opacity: 1;
+		}
 	}
 </style>
