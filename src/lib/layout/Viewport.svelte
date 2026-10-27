@@ -4,7 +4,7 @@
 	import { onMount, tick } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
 
-	import { afterNavigate, goto, preloadCode } from '$app/navigation';
+	import { afterNavigate, goto, preloadCode, preloadData } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 
@@ -147,6 +147,9 @@
 
 		observer?.disable();
 
+		const href = resolve(pagePath(key, getLocale()));
+		void preloadData(href);
+
 		const isSafari = /^((?!chrome|chromium|android|crios|fxios|edgios).)*safari/i.test(
 			navigator.userAgent
 		);
@@ -156,7 +159,7 @@
 			y: direction * -60,
 			duration: isSafari ? 0.33 : 0.5,
 			ease: isSafari ? 'power3.in' : 'power2.in',
-			onComplete: () => afterTouchRelease(() => goto(resolve(pagePath(key, getLocale()))))
+			onComplete: () => afterTouchRelease(() => goto(href))
 		});
 	}
 
