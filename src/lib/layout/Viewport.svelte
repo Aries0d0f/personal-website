@@ -284,7 +284,9 @@
 	const HIDDEN_OPACITY = 0.0001;
 
 	function startAnimation() {
-		const tl = gsap.timeline();
+		transitioning = true;
+
+		const tl = gsap.timeline({ onComplete: () => (transitioning = false) });
 		tl.set('.intro-content', {
 			opacity: HIDDEN_OPACITY,
 			translateX: -200
