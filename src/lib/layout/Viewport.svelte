@@ -46,6 +46,7 @@
 	let mounted = $state(false);
 	// Hands the CSS first frame over to GSAP.
 	let introPending = $state(true);
+	let transitioning = $state(false);
 	let sequence: string[] = $state([]);
 	let konamiTimer = $state<ReturnType<typeof setTimeout>>();
 
@@ -107,8 +108,13 @@
 		}
 	}
 
+	let pinching = false;
+	const startPinch = () => (pinching = true);
+	const endPinch = () => (pinching = false);
+
 	function performPageSwitch(direction: 1 | -1, key: PageKey) {
 		lastDirection = direction;
+		transitioning = true;
 
 		observer?.disable();
 
@@ -229,6 +235,8 @@
 	}
 
 	function animateIn() {
+		transitioning = true;
+
 		gsap.fromTo(
 			'.intro-content',
 			{ opacity: 0, y: lastDirection * 60 },
@@ -238,7 +246,10 @@
 				duration: 0.5,
 				ease: 'power3.out',
 				clearProps: 'transform',
-				onComplete: () => observer?.enable()
+				onComplete: () => {
+					transitioning = false;
+					observer?.enable();
+				}
 			}
 		);
 	}
@@ -499,6 +510,8 @@
 				wheelSpeed: -1,
 				tolerance: $isGameMode ? 100 : 10,
 				preventDefault: true,
+				// Pinch-zoom: ctrl+wheel on touchpads, gesture events on Safari.
+				ignoreCheck: (event) => pinching || (event as WheelEvent).ctrlKey,
 				onUp: () => switchPage(1),
 				onDown: () => switchPage(-1)
 			});
@@ -559,6 +572,8 @@
 		mounted = true;
 
 		document.addEventListener('toggle', syncDialogState, true);
+		window.addEventListener('gesturestart', startPinch);
+		window.addEventListener('gestureend', endPinch);
 
 		if (showCombined) {
 			if (pageKeyFromPath(page.url.pathname) === 'home') {
@@ -575,6 +590,8 @@
 
 		return () => {
 			document.removeEventListener('toggle', syncDialogState, true);
+			window.removeEventListener('gesturestart', startPinch);
+			window.removeEventListener('gestureend', endPinch);
 			observer?.kill();
 		};
 	});
@@ -600,7 +617,7 @@
 >
 	<main class="intro-container" class:combined={showCombined}>
 		<div class="intro-avatar">
-			<Avatar {width} {height} {showCombined} />
+			<Avatar {width} {height} {showCombined} {transitioning} />
 		</div>
 		<div class="intro-content" style="opacity: {HIDDEN_OPACITY}">
 			{#if showCombined}

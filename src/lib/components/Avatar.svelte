@@ -21,15 +21,19 @@
 	let {
 		width,
 		height,
-		showCombined
+		showCombined,
+		transitioning = false
 	}: {
 		width: number;
 		height: number;
 		showCombined: boolean;
+		transitioning?: boolean;
 	} = $props();
 
 	const { isGameMode, abnormality } = useGameStore();
-	const interactiveBobble = useInteractiveBobble(() => $isGameMode || showCombined);
+	const interactiveBobble = useInteractiveBobble(
+		() => $isGameMode || showCombined || transitioning
+	);
 	const bobbleIcon = $derived(interactiveBobble.current?.icon);
 	const bobbleLink = $derived(interactiveBobble.current?.link);
 	const bobbleText = useTypewriter(() => interactiveBobble.current?.message || '', {
