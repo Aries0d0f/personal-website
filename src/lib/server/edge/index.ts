@@ -6,7 +6,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { isIPLookup, isSocialRedirect } from './helpers/matchers.helpers';
 import { checkEasterEggs, CLI_UA } from './helpers/user-agent.helpers';
 
-// Handlers are loaded on demand: page views skip ansis/ua-parser-js on cold start.
+// Handlers load on demand.
 
 /** Returns a Response for social-redirect/IP-lookup requests, else `null`. */
 export async function handleEdge(event: RequestEvent): Promise<Response | null> {

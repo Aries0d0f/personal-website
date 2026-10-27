@@ -1,5 +1,4 @@
 // ─── Request Matchers ────────────────────────────────────────────────────────
-// Kept apart from the handlers so page requests never load their dependencies.
 
 import { CLI_UA, NATIVE_UA } from './user-agent.helpers';
 

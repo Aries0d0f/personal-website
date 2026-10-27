@@ -9,7 +9,7 @@ import {
 } from '#lib/game/state.js';
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
 
-// Loaded on demand: most visitors carry no token, so cold starts skip semver.
+// Loaded only when a token exists.
 const loadGameToken = () => import('#lib/server/game-token.js');
 
 // httpOnly so page scripts can't read or swap the token.

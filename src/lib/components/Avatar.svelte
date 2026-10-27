@@ -45,7 +45,7 @@
 
 	const BASE_IMG_WIDTH = 423;
 
-	// Width is 0 before it's measured (SSR): use full size.
+	// Width is 0 during SSR.
 	const avatarImgWidth = $derived(width > 0 && width < BASE_IMG_WIDTH ? width : BASE_IMG_WIDTH);
 	const currentLang = $derived(getLocale());
 
@@ -202,7 +202,7 @@
 				'<'
 			);
 
-		// Stop the CSS loader where it is and lift it to where the drop begins.
+		// Hand the loader over to the intro dot.
 		const loader = document.querySelector<SVGCircleElement>('#intro-loading-decorate');
 		if (loader) {
 			const style = getComputedStyle(loader);
@@ -216,7 +216,7 @@
 			};
 
 			gsap.set(loader, { animation: 'none' });
-			// Freeze the CSS reveal as is, so a loader still hidden stays hidden.
+			// Freeze the reveal as is.
 			gsap.set('.intro-loading', {
 				animation: 'none',
 				opacity: getComputedStyle(loader.parentElement!).opacity
@@ -749,7 +749,6 @@
 		r: 10px;
 	}
 
-	// Not a transform: it breaks GSAP's origin maths.
 	.intro-pending #mask-bottom-hemisphere-rect {
 		opacity: 0;
 	}
@@ -758,7 +757,6 @@
 		opacity: 0;
 	}
 
-	// Hidden for the first second, so a fast network never flashes the loader.
 	.intro-loading {
 		opacity: 0;
 		animation: intro-loading-reveal 0s 1s forwards;
