@@ -588,7 +588,9 @@
 		{@render title(true)}
 	{/if}
 	{@render avatar()}
-	{@render bobble()}
+	{#if !introPending}
+		{@render bobble()}
+	{/if}
 </div>
 
 <style lang="scss">
