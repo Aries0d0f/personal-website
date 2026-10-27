@@ -19,6 +19,7 @@ export default defineConfig({
 		paraglideVitePlugin({
 			project: './project.inlang',
 			outdir: './src/lib/paraglide',
+			emitTsDeclarations: true,
 			// URL is the source of truth: an explicit /ja/ or /zh-tw/ prefix always
 			// wins, so localized links are shareable. preferredLanguage seeds
 			// first-time visitors from their Accept-Language; baseLocale is the final

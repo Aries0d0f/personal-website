@@ -5,16 +5,16 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "wrangler types --check && vite build",
+		"build": "bun run clean && wrangler types --check && vite build",
 		"preview": "bun run build && wrangler dev",
 		"prepare": "svelte-kit sync || echo ''",
-		"check": "wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check": "bun run clean && wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
-		"gen": "wrangler types",
-		"deploy": "bun run gen && bun run build && wrangler deploy",
-		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts"
+		"gen": "bun run clean && wrangler types",
+		"clean": "rm -rf .svelte-kit/cloudflare",
+		"deploy": "bun run gen && bun run build && wrangler deploy"
 	},
 	"devDependencies": {
 		"@aries0d0f/fetch-worker": "^0.1.0",
