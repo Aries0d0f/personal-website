@@ -224,6 +224,9 @@
 		);
 	}
 
+	// Matches the length of Avatar's intro timeline; content enters once it settles.
+	const AVATAR_INTRO_SECONDS = 1.6;
+
 	function startAnimation() {
 		const tl = gsap.timeline();
 		tl.set('.intro-content', {
@@ -239,7 +242,11 @@
 			const MARGIN = 320;
 
 			tl.set('.intro-content', { display: 'none' })
-				.set('.intro-content', { display: 'flex', x: -MARGIN / 2 - 200 }, '+=2.2')
+				.set(
+					'.intro-content',
+					{ display: 'flex', x: -MARGIN / 2 - 200 },
+					`+=${AVATAR_INTRO_SECONDS}`
+				)
 				.set('.intro-avatar', { x: MARGIN / 2 }, '<')
 				.to('.intro-content', { x: 0, duration: 1, ease: 'power3.out' }, '<')
 				.to(
@@ -252,7 +259,7 @@
 				'.intro-content',
 				{ marginTop: -240, display: 'flex', translateX: 0 },
 				{ marginTop: 0, translateX: 0, duration: 1, ease: 'power3.out' },
-				'<+=2.2'
+				`<+=${AVATAR_INTRO_SECONDS}`
 			);
 		}
 

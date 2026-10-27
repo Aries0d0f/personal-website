@@ -77,10 +77,10 @@
 					opacity: 1,
 					r: 10,
 					cy: 320,
-					duration: 1,
+					duration: 0.8,
 					ease: 'elastic.out(1, 0.9)'
 				},
-				'+=0.6'
+				'+=0.2'
 			)
 			.fromTo(
 				'#intro-in-decorate',
