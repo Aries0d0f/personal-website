@@ -3,9 +3,10 @@
 
 import type { RequestEvent } from '@sveltejs/kit';
 
-import { handleIPLookup, isIPLookup } from './helpers/ip-lookup.helpers';
-import { handleSocialRedirect, isSocialRedirect } from './helpers/social-redirect.helpers';
+import { isIPLookup, isSocialRedirect } from './helpers/matchers.helpers';
 import { checkEasterEggs, CLI_UA } from './helpers/user-agent.helpers';
+
+// Handlers are loaded on demand: page views skip ansis/ua-parser-js on cold start.
 
 /** Returns a Response for social-redirect/IP-lookup requests, else `null`. */
 export async function handleEdge(event: RequestEvent): Promise<Response | null> {
@@ -14,6 +15,7 @@ export async function handleEdge(event: RequestEvent): Promise<Response | null> 
 	const clientIP = event.request.headers.get('CF-Connecting-IP');
 
 	if (isSocialRedirect(url)) {
+		const { handleSocialRedirect } = await import('./helpers/social-redirect.helpers');
 		return handleSocialRedirect(event, clientIP);
 	}
 
@@ -29,6 +31,7 @@ export async function handleEdge(event: RequestEvent): Promise<Response | null> 
 			});
 		}
 
+		const { handleIPLookup } = await import('./helpers/ip-lookup.helpers');
 		return handleIPLookup(event, url, clientIP, CLI_UA.test(userAgent), checkEasterEggs(userAgent));
 	}
 

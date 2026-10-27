@@ -1,6 +1,7 @@
 // ─── The game token ──────────────────────────────────────────────────────────
 
-import * as semver from 'semver';
+import semverMajor from 'semver/functions/major';
+import semverValid from 'semver/functions/valid';
 
 import { dev } from '$app/env';
 import { GAME_SECRET } from '$app/env/private';
@@ -156,7 +157,7 @@ export async function verifyGameToken(token: string, secret: string): Promise<Ve
 	}
 
 	// Only the major version is enforced; minor is reserved for future migrations.
-	if (!semver.valid(claims?.v) || semver.major(claims.v) !== semver.major(GAME_TOKEN_VERSION)) {
+	if (!semverValid(claims?.v) || semverMajor(claims.v) !== semverMajor(GAME_TOKEN_VERSION)) {
 		return { ok: false, reason: 'stale' };
 	}
 

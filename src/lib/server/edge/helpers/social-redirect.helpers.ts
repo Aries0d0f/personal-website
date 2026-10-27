@@ -4,18 +4,14 @@
 import type { RequestEvent } from '@sveltejs/kit';
 
 import { resolveGA4ClientId, reportSocialRedirect } from './ga4.helpers';
-
-export function isSocialRedirect({ pathname }: URL): boolean {
-	return /^\/s\/(@?)(\w+)(\.\w+)?(\/\w+)?/.test(pathname);
-}
+import { SOCIAL_REDIRECT_PATTERN } from './matchers.helpers';
 
 export async function handleSocialRedirect(
 	event: RequestEvent,
 	clientIP: string | null
 ): Promise<Response> {
-	const [, atMark, brand, tld = '.com', path = ''] = event.url.pathname.match(
-		/^\/s\/(@?)(\w+)(\.\w+)?(\/\w+)?/
-	)!;
+	const [, atMark, brand, tld = '.com', path = ''] =
+		event.url.pathname.match(SOCIAL_REDIRECT_PATTERN)!;
 	const target = `https://${brand}${tld}${path}/${atMark ? '@' : ''}aries0d0f`;
 
 	const { clientId, mintedCookie } = await resolveGA4ClientId(event, clientIP);

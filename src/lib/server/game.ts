@@ -7,14 +7,10 @@ import {
 	IDLE_GAME_STATE,
 	type GameState
 } from '#lib/game/state.js';
-import {
-	getGameSecret,
-	hashGameToken,
-	signGameToken,
-	verifyGameToken
-} from '#lib/server/game-token.js';
-
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
+
+// Loaded on demand: most visitors carry no token, so cold starts skip semver.
+const loadGameToken = () => import('#lib/server/game-token.js');
 
 // httpOnly so page scripts can't read or swap the token.
 const COOKIE_OPTIONS = {
@@ -48,8 +44,8 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 
 	if (!token) return IDLE_GAME_STATE;
 
-	const secret = getGameSecret();
-	const result = await verifyGameToken(token, secret);
+	const { getGameSecret, hashGameToken, verifyGameToken } = await loadGameToken();
+	const result = await verifyGameToken(token, getGameSecret());
 
 	if (result.ok) {
 		// A parked token (`w`) is not an active run.
@@ -95,6 +91,7 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 
 /** Sign `state` into the cookie; returns the new token's hash as the next proofSeed. */
 export async function writeGameState(cookies: Cookies, state: GameState): Promise<string> {
+	const { getGameSecret, hashGameToken, signGameToken } = await loadGameToken();
 	const token = await signGameToken(
 		{
 			stage: state.stage,

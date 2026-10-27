@@ -3,7 +3,6 @@
 
 import { IPAPI_API_KEY } from '$app/env/private';
 import { renderScreen, useCuiHelper } from './cui.helpers';
-import { CLI_UA, NATIVE_UA } from './user-agent.helpers';
 
 import type { RequestEvent } from '@sveltejs/kit';
 
@@ -64,15 +63,6 @@ interface GeoDataPayload {
 type ActivedGeoDataKey = (typeof GEOIP_FIELDS)[number];
 
 type GeoData = Pick<GeoDataPayload, ActivedGeoDataKey>;
-
-export function isIPLookup({ pathname, hostname }: URL, userAgent: string): boolean {
-	return (
-		pathname.startsWith('/ip') ||
-		hostname === 'ip.aries0d0f.me' ||
-		CLI_UA.test(userAgent) ||
-		(/^\/(whois|abuse|geo).?(whois|abuse|geo)?$/.test(pathname) && !NATIVE_UA.test(userAgent))
-	);
-}
 
 export async function handleIPLookup(
 	event: RequestEvent,
