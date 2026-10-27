@@ -70,7 +70,7 @@
 			font-size: 1rem;
 
 			li {
-				color: #aaa;
+				color: #767676;
 				transition: color 0.3s ease;
 
 				&.active {
