@@ -4,6 +4,7 @@
 	import { getLocale } from '#lib/paraglide/runtime.js';
 	import { syncLocale } from '#lib/i18n.svelte.js';
 	import { useNavigationLock } from '#lib/helpers/navigation-lock.svelte.js';
+	import { localeFontHref } from '#lib/fonts.js';
 	import { useGameStore } from '#lib/store/game.js';
 	import Viewport from '#lib/layout/Viewport.svelte';
 	import CrtScreen from '#lib/components/CrtScreen.svelte';
@@ -33,32 +34,31 @@
 		}
 	});
 
+	// Post-hydration only, so the head never mismatches Cloudflare's rewritten fonts.
+	const ssrLang = getLocale();
+	let hydrated = $state(false);
+	const switchedFontHref = $derived(
+		hydrated && currentLang !== ssrLang ? localeFontHref(currentLang) : undefined
+	);
+
 	$effect(() => {
 		syncLocale(page.url);
 		syncFromServer(data?.game);
 	});
 
 	onMount(() => {
+		hydrated = true;
+
 		// Clear sessionStorage on page load to reset the game temporary data
 		sessionStorage.clear();
 	});
 </script>
 
 <svelte:head>
-	<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-	{#if currentLang === 'zh-tw'}
-		<link href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet" />
-	{:else if currentLang === 'ja'}
-		<link
-			href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap"
-			rel="stylesheet"
-		/>
+	<!-- SSR fonts live in app.html; this only covers client-side locale switches. -->
+	{#if switchedFontHref}
+		<link href={switchedFontHref} rel="stylesheet" />
 	{/if}
-	<link
-		href="https://fonts.googleapis.com/css2?family=Zilla+Slab:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
-		rel="stylesheet"
-	/>
 
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<meta http-equiv="x-ua-compatible" content="ie=edge" />
@@ -130,6 +130,23 @@
 				'Open Sans',
 				'Helvetica Neue',
 				sans-serif;
+
+			&:lang(zh-tw) {
+				font-family:
+					'Zilla Slab',
+					'Huninn',
+					'Kosugi Maru',
+					-apple-system,
+					BlinkMacSystemFont,
+					'Segoe UI',
+					Roboto,
+					Oxygen,
+					Ubuntu,
+					Cantarell,
+					'Open Sans',
+					'Helvetica Neue',
+					sans-serif;
+			}
 		}
 
 		::selection {

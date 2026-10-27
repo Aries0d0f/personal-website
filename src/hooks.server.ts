@@ -10,6 +10,7 @@ import {
 	localizeUrl
 } from '#lib/paraglide/runtime.js';
 import { paraglideMiddleware } from '#lib/paraglide/server.js';
+import { renderFontLinks } from '#lib/fonts.js';
 import { handleEdge } from '#lib/server/edge/index.js';
 import { markCaught, readGameState, writeGameState } from '#lib/server/game.js';
 
@@ -124,6 +125,7 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 					html
 						.replace('%paraglide.lang%', locale)
 						.replace('%paraglide.dir%', getTextDirection(locale))
+						.replace('%app.fonts%', renderFontLinks(locale))
 			}
 		);
 	});
