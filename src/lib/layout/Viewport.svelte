@@ -224,13 +224,12 @@
 		);
 	}
 
-	// Matches the length of Avatar's intro timeline; content enters once it settles.
-	const AVATAR_INTRO_SECONDS = 1.6;
+	const HIDDEN_OPACITY = 0.0001;
 
 	function startAnimation() {
 		const tl = gsap.timeline();
 		tl.set('.intro-content', {
-			opacity: 0,
+			opacity: HIDDEN_OPACITY,
 			translateX: -200
 		}).set('menu', {
 			opacity: 0,
@@ -241,14 +240,10 @@
 			// Transforms over the final layout instead of a negative margin, to avoid repaints.
 			const MARGIN = 320;
 
-			tl.set('.intro-content', { display: 'none' })
-				.set(
-					'.intro-content',
-					{ display: 'flex', x: -MARGIN / 2 - 200 },
-					`+=${AVATAR_INTRO_SECONDS}`
-				)
-				.set('.intro-avatar', { x: MARGIN / 2 }, '<')
-				.to('.intro-content', { x: 0, duration: 1, ease: 'power3.out' }, '<')
+			// Offset rather than `display: none`: re-showing the content would restart LCP.
+			tl.set('.intro-content', { x: -MARGIN / 2 - 200 })
+				.set('.intro-avatar', { x: MARGIN / 2 })
+				.to('.intro-content', { x: 0, duration: 1, ease: 'power3.out' }, '+=2.2')
 				.to(
 					'.intro-avatar',
 					{ x: 0, duration: 1, ease: 'power3.out', clearProps: 'transform' },
@@ -257,16 +252,17 @@
 		} else {
 			tl.fromTo(
 				'.intro-content',
-				{ marginTop: -240, display: 'flex', translateX: 0 },
-				{ marginTop: 0, translateX: 0, duration: 1, ease: 'power3.out' },
-				`<+=${AVATAR_INTRO_SECONDS}`
+				// Transform, not margin: a margin animation shifts layout every frame (CLS).
+				{ y: -240, display: 'flex', translateX: 0 },
+				{ y: 0, translateX: 0, duration: 1, ease: 'power3.out' },
+				'<+=2.2'
 			);
 		}
 
 		tl.fromTo(
 			'.intro-content',
 			{
-				opacity: 0
+				opacity: HIDDEN_OPACITY
 			},
 			{
 				opacity: 1,
@@ -576,7 +572,7 @@
 		<div class="intro-avatar">
 			<Avatar {width} {height} {showCombined} />
 		</div>
-		<div class="intro-content" style="opacity: 0">
+		<div class="intro-content" style="opacity: {HIDDEN_OPACITY}">
 			{#if showCombined}
 				<AllSections />
 			{:else}
