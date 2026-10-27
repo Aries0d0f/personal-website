@@ -23,6 +23,7 @@ export default defineConfig({
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
+			inlineStyleThreshold: Infinity,
 			preprocess: [vitePreprocess({ style: true }), mdsvex({ extensions: ['.svx', '.md'] })],
 			extensions: ['.svelte', '.svx', '.md'],
 			adapter: adapter()
