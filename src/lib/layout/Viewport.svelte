@@ -154,7 +154,7 @@
 		gsap.to('.intro-content', {
 			opacity: 0,
 			y: direction * -60,
-			duration: isSafari ? 0.33 : 0.4,
+			duration: isSafari ? 0.33 : 0.5,
 			ease: isSafari ? 'power3.in' : 'power2.in',
 			onComplete: () => afterTouchRelease(() => goto(resolve(pagePath(key, getLocale()))))
 		});
