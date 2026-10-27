@@ -772,9 +772,9 @@
 		transform-box: fill-box;
 		transform-origin: center;
 		animation:
-			intro-loading-bounce 1s infinite,
-			intro-loading-pulse 1s ease-in-out infinite,
-			intro-loading-squash 1s ease-in-out infinite;
+			intro-loading-bounce 1.3s infinite,
+			intro-loading-pulse 1.3s ease-in-out infinite,
+			intro-loading-squash 1.3s ease-in-out infinite;
 	}
 
 	@keyframes intro-loading-bounce {
