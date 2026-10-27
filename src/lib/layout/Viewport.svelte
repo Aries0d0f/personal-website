@@ -140,6 +140,22 @@
 	const startPinch = () => (pinching = true);
 	const endPinch = () => (pinching = false);
 
+	const SWAP_OPACITY = 0.1;
+
+	// GSAP power eases as CSS curves; `exp` is the curve's power.
+	const EASE = {
+		power2In: { css: 'cubic-bezier(0.55, 0.055, 0.675, 0.19)', exp: 3 },
+		power3In: { css: 'cubic-bezier(0.895, 0.03, 0.685, 0.22)', exp: 4 },
+		power3Out: 'cubic-bezier(0.165, 0.84, 0.44, 1)'
+	};
+
+	// WAAPI runs on the compositor, so it holds the display rate while the main thread renders.
+	let pageAnimation: Animation | undefined;
+
+	function contentEl() {
+		return document.querySelector<HTMLElement>('.intro-content');
+	}
+
 	function performPageSwitch(direction: 1 | -1, key: PageKey) {
 		lastDirection = direction;
 		transitioning = true;
@@ -153,14 +169,30 @@
 		const isSafari = /^((?!chrome|chromium|android|crios|fxios|edgios).)*safari/i.test(
 			navigator.userAgent
 		);
+		const duration = isSafari ? 400 : 500;
+		const ease = EASE.power2In;
 
-		gsap.to('.intro-content', {
-			opacity: 0,
-			y: direction * -60,
-			duration: isSafari ? 0.33 : 0.5,
-			ease: isSafari ? 'power3.in' : 'power2.in',
-			onComplete: () => afterTouchRelease(() => goto(href))
-		});
+		let navigated = false;
+		const navigate = () => {
+			if (navigated) return;
+			navigated = true;
+			afterTouchRelease(() => goto(href));
+		};
+
+		const el = contentEl();
+		if (!el) return navigate();
+
+		const { opacity, transform } = getComputedStyle(el);
+		pageAnimation?.cancel();
+		pageAnimation = el.animate(
+			[
+				{ opacity, transform: transform === 'none' ? 'translate3d(0, 0, 0)' : transform },
+				{ opacity: 0, transform: `translate3d(0, ${direction * -60}px, 0)` }
+			],
+			{ duration, easing: ease.css, fill: 'forwards' }
+		);
+		pageAnimation.onfinish = navigate;
+		setTimeout(navigate, duration * Math.pow(1 - SWAP_OPACITY, 1 / ease.exp));
 	}
 
 	let touching = false;
@@ -265,7 +297,7 @@
 
 	function startGameMode() {
 		observer?.disable();
-		gsap.killTweensOf('.intro-content');
+		pageAnimation?.pause();
 
 		void powerCycle(() => goto(resolve(`${getLocale()}/game`)));
 	}
@@ -273,21 +305,24 @@
 	function animateIn() {
 		transitioning = true;
 
-		gsap.fromTo(
-			'.intro-content',
-			{ opacity: 0, y: lastDirection * 60 },
-			{
-				opacity: 1,
-				y: 0,
-				duration: 0.5,
-				ease: 'power3.out',
-				clearProps: 'transform',
-				onComplete: () => {
-					transitioning = false;
-					observer?.enable();
-				}
-			}
+		const el = contentEl();
+		if (!el) return;
+
+		const from = pageAnimation?.playState === 'running' ? getComputedStyle(el).opacity : 0;
+		pageAnimation?.cancel();
+
+		gsap.set(el, { opacity: 1, clearProps: 'transform' });
+		pageAnimation = el.animate(
+			[
+				{ opacity: from, transform: `translate3d(0,${lastDirection * 60}px,0)` },
+				{ opacity: 1, transform: 'translate3d(0, 0, 0)' }
+			],
+			{ duration: 500, easing: EASE.power3Out }
 		);
+		pageAnimation.onfinish = () => {
+			transitioning = false;
+			observer?.enable();
+		};
 	}
 
 	const HIDDEN_OPACITY = 0.0001;
