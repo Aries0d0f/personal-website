@@ -202,16 +202,20 @@
 				'<'
 			);
 
-		// Stop the SMIL loader and lift it to where the drop begins.
+		// Stop the CSS loader where it is and lift it to where the drop begins.
 		const loader = document.querySelector<SVGCircleElement>('#intro-loading-decorate');
 		if (loader) {
+			const style = getComputedStyle(loader);
+			const offsetY =
+				style.translate === 'none' ? 0 : parseFloat(style.translate.split(' ')[1] ?? '0');
+			const scale = style.scale === 'none' ? 1 : parseFloat(style.scale);
 			const from = {
-				cy: loader.cy.animVal.value,
-				r: loader.r.animVal.value,
-				opacity: Number(getComputedStyle(loader).opacity)
+				cy: loader.cy.baseVal.value + offsetY,
+				r: loader.r.baseVal.value * scale,
+				opacity: Number(style.opacity)
 			};
 
-			loader.querySelectorAll('animate').forEach((animation) => animation.remove());
+			gsap.set(loader, { animation: 'none' });
 			// Freeze the CSS reveal as is, so a loader still hidden stays hidden.
 			gsap.set('.intro-loading', {
 				animation: 'none',
@@ -374,35 +378,8 @@
 				opacity="0"
 			></circle>
 			<g class="intro-loading">
-				<circle id="intro-loading-decorate" cx="211.088" cy="320" r="10" fill="var(--accent-fill)">
-					<animate
-						attributeName="cy"
-						values="320;160;375;320"
-						keyTimes="0;0.5;0.95;1"
-						calcMode="spline"
-						keySplines="0.165 0.84 0.44 1;0.895 0.03 0.685 0.22;0.165 0.84 0.44 1"
-						dur="1s"
-						repeatCount="indefinite"
-					/>
-					<animate
-						attributeName="opacity"
-						values="1;0.6;1;0.6;1"
-						keyTimes="0;0.25;0.5;0.75;1"
-						calcMode="spline"
-						keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"
-						dur="1s"
-						repeatCount="indefinite"
-					/>
-					<animate
-						attributeName="r"
-						values="10;8;12;10;5;10"
-						keyTimes="0;0.2;0.5;0.75;0.9;1"
-						calcMode="spline"
-						keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"
-						dur="1s"
-						repeatCount="indefinite"
-					/>
-				</circle>
+				<circle id="intro-loading-decorate" cx="211.088" cy="320" r="10" fill="var(--accent-fill)"
+				></circle>
 			</g>
 			<g id="interactive-point-map">
 				<circle
@@ -790,6 +767,62 @@
 	@keyframes intro-loading-reveal {
 		to {
 			opacity: 1;
+		}
+	}
+
+	#intro-loading-decorate {
+		transform-box: fill-box;
+		transform-origin: center;
+		animation:
+			intro-loading-bounce 1s infinite,
+			intro-loading-pulse 1s ease-in-out infinite,
+			intro-loading-squash 1s ease-in-out infinite;
+	}
+
+	@keyframes intro-loading-bounce {
+		0% {
+			translate: 0 0;
+			animation-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+		}
+		50% {
+			translate: 0 -160px;
+			animation-timing-function: cubic-bezier(0.895, 0.03, 0.685, 0.22);
+		}
+		95% {
+			translate: 0 55px;
+			animation-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+		}
+		100% {
+			translate: 0 0;
+		}
+	}
+
+	@keyframes intro-loading-pulse {
+		0%,
+		50%,
+		100% {
+			opacity: 1;
+		}
+		25%,
+		75% {
+			opacity: 0.6;
+		}
+	}
+
+	@keyframes intro-loading-squash {
+		0%,
+		75%,
+		100% {
+			scale: 1;
+		}
+		20% {
+			scale: 0.8;
+		}
+		50% {
+			scale: 1.2;
+		}
+		90% {
+			scale: 0.5;
 		}
 	}
 </style>
