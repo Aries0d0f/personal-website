@@ -28,8 +28,7 @@ export interface GameClaims {
 }
 
 export type VerifyResult =
-	| { ok: true; claims: GameClaims }
-	| { ok: false; reason: 'expired' | 'stale' | 'forged' };
+	{ ok: true; claims: GameClaims } | { ok: false; reason: 'expired' | 'stale' | 'forged' };
 
 // ─── Secret ──────────────────────────────────────────────────────────────────
 

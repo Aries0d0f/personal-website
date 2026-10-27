@@ -40,11 +40,7 @@ interface ButtonClickedRequest {
 }
 
 type GameRequest =
-	| ClearStageRequest
-	| GameClearRequest
-	| RestartRequest
-	| GiveUpRequest
-	| ButtonClickedRequest;
+	ClearStageRequest | GameClearRequest | RestartRequest | GiveUpRequest | ButtonClickedRequest;
 
 const randomFromSet = <T>(set: Set<T>): T | null => {
 	const arr = Array.from(set);
