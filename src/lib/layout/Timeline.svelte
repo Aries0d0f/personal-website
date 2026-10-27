@@ -7,8 +7,10 @@
 	<div class="timeline-content">
 		{@render children?.()}
 	</div>
+</article>
 
-	<style lang="scss">
+<style lang="scss">
+	:global {
 		.timeline-content {
 			> section {
 				position: relative;
@@ -85,9 +87,11 @@
 							top: 0;
 							content: '';
 							display: block;
-							width: 0;
+							width: 100%;
 							height: 100%;
 							background-color: #000;
+							transform: scaleX(0);
+							transform-origin: left;
 							position: absolute;
 							left: 0;
 							bottom: 50%;
@@ -152,18 +156,16 @@
 
 				@keyframes strikeThrough {
 					from {
-						width: 0;
+						transform: scaleX(0);
 					}
 					to {
-						width: 100%;
+						transform: scaleX(1);
 					}
 				}
 			}
 		}
-	</style>
-</article>
+	}
 
-<style lang="scss">
 	.timeline-container {
 		display: flex;
 		flex-direction: column;

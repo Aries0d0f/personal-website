@@ -11,8 +11,10 @@
 	<div class="bento-wrapper" lang={currentLang}>
 		{@render children?.()}
 	</div>
+</article>
 
-	<style lang="scss">
+<style lang="scss">
+	:global {
 		.bento-wrapper {
 			> section {
 				display: flex;
@@ -153,10 +155,8 @@
 				background-position: 100% 100%;
 			}
 		}
-	</style>
-</article>
+	}
 
-<style lang="scss">
 	.bento {
 		&-container {
 			display: flex;

@@ -505,7 +505,8 @@
 </script>
 
 <svg class="crt-defs" aria-hidden="true" focusable="false">
-	<filter id="crt-chroma" x="-10%" y="-10%" width="120%" height="120%">
+	<!-- The split is horizontal only (dy stays 0), so the region never needs to grow vertically. -->
+	<filter id="crt-chroma" x="-10%" y="0%" width="120%" height="100%">
 		<feColorMatrix
 			in="SourceGraphic"
 			type="matrix"
@@ -642,8 +643,15 @@
 			}
 		}
 
+		// The drifting layers below move by transform rather than background-position, so the
+		// compositor slides an already-painted texture instead of repainting the whole viewport
+		// every frame. Each is oversized by its travel, and its background offset by the same
+		// amount, so the pattern lands exactly where the background-position version put it.
 		&-scanlines {
 			z-index: 3;
+			top: -4px;
+			background-position: 0 4px;
+			will-change: transform;
 			background-image: repeating-linear-gradient(
 				to bottom,
 				rgba(0, 0, 0, 0) 0 2px,
@@ -665,12 +673,16 @@
 				rgba(255, 255, 255, 0) 100%
 			);
 			transform: translateY(-110%);
+			will-change: transform;
 		}
 
 		&-grain {
 			z-index: 4;
+			inset: -40px;
 			opacity: 0.04;
 			background-image: url('../assets/crt-noise.svg');
+			background-position: 40px 40px;
+			will-change: transform;
 		}
 
 		&-vignette {
@@ -687,6 +699,7 @@
 			z-index: 6;
 			background-color: #fff;
 			opacity: 0;
+			will-change: opacity;
 		}
 
 		// Curved glass: the picture falls away as it wraps around the edge of the
@@ -735,9 +748,12 @@
 		// light rather than veiling the picture: the noise is what makes it brighter.
 		&-static {
 			z-index: 8;
+			inset: -40px;
 			opacity: 0;
 			background-image: url('../assets/crt-noise.svg');
+			background-position: 40px 40px;
 			mix-blend-mode: screen;
+			will-change: transform, opacity;
 		}
 
 		&-line {
@@ -793,7 +809,7 @@
 
 	@keyframes crt-drift {
 		to {
-			background-position-y: 4px;
+			transform: translateY(4px);
 		}
 	}
 
@@ -814,29 +830,19 @@
 
 	@keyframes crt-noise {
 		0% {
-			background-position:
-				0 0,
-				0 0;
+			transform: translate(0, 0);
 		}
 		25% {
-			background-position:
-				-40px 30px,
-				0 0;
+			transform: translate(-40px, 30px);
 		}
 		50% {
-			background-position:
-				30px -20px,
-				0 0;
+			transform: translate(30px, -20px);
 		}
 		75% {
-			background-position:
-				-20px -40px,
-				0 0;
+			transform: translate(-20px, -40px);
 		}
 		100% {
-			background-position:
-				40px 20px,
-				0 0;
+			transform: translate(40px, 20px);
 		}
 	}
 

@@ -250,28 +250,32 @@
 	onMount(() => {
 		startAnimation();
 		gsap.registerPlugin(Observer);
-		Observer.create({
+
+		// One reusable tween per axis, retargeted on every move, rather than a fresh tween per
+		// pointer event. Same duration and ease as a default `gsap.to`, so the follow feels identical.
+		const parallaxTargets = [
+			'#morphing-image',
+			'#morphing-group',
+			'#mask-bottom-hemisphere-group',
+			'#bobble',
+			'#interactive-point-map'
+		];
+		const parallaxX = gsap.quickTo(parallaxTargets, 'x', { duration: 0.5, ease: 'power1.out' });
+		const parallaxY = gsap.quickTo(parallaxTargets, 'y', { duration: 0.5, ease: 'power1.out' });
+
+		const parallax = Observer.create({
 			target: window,
 			type: 'pointer',
 			onMove: (pointer) => {
 				const { x, y } = pointer;
 				const offsetX = ((x ?? 0) - width / 2) / width;
 				const offsetY = ((y ?? 0) - height / 2) / height;
-				gsap.to(
-					[
-						'#morphing-image',
-						'#morphing-group',
-						'#mask-bottom-hemisphere-group',
-						'#bobble',
-						'#interactive-point-map'
-					],
-					{
-						translateX: offsetX * 10,
-						translateY: offsetY * 10
-					}
-				);
+				parallaxX(offsetX * 10);
+				parallaxY(offsetY * 10);
 			}
 		});
+
+		return () => parallax.kill();
 	});
 </script>
 

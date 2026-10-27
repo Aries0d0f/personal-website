@@ -232,57 +232,59 @@
 		tl.set('.intro-content', {
 			opacity: 0,
 			translateX: -200
-		})
-			.set('menu', {
-				opacity: 0,
-				translateX: '100%'
-			})
-			.fromTo(
+		}).set('menu', {
+			opacity: 0,
+			translateX: '100%'
+		});
+
+		if (width > 840) {
+			// The content slides out from under the avatar and pushes it aside. Doing that with
+			// a negative margin re-lays out and repaints the avatar every frame, so the same
+			// motion is played with transforms over the final layout instead. Pulling the content
+			// back by MARGIN under a centred row puts the avatar MARGIN / 2 right of where it ends
+			// up and the content MARGIN / 2 left of it, on top of its own -200 slide.
+			const MARGIN = 320;
+
+			tl.set('.intro-content', { display: 'none' })
+				.set('.intro-content', { display: 'flex', x: -MARGIN / 2 - 200 }, '+=2.2')
+				.set('.intro-avatar', { x: MARGIN / 2 }, '<')
+				.to('.intro-content', { x: 0, duration: 1, ease: 'power3.out' }, '<')
+				.to(
+					'.intro-avatar',
+					{ x: 0, duration: 1, ease: 'power3.out', clearProps: 'transform' },
+					'<'
+				);
+		} else {
+			tl.fromTo(
 				'.intro-content',
-				width > 840
-					? {
-							marginLeft: -320,
-							display: 'none',
-							translateX: -200
-						}
-					: {
-							marginTop: -240,
-							display: 'flex',
-							translateX: 0
-						},
-				{
-					marginLeft: 0,
-					marginTop: 0,
-					display: 'flex',
-					translateX: 0,
-					duration: 1,
-					ease: 'power3.out'
-				},
+				{ marginTop: -240, display: 'flex', translateX: 0 },
+				{ marginTop: 0, translateX: 0, duration: 1, ease: 'power3.out' },
 				'<+=2.2'
-			)
-			.fromTo(
-				'.intro-content',
-				{
-					opacity: 0
-				},
-				{
-					opacity: 1,
-					duration: 0.5,
-					ease: 'power3.out'
-				},
-				'<+=0.3'
-			)
-			.fromTo(
-				'menu',
-				{ opacity: 0, translateX: '100%' },
-				{
-					opacity: 1,
-					translateX: '0%',
-					duration: 0.5,
-					ease: 'power3.out'
-				},
-				'<'
 			);
+		}
+
+		tl.fromTo(
+			'.intro-content',
+			{
+				opacity: 0
+			},
+			{
+				opacity: 1,
+				duration: 0.5,
+				ease: 'power3.out'
+			},
+			'<+=0.3'
+		).fromTo(
+			'menu',
+			{ opacity: 0, translateX: '100%' },
+			{
+				opacity: 1,
+				translateX: '0%',
+				duration: 0.5,
+				ease: 'power3.out'
+			},
+			'<'
+		);
 	}
 
 	function pageKeyFromPath(pathname: string) {
@@ -599,6 +601,31 @@
 </div>
 
 <style lang="scss">
+	// A full-viewport noise texture used to scroll by animating `background-position: 0 0 → 100% 100%`
+	// on a 75%-wide tile, which repaints the entire screen on every step. The same travel is
+	// reproduced here with a transform: on a viewport-sized box, 100% background-position works
+	// out to (100vw - 75vw, 100vh - 75vw). The layer is grown by that travel on whichever side it
+	// would otherwise expose, and its background offset back by the same amount, so every frame
+	// shows the exact pattern the background-position version did.
+	$noise-tile: 75vw;
+	$noise-travel-x: calc(100vw - #{$noise-tile});
+	$noise-travel-y: calc(100vh - #{$noise-tile});
+
+	@mixin noise-layer {
+		content: '';
+		position: absolute;
+		top: calc(-1 * max(0px, #{$noise-travel-y}));
+		bottom: calc(-1 * max(0px, -1 * #{$noise-travel-y}));
+		left: calc(-1 * #{$noise-travel-x});
+		right: 0;
+		background-image: url('/src/lib/assets/crt-noise.svg');
+		background-size: $noise-tile;
+		background-position: $noise-travel-x max(0px, #{$noise-travel-y});
+		background-repeat: repeat;
+		will-change: transform;
+		animation: noiseAnimation 0.1s infinite steps(10);
+	}
+
 	.viewport-wrapper {
 		width: 100%;
 		min-height: 100dvh;
@@ -614,14 +641,19 @@
 			overflow: visible;
 		}
 
+		// The filter already makes the wrapper a containing block here, so promoting it changes
+		// nothing about layout, but lets the compositor run the filter instead of the main thread
+		// repainting the whole viewport through it.
 		&.invert-screen {
 			filter: invert(80%);
 			transform: scale(-1);
+			will-change: filter;
 		}
 
 		&.monochrome-screen {
 			filter: grayscale(100%);
 			transition: filter 5s cubic-bezier(0.53, 0.2, 0.53, 0.2);
+			will-change: filter;
 		}
 
 		> .red-screen,
@@ -643,11 +675,12 @@
 		}
 
 		> .noise-screen {
+			overflow: hidden;
 			background-color: #000;
-			background-image: url('/src/lib/assets/crt-noise.svg');
-			background-size: 75%;
-			background-repeat: repeat;
-			animation: noiseAnimation 0.1s infinite steps(10);
+
+			&::before {
+				@include noise-layer;
+			}
 		}
 
 		> .break-screen {
@@ -663,28 +696,19 @@
 			z-index: 999999999;
 
 			&::before {
-				content: '';
 				mix-blend-mode: multiply;
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
 				opacity: 0.1;
 				background-color: #000;
-				background-image: url('/src/lib/assets/crt-noise.svg');
-				background-size: 75%;
-				background-repeat: repeat;
-				animation: noiseAnimation 0.1s infinite steps(10);
+				@include noise-layer;
 			}
 		}
 
 		@keyframes noiseAnimation {
 			0% {
-				background-position: 0 0;
+				transform: translate(0, 0);
 			}
 			100% {
-				background-position: 100% 100%;
+				transform: translate($noise-travel-x, $noise-travel-y);
 			}
 		}
 	}

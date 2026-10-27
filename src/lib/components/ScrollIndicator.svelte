@@ -69,16 +69,23 @@
 			>
 				<rect width="1" height="3" fill="rgba(0, 0, 0, 0.05)" />
 			</pattern>
-			<pattern id="scroll-thumb-grooves" width="4" height="3" patternUnits="userSpaceOnUse">
-				<rect width="4" height="3" fill="#c8c8c8" />
-				<rect width="4" height="1" fill="#8f8f8f" />
-			</pattern>
 		</defs>
 
 		<path class="track-border" d={track.d} />
 		<path class="track-highlight" d={track.d} />
 		<path class="track-fill" d={track.d} />
 		<path class="track-hatch" d={track.d} />
+	</svg>
+
+	<!-- The thumb gets its own layer, so sliding it between pages only repaints the thumb,
+	     not the full-height track and its hatching underneath. -->
+	<svg class="scroll-indicator thumb-layer" aria-hidden="true">
+		<defs>
+			<pattern id="scroll-thumb-grooves" width="4" height="3" patternUnits="userSpaceOnUse">
+				<rect width="4" height="3" fill="#c8c8c8" />
+				<rect width="4" height="1" fill="#8f8f8f" />
+			</pattern>
+		</defs>
 
 		<path
 			class="thumb thumb-border"
@@ -112,6 +119,10 @@
 		height: 100%;
 		pointer-events: none;
 		z-index: 1000;
+
+		&.thumb-layer {
+			will-change: transform;
+		}
 
 		path {
 			fill: none;
