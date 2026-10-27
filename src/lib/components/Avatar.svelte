@@ -9,10 +9,10 @@
 	import { getLocale } from '#lib/paraglide/runtime.js';
 	import { useGameStore } from '#lib/store/game.js';
 	import { useCRT } from '#lib/helpers/crt.svelte.js';
-	import avatarImgNoBg from '#lib/assets/avatar-nbg.png';
-	import avatarImgGameMode from '#lib/assets/avatar-nbg-gamemode.png';
-	import avatarImgGameModeCreepy from '#lib/assets/avatar-nbg-gamemode-creepy.png';
-	import avatarImg from '#lib/assets/avatar.jpg';
+	import avatarImgNoBg from '#lib/assets/avatar-nbg.webp';
+	import avatarImgGameMode from '#lib/assets/avatar-nbg-gamemode.webp';
+	import avatarImgGameModeCreepy from '#lib/assets/avatar-nbg-gamemode-creepy.webp';
+	import avatarImg from '#lib/assets/avatar.webp';
 	import { Abnormality } from '#lib/game/abnoramlity.js';
 	import { useInteractiveBobble } from '#lib/helpers/interactive-bobble.svelte.js';
 	import Icon from '@iconify/svelte';
