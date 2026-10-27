@@ -56,9 +56,7 @@
 				locale
 			}) as ResolvedPathname;
 
-			// The fade is the menu's, and the switcher is no longer only in the menu — the game
-			// options dialog has one too, on a page with no <menu> to fade. Awaiting a tween
-			// that found no target never settles, which would strand the navigation below it.
+			// The menu may be absent (options dialog); a targetless tween never settles.
 			const menu = document.querySelector('menu');
 
 			if (menu) {

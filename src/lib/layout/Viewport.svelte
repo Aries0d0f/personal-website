@@ -53,9 +53,7 @@
 	let observer: Observer | undefined;
 	let lastDirection: 1 | -1 = 1;
 
-	// Modal <dialog>s (game options, codex) sit above the viewport but the wheel Observer
-	// listens on window, so a scroll inside them would still page-switch underneath.
-	// `toggle` doesn't bubble, but a capture-phase listener on document still sees it.
+	// Observer listens on window; `toggle` doesn't bubble, so listen in capture.
 	let dialogOpen = $state(false);
 
 	function syncDialogState() {
@@ -141,8 +139,7 @@
 
 	const isPrefix = (keys: string[]) => keys.every((key, i) => key === KONAMI_CODE[i]);
 
-	// True once the key belongs to the konami code rather than to page navigation,
-	// so the arrows stop paging the site out from under the sequence.
+	// True once the key belongs to the konami code rather than page navigation.
 	function konamiConsumes(event: KeyboardEvent) {
 		const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
 
@@ -238,11 +235,7 @@
 		});
 
 		if (width > 840) {
-			// The content slides out from under the avatar and pushes it aside. Doing that with
-			// a negative margin re-lays out and repaints the avatar every frame, so the same
-			// motion is played with transforms over the final layout instead. Pulling the content
-			// back by MARGIN under a centred row puts the avatar MARGIN / 2 right of where it ends
-			// up and the content MARGIN / 2 left of it, on top of its own -200 slide.
+			// Transforms over the final layout instead of a negative margin, to avoid repaints.
 			const MARGIN = 320;
 
 			tl.set('.intro-content', { display: 'none' })
@@ -601,12 +594,7 @@
 </div>
 
 <style lang="scss">
-	// A full-viewport noise texture used to scroll by animating `background-position: 0 0 → 100% 100%`
-	// on a 75%-wide tile, which repaints the entire screen on every step. The same travel is
-	// reproduced here with a transform: on a viewport-sized box, 100% background-position works
-	// out to (100vw - 75vw, 100vh - 75vw). The layer is grown by that travel on whichever side it
-	// would otherwise expose, and its background offset back by the same amount, so every frame
-	// shows the exact pattern the background-position version did.
+	// Scroll via transform, not background-position, to avoid full-screen repaints.
 	$noise-tile: 75vw;
 	$noise-travel-x: calc(100vw - #{$noise-tile});
 	$noise-travel-y: calc(100vh - #{$noise-tile});
@@ -641,9 +629,7 @@
 			overflow: visible;
 		}
 
-		// The filter already makes the wrapper a containing block here, so promoting it changes
-		// nothing about layout, but lets the compositor run the filter instead of the main thread
-		// repainting the whole viewport through it.
+		// Promoted so the compositor runs the filter instead of repainting the viewport.
 		&.invert-screen {
 			filter: invert(80%);
 			transform: scale(-1);

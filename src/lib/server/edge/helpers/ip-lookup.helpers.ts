@@ -1,7 +1,5 @@
 // ─── IP Lookup ───────────────────────────────────────────────────────────────
-//
-// curl the site and you get your IP back, like ifconfig.me, with optional
-// WHOIS / abuse intelligence and UA easter eggs.
+// curl the site to get your IP back, like ifconfig.me.
 
 import { IPAPI_API_KEY } from '$app/env/private';
 import { renderScreen, useCuiHelper } from './cui.helpers';

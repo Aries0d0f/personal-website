@@ -77,8 +77,7 @@
 		<path class="track-hatch" d={track.d} />
 	</svg>
 
-	<!-- The thumb gets its own layer, so sliding it between pages only repaints the thumb,
-	     not the full-height track and its hatching underneath. -->
+	<!-- Own layer, so sliding the thumb doesn't repaint the track underneath. -->
 	<svg class="scroll-indicator thumb-layer" aria-hidden="true">
 		<defs>
 			<pattern id="scroll-thumb-grooves" width="4" height="3" patternUnits="userSpaceOnUse">

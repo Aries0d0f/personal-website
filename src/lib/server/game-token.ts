@@ -1,12 +1,4 @@
 // ─── The game token ──────────────────────────────────────────────────────────
-//
-// The player's progress lives in an HS256 JWT in an httpOnly cookie, and the
-// signature is the whole point: the client can read its progress out of the
-// token, but it cannot write a new one. Every state change goes through the
-// server (src/routes/api/game/+server.ts), which re-signs.
-//
-// HS256 over Web Crypto rather than a JWT library — Workers ships SubtleCrypto,
-// and the alternative is a dependency for ~40 lines of base64url.
 
 import * as semver from 'semver';
 
@@ -20,36 +12,7 @@ import type { AbnormalityCode } from '#lib/game/abnoramlity.js';
 
 const encoder = new TextEncoder();
 
-/**
- * The signed half of the game state: what the player has *done*, and nothing else.
- * `iat`/`exp` are in seconds, per RFC 7519.
- *
- * `c` (clicked) is here rather than in a plain readable cookie so it cannot be flipped
- * back to false to re-watch the one-time reveal it suppresses. Omitted while false, to
- * keep the token short.
- *
- * `a` (current abnormality) and `d` (discovered abnormalities) drive the challenge
- * stages the same way `stage` does — the client could otherwise reroll its own
- * abnormality by editing a plain cookie, so they are signed in rather than kept
- * alongside the token. Both omitted while empty, to keep the token short.
- *
- * `w` (won) parks the token after a game clear: the run is over, but the token stays
- * to carry `d` into the next one. It is signed in because it is also an entitlement —
- * only a parked token may restart straight at stage 1, skipping the front door.
- * Omitted while false, to keep the token short.
- *
- * `n` (clear times) counts how many times this player has ever reached a game clear.
- * Signed in for the same reason `d` is — a plain cookie could be edited to fake veteran
- * status and skip the first-play abnormality restriction. Omitted while 0, to keep the
- * token short. This doubles as the migration for tokens minted before this claim
- * existed: they simply have no `n`, `claims.n ?? 0` reads that the same as an honest
- * zero, and the holder is treated as a first-time player rather than rejected.
- *
- * Getting caught cheating is deliberately *not* a claim. It is an event, not a property
- * of the player, and signing it in would make it survive every reload — pinning them to
- * the same accusation for the rest of the run. It lives in a one-shot cookie instead
- * (GAME_CAUGHT_COOKIE).
- */
+/** Signed progress claims: anything a plain cookie would let the client tamper with. */
 export interface GameClaims {
 	/** Semver string, e.g. `"1.0.0"`. See GAME_TOKEN_VERSION. */
 	v: string;
@@ -69,16 +32,9 @@ export type VerifyResult =
 
 // ─── Secret ──────────────────────────────────────────────────────────────────
 
-// Local dev has no Cloudflare secret store. This key is public by definition,
-// so anything it signs is forgeable — which is fine, because in dev there is
-// nothing to protect. In production a missing secret is a hard failure rather
-// than a silent downgrade to this one.
+// Public, dev-only key; production throws if GAME_SECRET is missing.
 const DEV_SECRET = 'dev-only-game-secret-not-used-in-production';
 
-/**
- * Resolve the signing key from the private env, which reads the Workers binding in
- * both `vite dev` and `wrangler dev`.
- */
 export function getGameSecret(): string {
 	const secret = GAME_SECRET;
 
@@ -106,16 +62,13 @@ function fromBase64Url(value: string): Uint8Array<ArrayBuffer> {
 	return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
 }
 
-// TextEncoder is typed as writing into an ArrayBufferLike, which SubtleCrypto's
-// BufferSource won't accept. It is always a plain ArrayBuffer in practice.
+// Cast: SubtleCrypto's BufferSource rejects ArrayBufferLike.
 const bytes = (value: string) => encoder.encode(value) as Uint8Array<ArrayBuffer>;
 
 const encodeSegment = (value: unknown) => toBase64Url(encoder.encode(JSON.stringify(value)));
 
 // ─── Signing ─────────────────────────────────────────────────────────────────
 
-// Importing the key is not free, and the secret never changes within an
-// isolate's lifetime, so hold onto it.
 const keyCache = new Map<string, Promise<CryptoKey>>();
 
 function getKey(secret: string): Promise<CryptoKey> {
@@ -164,11 +117,7 @@ export async function signGameToken(
 	return `${body}.${toBase64Url(new Uint8Array(signature))}`;
 }
 
-/**
- * SHA-256 hex digest of a signed token, safe to hand to the client: it is one-way, so
- * it cannot be turned back into the token or the key that signed it. The client uses it
- * as the seed for its next stage-clear proof (see `#lib/game/proof.js`).
- */
+/** SHA-256 hex of a token; one-way, so safe to send to the client as proof seed. */
 export async function hashGameToken(token: string): Promise<string> {
 	const digest = await crypto.subtle.digest('SHA-256', bytes(token));
 
@@ -177,18 +126,7 @@ export async function hashGameToken(token: string): Promise<string> {
 		.join('');
 }
 
-/**
- * Verify and decode a token.
- *
- * Three ways to fail, and the distinction matters because one of them gets the player
- * accused of cheating:
- *
- * - `forged` — not something we signed: bad signature, mangled base64, nonsense claims.
- * - `expired` — genuinely ours, just old. An honest player who wandered off.
- * - `stale` — genuinely ours, but speaks a token version we have retired. This happens
- *   to innocent people whenever the claim shape changes, so it must never be mistaken
- *   for forgery: the signature verified, and only we can produce that.
- */
+/** Verify and decode a token. `stale` is ours (signature valid): never treat as forgery. */
 export async function verifyGameToken(token: string, secret: string): Promise<VerifyResult> {
 	const parts = token.split('.');
 	if (parts.length !== 3) return { ok: false, reason: 'forged' };
@@ -217,9 +155,7 @@ export async function verifyGameToken(token: string, secret: string): Promise<Ve
 		return { ok: false, reason: 'forged' };
 	}
 
-	// Only the major half is enforced. A mismatched major is a shape we no longer speak —
-	// the signature already proved we minted this, so that is our doing, not theirs. The
-	// minor half is reserved for a future migration to key off; it is not compared here.
+	// Only the major version is enforced; minor is reserved for future migrations.
 	if (!semver.valid(claims?.v) || semver.major(claims.v) !== semver.major(GAME_TOKEN_VERSION)) {
 		return { ok: false, reason: 'stale' };
 	}

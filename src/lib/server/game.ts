@@ -1,6 +1,3 @@
-// Reading and writing the game cookie. The hook reads it on every request; the
-// API route is the only thing allowed to write it.
-
 import { dev } from '$app/env';
 
 import {
@@ -19,11 +16,7 @@ import {
 
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
 
-// httpOnly, so page scripts can neither read the token nor swap it for one of
-// their own making. It stays perfectly visible in DevTools → Application, which
-// is the right amount of discoverable: the player can see the box, and can't
-// pick the lock. `lax` because the game is entered by ordinary top-level
-// navigation to /{lang}/game.
+// httpOnly so page scripts can't read or swap the token.
 const COOKIE_OPTIONS = {
 	path: '/',
 	httpOnly: true,
@@ -35,19 +28,11 @@ const COOKIE_OPTIONS = {
 // The flash lives only long enough to cross the redirect it is set on.
 const CAUGHT_COOKIE_OPTIONS = { ...COOKIE_OPTIONS, maxAge: 60 } as const;
 
-/**
- * Leave a note for the next request saying we caught them. Used by the stage-0 trap,
- * which answers with a redirect and so has no page of its own to say it on.
- */
 export function markCaught(cookies: Cookies): void {
 	cookies.set(GAME_CAUGHT_COOKIE, '1', CAUGHT_COOKIE_OPTIONS);
 }
 
-/**
- * Read the note and tear it up. Read-and-clear is the whole point: the accusation is
- * delivered to exactly one render, so reloading the 404 afterwards shows the ordinary
- * script rather than pinning the player to the same line forever.
- */
+/** Read-and-clear, so the accusation is shown on exactly one render. */
 function takeCaught(cookies: Cookies): boolean {
 	if (!cookies.get(GAME_CAUGHT_COOKIE)) return false;
 
@@ -67,8 +52,7 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 	const result = await verifyGameToken(token, secret);
 
 	if (result.ok) {
-		// A parked token — signed by the game-clear intent — is not an active run. It
-		// exists to carry the abnormality collection into the next one.
+		// A parked token (`w`) is not an active run.
 		const cleared = result.claims.w === true;
 
 		return {
@@ -85,18 +69,13 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 		};
 	}
 
-	// A genuine token, aged out or speaking a version we have retired. Either way it is
-	// not their doing, so the run simply ends and they are let back onto the normal site
-	// rather than accused of anything.
+	// Genuine but expired or retired: end the run quietly, never accuse.
 	if (result.reason === 'expired' || result.reason === 'stale') {
 		event.cookies.delete(GAME_COOKIE, { path: '/' });
 		return IDLE_GAME_STATE;
 	}
 
-	// Forged, mangled, or signed with a key we no longer hold. They were plainly in the
-	// game, so keep them in it — but back at the start. This request renders the page
-	// itself, so it can carry the accusation directly; no flash needed, and the freshly
-	// signed token it leaves behind is clean, so the next reload says nothing.
+	// Forged: reset to stage 0 and flag as caught.
 	const reset: GameState = {
 		active: true,
 		stage: 0,
@@ -114,11 +93,7 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 	return reset;
 }
 
-/**
- * Sign `state` into the cookie. The only path by which progress is recorded. Returns the
- * SHA-256 digest of the token just signed, for the caller to hand the client as its next
- * `proofSeed`.
- */
+/** Sign `state` into the cookie; returns the new token's hash as the next proofSeed. */
 export async function writeGameState(cookies: Cookies, state: GameState): Promise<string> {
 	const token = await signGameToken(
 		{

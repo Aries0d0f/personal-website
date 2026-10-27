@@ -1,14 +1,5 @@
 // ─── Edge worker logic ───────────────────────────────────────────────────────
-//
-// Ported from the standalone Cloudflare Worker that fronted the previous site.
-// Runs inside SvelteKit's `handle` hook (see src/hooks.server.ts) ahead of
-// routing, so it can short-circuit the request with its own Response.
-//
-// Two behaviours survive from the old worker:
-//   - Social redirects  — /s/<brand>[.tld][/path] → that profile.
-//   - The IP lookup — curl the site and you get your IP back, like
-//     ifconfig.me, with optional WHOIS / abuse intelligence and UA easter eggs.
-//
+// Runs in the `handle` hook: social redirects and the curl-able IP lookup.
 
 import type { RequestEvent } from '@sveltejs/kit';
 
@@ -16,11 +7,7 @@ import { handleIPLookup, isIPLookup } from './helpers/ip-lookup.helpers';
 import { handleSocialRedirect, isSocialRedirect } from './helpers/social-redirect.helpers';
 import { checkEasterEggs, CLI_UA } from './helpers/user-agent.helpers';
 
-/**
- * Inspect an incoming request and, if it matches the social-redirect or
- * IP-lookup behaviour, return a Response to serve. Returns `null` to let
- * SvelteKit handle the request normally.
- */
+/** Returns a Response for social-redirect/IP-lookup requests, else `null`. */
 export async function handleEdge(event: RequestEvent): Promise<Response | null> {
 	const { url } = event;
 	const userAgent = event.request.headers.get('User-Agent') ?? 'Unknown';

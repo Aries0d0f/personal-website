@@ -35,10 +35,7 @@ const fibonacci = (n: number) => {
 	return fib.slice(0, n);
 };
 
-/**
- * Corrupts `source` with an accelerating burst of glitch characters once `active` turns true:
- * a rare flicker at first, then a meltdown, paced by a reversed Fibonacci sequence.
- */
+/** Corrupts `source` with an accelerating glitch burst once `active` turns true. */
 export const useGlitch = (source: () => string, active: () => boolean, options: Options = {}) => {
 	const {
 		depth = FIB_DEPTH,

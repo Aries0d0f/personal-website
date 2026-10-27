@@ -4,20 +4,14 @@ import { pageOrder, pageHref, type PageKey } from '#lib/pages.js';
 
 const ORIGIN = 'https://aries0d0f.me';
 
-// English glosses are included alongside each native name because llms.txt is
-// consumed by LLMs that may not otherwise recognize the native name as a
-// language label.
+// English glosses help LLMs recognize native language names.
 const LANGUAGE_NAMES: Record<Locale, string> = {
 	en: 'English',
 	ja: '日本語 (Japanese)',
 	'zh-tw': '繁體中文 (Traditional Chinese)'
 };
 
-// The base locale is canonically the un-prefixed /llms.txt (see
-// src/hooks.server.ts's NON_LOCALIZED_PATHS — it must stay reachable outside
-// the i18n tree for crawlers/LLMs that expect it at the well-known root
-// path). Other locales use the site's normal /{locale}/path prefix, which
-// Paraglide's own URL matching already resolves to this same route.
+// Base locale stays at bare /llms.txt (see NON_LOCALIZED_PATHS in hooks).
 function llmsTxtUrl(locale: Locale): string {
 	return locale === baseLocale ? `${ORIGIN}/llms.txt` : `${ORIGIN}/${locale}/llms.txt`;
 }
@@ -26,10 +20,7 @@ function pageUrl(path: `/${string}`, locale: Locale): string {
 	return ORIGIN + localizeHref(path, { locale }).replace(/\/$/, '');
 }
 
-// Paraglide messages that use inline markup (e.g. `{#strong}...{/strong}`)
-// expose `.parts()`, a flat stream of text/markup tokens meant for a renderer
-// to walk — ParaglideMessage.svelte walks it into Svelte elements; here it's
-// walked into markdown so the plain-text bio still carries its emphasis.
+// Walk Paraglide `.parts()` markup tokens into markdown emphasis.
 const MARKUP_TOKENS: Record<string, string> = { strong: '**', em: '*' };
 
 function renderParts(parts: readonly { type: string; value?: string; name?: string }[]): string {
@@ -40,22 +31,14 @@ function renderParts(parts: readonly { type: string; value?: string; name?: stri
 		.join('');
 }
 
-// Raw markdown source, not the compiled mdsvex/Svelte component — llms.txt
-// needs the author's text, not rendered output. Reading it eagerly means
-// editing a content file changes what the next request to /llms.txt serves,
-// with no separate build step to keep the two in sync.
+// Raw markdown source, not the compiled component.
 const contentModules = import.meta.glob('/src/content/web/*/*.md', {
 	eager: true,
 	query: '?raw',
 	import: 'default'
 }) as Record<string, string>;
 
-// Strips the mdsvex/Svelte scaffolding these files carry purely for
-// rendering (frontmatter, a <script> setup block, layout wrapper tags, icon
-// components) so what's left is plain, readable markdown. Each file's own
-// headings (`##`) are written assuming the page itself is the top level, but
-// here they're nested one level under an "## {Page title}" section, so every
-// heading is demoted by one (`##` -> `###`) to keep the outline consistent.
+// Strip mdsvex scaffolding and demote headings one level.
 function toPlainMarkdown(raw: string): string {
 	return raw
 		.replace(/^---\n[\s\S]*?\n---\n/, '')

@@ -251,8 +251,7 @@
 		startAnimation();
 		gsap.registerPlugin(Observer);
 
-		// One reusable tween per axis, retargeted on every move, rather than a fresh tween per
-		// pointer event. Same duration and ease as a default `gsap.to`, so the follow feels identical.
+		// One reusable tween per axis, retargeted per move, not a new tween per event.
 		const parallaxTargets = [
 			'#morphing-image',
 			'#morphing-group',

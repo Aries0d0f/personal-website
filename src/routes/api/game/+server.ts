@@ -86,9 +86,7 @@ const abnormalityLottery = (
 	const pool = clearTimes > 0 ? abnormalityCodeSet : firstPlayAbnormalitySet;
 	const discoveredSet = new Set(discovered);
 
-	// Never deal the same abnormality twice in a row, never chain two screen
-	// effects back-to-back (consecutive screen glitches blur into one long one),
-	// and hold the subtle game-options ones until the player has found a couple.
+	// No repeats, no back-to-back screen effects, game-options held back early.
 	const excluded = new Set<AbnormalityCode>();
 	if (previous) {
 		excluded.add(previous);
@@ -142,9 +140,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 		} satisfies GameState);
 	}
 
-	// Starting the next round from the victory screen. Only a parked token — one that
-	// actually cleared the game — may drop straight into stage 1 with its abnormality
-	// collection intact. Everyone else walks in through the front door, /{lang}/game.
+	// Only a parked (cleared) token may restart straight at stage 1.
 	if (body?.intent === 'restart') {
 		if (locals.game.active || !locals.game.cleared) {
 			error(403, 'Nothing to continue');
@@ -163,9 +159,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 		return json(next satisfies GameState);
 	}
 
-	// The player has now seen the decoy button admit what it is. Remember it, so a reload
-	// does not rewind that reveal and play it at them a second time. One-way: nothing
-	// un-clicks it short of giving up.
+	// Persist the decoy reveal so a reload can't replay it.
 	if (body?.intent === 'button-clicked') {
 		if (!locals.game.active) {
 			error(403, 'Not playing');
@@ -197,9 +191,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 
 	const current = locals.game;
 
-	// Anti-cheat. For game-clear the claimed stage is the one being stood on, not the
-	// one being reached, so it must match the token exactly — and the exit only opens
-	// from the last rooms (the footer keeps it locked below stage 6).
+	// game-clear: stage must match the token, and only from the last rooms.
 	if (
 		body.intent === 'game-clear'
 			? stage !== current.stage || current.stage < MAX_STAGE - 1

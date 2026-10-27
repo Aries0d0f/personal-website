@@ -1,5 +1,4 @@
-// Single source of truth for the page order so the nav menu and scroll/swipe
-// navigation always stay in sync.
+// Single source of truth for page order (nav menu and scroll/swipe).
 export const pageOrder = [
 	'blank',
 	'home',

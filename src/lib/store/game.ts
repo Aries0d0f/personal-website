@@ -22,12 +22,6 @@ interface Model {
 	lastMessageUpdatedAt: Writable<Date | null>;
 	abnormality: Writable<Abnormality | false>;
 	discoveredAbnormalities: Writable<Set<AbnormalityCode>>;
-	/**
-	 * The parked state handed back by a successful `game-clear`, held here while the
-	 * victory dialog is up. Non-null is what "show the GameClear screen" means. It is
-	 * deliberately not adopted right away, so the screen stays in game mode underneath
-	 * the dialog until the player picks a door (see `leaveClearedGame` / `continueChallenge`).
-	 */
 	clearedState: Writable<GameState | null>;
 }
 
@@ -154,16 +148,12 @@ export const useGameStore = () => {
 				return;
 			}
 
-			// The win. Hold the parked state instead of adopting it, so game mode keeps
-			// running underneath the GameClear dialog until the player picks a door.
+			// Hold the parked state so game mode stays on under the GameClear dialog.
 			state.discoveredAbnormalities.set(new Set(next.discoveredAbnormalities));
 			state.clearedState.set(next);
 		},
 
-		/**
-		 * Back to the normal world: adopt the parked state the server already signed.
-		 * Navigation is the caller's job.
-		 */
+		/** Adopt the parked state; navigation is the caller's job. */
 		leaveClearedGame: () => {
 			const parked = get(state.clearedState);
 			if (!parked) return;

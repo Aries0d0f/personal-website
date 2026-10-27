@@ -3,27 +3,19 @@ import { baseLocale, locales, localizeHref } from '#lib/paraglide/runtime.js';
 
 const ORIGIN = 'https://aries0d0f.me';
 
-// Content slugs are the directory names under /src/content/web (e.g. `experience`,
-// `community`, `skill`). Deriving them from the same glob the page loader uses
-// keeps the sitemap in sync automatically when content is added or removed.
+// Derive slugs from the content glob so the sitemap stays in sync.
 const slugs = [
 	...new Set(
 		Object.keys(import.meta.glob('/src/content/web/*/*.md')).map((path) => path.split('/')[4])
 	)
 ];
 
-// The un-prefixed routes Paraglide localizes. `''` is the index; the rest are
-// the dynamic [slug] pages.
+// `''` is the index; the rest are the [slug] pages.
 const basePaths = ['', ...slugs.map((slug) => `/${slug}`)];
 
-// super-sitemap can't model this site: it assumes the default locale is
-// un-prefixed (/about, /zh/about), but Paraglide prefixes *every* locale
-// (/en, /ja, /zh-tw). So we build the sitemap from Paraglide's runtime — the
-// real source of truth for canonical URLs — including hreflang alternates so
-// search engines see each page's language variants.
+// Built from Paraglide: super-sitemap assumes an un-prefixed default locale.
 const localizePath = (path: string, locale: (typeof locales)[number]) =>
-	// localizeHref("/", …) yields a trailing slash (e.g. "/en/"); strip it so the
-	// canonical loc matches what the app serves without a redirect.
+	// Strip the trailing slash so loc matches the served URL without a redirect.
 	ORIGIN + localizeHref(path || '/', { locale }).replace(/\/$/, '');
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>

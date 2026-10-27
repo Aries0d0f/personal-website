@@ -253,8 +253,7 @@
 			}
 		}
 
-		// An empty square on the left. No glyph — the ✕ is a much later idea; the classic
-		// box only filled in while you held the mouse down on it.
+		// Empty close box, no glyph, like the classic one.
 		&-close {
 			@include plate(0);
 

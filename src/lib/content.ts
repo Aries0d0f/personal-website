@@ -1,6 +1,4 @@
-// Shared markdown content loader so both the per-route page (`[slug]/+page.ts`)
-// and the mobile combined view (`AllSections.svelte`) resolve content the same
-// way, from a single glob.
+// Shared markdown loader for `[slug]/+page.ts` and `AllSections.svelte`.
 import type { Component } from 'svelte';
 
 const modules = import.meta.glob('/src/content/web/**/*.md');

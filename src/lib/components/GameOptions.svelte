@@ -295,8 +295,7 @@
 			}
 		}
 
-		// An empty square on the left. No glyph — the ✕ is a much later idea; the classic
-		// box only filled in while you held the mouse down on it.
+		// Empty close box, no glyph, like the classic one.
 		&-close {
 			@include plate(0);
 
@@ -390,8 +389,7 @@
 			outline-offset: -4px;
 		}
 
-		// Selection on a 1-bit screen is inversion — the current language is the button
-		// left turned inside out, and it is no longer a target.
+		// Selection on a 1-bit screen is inversion; the current language isn't a target.
 		:global(.language-switcher button[aria-current='true']) {
 			background: $ink;
 			color: $paper;

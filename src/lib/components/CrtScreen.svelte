@@ -48,8 +48,7 @@
 	// Collapse around the middle of the viewport, not of the (scrolled) page.
 	const viewportCenter = () => `center ${window.scrollY + window.innerHeight / 2}px`;
 
-	// Pulls the red and cyan guns apart. One tracker per timeline, so the offsets
-	// stay continuous across the tweens that share it.
+	// One tracker per timeline keeps the offsets continuous across its tweens.
 	function chromaSplitter(tl: gsap.core.Timeline) {
 		const chroma = { split: 0 };
 
@@ -69,8 +68,7 @@
 			);
 	}
 
-	// Drives the tube past its limits. Rides on the same filter as the chroma split,
-	// so the brightness has to be rewritten alongside it rather than set on its own.
+	// Shares the chroma filter, so brightness is rewritten alongside it.
 	function overdriver(tl: gsap.core.Timeline, el: HTMLElement) {
 		const burn = { brightness: 1, contrast: 1 };
 
@@ -315,16 +313,14 @@
 			.to(voidEl!, { opacity: 0, duration: 0.45, ease: 'power2.out' }, '<+=0.05');
 	}
 
-	// One master timeline so GSDevTools has a single thing to bind to. Without a
-	// `swap` it plays straight through, which is what makes it scrubbable.
+	// One master timeline for GSDevTools; without `swap` it plays straight through.
 	function buildCycle(el: HTMLElement, swap?: () => void | Promise<void>) {
 		const tl = gsap.timeline({ id: 'crt', paused: true });
 
 		tl.add(tearAndCollapse(el));
 
 		if (swap) {
-			// The swap happens while the screen is dark, so it is never seen. Resume no
-			// matter how it goes: a swap that throws must not leave the tube stuck shut.
+			// Resume regardless: a throwing swap must not leave the tube stuck shut.
 			tl.addPause(tl.duration(), async () => {
 				try {
 					el.style.filter = '';
@@ -347,8 +343,7 @@
 		tl.add(burnOut(el));
 
 		if (swap) {
-			// The swap happens inside the blowout, while the screen is pure white. Resume no
-			// matter how it goes: a swap that throws must not leave the screen white forever.
+			// Resume regardless: a throwing swap must not leave the screen white.
 			tl.addPause(tl.duration(), async () => {
 				try {
 					disarmScreen(el);
@@ -378,8 +373,7 @@
 		cyanOffset?.setAttribute('dx', '0');
 	}
 
-	// Mounts the burst layers, runs the timeline against the armed screen, and puts
-	// the screen back the way it was found — whatever the timeline did to it.
+	// Always restores the screen, whatever the timeline did to it.
 	async function play(
 		build: (el: HTMLElement) => gsap.core.Timeline,
 		swap: Swap,
@@ -404,15 +398,10 @@
 		}
 	}
 
-	// `swap` is folded into the timeline so it lands on the one frame that hides it,
-	// and is passed to `play` only as the fallback for when there is no screen to animate.
-	//
-	// On the way in the tube is losing its picture, so the tears punch black holes in it.
-	// Once the game is on and the tube is overloading, they flare through it instead.
+	// `swap` lands on the hidden frame; passed to `play` only as a no-screen fallback.
 	const powerCycle = (swap: Swap) => play((el) => buildCycle(el, swap), swap, 'black');
 
-	// The tube is losing its vertical hold long before it gives out, so the roll stops
-	// rolling and starts jumping. Flagged for the whole cycle, not just the overload.
+	// Flagged for the whole cycle, not just the overload.
 	const burnOutCycle = async (swap: Swap) => {
 		burning = true;
 
@@ -426,8 +415,7 @@
 	// Nothing to hide: the picture stays up the whole way through, so nothing is swapped.
 	const interferenceCycle = () => play(interference, noop, 'invert');
 
-	// Dev-only: `crt.debug()` in the console builds a cycle without the page swap and
-	// hands it to GSDevTools, so it can be scrubbed in place. Pass 'burn' for the other one.
+	// Dev-only: `crt.debug()` scrubs a cycle in GSDevTools. Pass 'burn' for the other.
 	async function openDevTools(cycle: 'power' | 'burn' = 'power') {
 		const el = screen;
 		if (!import.meta.env.DEV || !el) return;
@@ -461,15 +449,12 @@
 		burst = false;
 	}
 
-	// A modal dialog is promoted into the top layer, which paints above the whole document
-	// no matter what z-index says. The only way for the picture to reach over one is to be
-	// in the top layer as well — hence a manual popover rather than a plain overlay.
+	// Manual popover: only the top layer can paint above a modal dialog.
 	function show() {
 		if (crtEl && !crtEl.matches(':popover-open')) crtEl.showPopover();
 	}
 
-	// Within the top layer, order of promotion is order of paint. Whatever went in after the
-	// tube is now in front of it, so the tube leaves and comes back in behind nothing.
+	// Top layer paints in promotion order, so the tube re-enters last.
 	function promote() {
 		if (!crtEl?.matches(':popover-open')) return;
 
@@ -568,10 +553,7 @@
 {/if}
 
 <style lang="scss">
-	// The face of a tube is where two very flat ellipses overlap: a tall one bowing
-	// the left and right edges, a wide one bowing the top and bottom. How far each
-	// reaches past the viewport sets how hard the picture wraps — the closer to
-	// 50% / 50%, the rounder (and older) the tube.
+	// The tube face is the overlap of two flat ellipses; closer to 50% is rounder.
 	$bow-tight: 52%;
 	$bow-wide: 118%;
 
@@ -591,8 +573,7 @@
 		pointer-events: none;
 		overflow: hidden;
 
-		// The UA shrink-wraps a popover and gives it a border, padding and an opaque
-		// background. The tube is a sheet of glass over the whole viewport: none of that.
+		// Undo the UA popover sizing, border, padding and background.
 		width: auto;
 		height: auto;
 		max-width: none;
@@ -643,10 +624,7 @@
 			}
 		}
 
-		// The drifting layers below move by transform rather than background-position, so the
-		// compositor slides an already-painted texture instead of repainting the whole viewport
-		// every frame. Each is oversized by its travel, and its background offset by the same
-		// amount, so the pattern lands exactly where the background-position version put it.
+		// Drift via transform, not background-position, to avoid full-viewport repaints.
 		&-scanlines {
 			z-index: 3;
 			top: -4px;
@@ -702,8 +680,6 @@
 			will-change: opacity;
 		}
 
-		// Curved glass: the picture falls away as it wraps around the edge of the
-		// tube, with a sheen where the room lands on it and a highlight along the rim.
 		&-glass {
 			z-index: 7;
 			background-image:
@@ -736,16 +712,14 @@
 			mask-composite: intersect;
 		}
 
-		// Unlit glass outside the face. Sits above the burst layers so the corners
-		// stay dark even while the tube flashes.
+		// Above the burst layers so the corners stay dark while the tube flashes.
 		&-bezel {
 			z-index: 12;
 			background-color: #000;
 			mask-image: $surround;
 		}
 
-		// The grain the tube always has, turned all the way up. Screened, so it adds
-		// light rather than veiling the picture: the noise is what makes it brighter.
+		// Screened so the noise adds light rather than veiling the picture.
 		&-static {
 			z-index: 8;
 			inset: -40px;
@@ -785,9 +759,7 @@
 			&-band {
 				animation: crt-roll 7s linear infinite;
 
-				// Vertical hold gone: the band snaps between two positions instead of
-				// sliding through them. `steps` is what sells it — an interpolated
-				// travel this short would read as a hum, not a flick.
+				// `steps` makes the band snap; interpolated travel this short reads as a hum.
 				&.flicking {
 					animation: crt-roll-flicking 0.03s steps(2, jump-none) infinite alternate;
 				}

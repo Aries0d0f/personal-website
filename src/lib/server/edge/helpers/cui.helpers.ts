@@ -1,5 +1,5 @@
 // ─── Text-Mode CUI Drawing ───────────────────────────────────────────────────
-//
+
 import { Ansis } from 'ansis';
 
 export type Options = {
@@ -72,8 +72,7 @@ export const useCuiHelper = (lines: string[] = [], options?: Options) => {
 	const SEPARATOR = '='.repeat(52);
 	const DIVIDER = '-'.repeat(52);
 
-	// Fancy rows inside a section are drawn with `├`, and the last one is
-	// rewritten to `└` once we know the section is over.
+	// Fancy section rows use `├`; the last is rewritten to `└` on close.
 	let inSection = false;
 	let lastRow: { index: number; body: string } | null = null;
 
@@ -196,10 +195,7 @@ export const useCuiHelper = (lines: string[] = [], options?: Options) => {
 	};
 };
 
-/**
- * Lays the final report out for the response. Plain text is returned as-is;
- * fancy mode puts the ANSI art beside the report and a color palette below.
- */
+/** Lays out the report; fancy mode adds ANSI art and a color palette. */
 export const renderScreen = (body: string, options?: Options): string => {
 	const { plainText = false } = options ?? {};
 	if (plainText) return body;

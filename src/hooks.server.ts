@@ -13,29 +13,13 @@ import { paraglideMiddleware } from '#lib/paraglide/server.js';
 import { handleEdge } from '#lib/server/edge/index.js';
 import { markCaught, readGameState, writeGameState } from '#lib/server/game.js';
 
-// Routes that exist outside the i18n tree and must be served verbatim by
-// SvelteKit. They have no locale-prefixed variant, and they must bypass the
-// edge worker too: isIPLookup() matches any CLI/unknown User-Agent, so without
-// this guard `curl /sitemap.xml` (or a crawler sending no UA) would get the
-// IP-lookup response instead of the sitemap.
-//
-// llms.txt is the exception: its base-locale version lives at the bare,
-// un-prefixed /llms.txt (a well-known path crawlers/LLMs expect, so it can't
-// live inside the i18n tree), but its other locales use the site's normal
-// /{locale}/path prefix and are handled by that same route via Paraglide's
-// own URL matching — extractLocaleFromUrl already resolves them, so they only
-// need to skip the edge worker below, not the locale redirect.
+// Skip locale redirect and edge worker (isIPLookup matches any CLI/unknown UA).
 const NON_LOCALIZED_PATHS = new Set(['/sitemap.xml', '/robots.txt', '/llms.txt', '/api/game']);
 const LOCALIZED_LLMS_TXT_PATHS = new Set(locales.map((locale) => `/${locale}/llms.txt`));
 const isNonLocalizedPath = (pathname: string) =>
 	NON_LOCALIZED_PATHS.has(pathname) || LOCALIZED_LLMS_TXT_PATHS.has(pathname);
 
-// HTTP2Shell (CVE-2026-111497) is an out-of-bounds write in the Brotli decoder,
-// reachable by anything that inflates an attacker-supplied `br` body. Nothing on
-// this site accepts a compressed request body — the only body reader is the
-// game API's request.json() — so refuse any request that declares a content
-// coding before it gets near a decoder. This is defense in depth: the runtime
-// itself (workerd, or Node/Bun in dev) still has to be on a patched Brotli.
+// CVE-2026-111497 (Brotli OOB write): refuse compressed request bodies.
 const handleRequestEncoding: Handle = ({ event, resolve }) => {
 	const encoding = event.request.headers.get('content-encoding')?.trim().toLowerCase();
 
@@ -46,10 +30,6 @@ const handleRequestEncoding: Handle = ({ event, resolve }) => {
 	return resolve(event);
 };
 
-// Ported Cloudflare Worker logic (social redirects + IP lookup). Runs first so
-// it can short-circuit the request before routing/i18n; falls through to
-// SvelteKit when it returns null. Reserved paths skip the worker so they reach
-// their real handlers regardless of User-Agent.
 const handleWorker: Handle = async ({ event, resolve }) => {
 	if (isNonLocalizedPath(event.url.pathname)) return resolve(event);
 
@@ -59,13 +39,7 @@ const handleWorker: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-// Google indexed the previous BCP-47 casing of the Chinese locale (/zh-TW), but
-// Paraglide's routes are lowercase (/zh-tw). Permanently redirect the old casing
-// — and any path beneath it — to the canonical lowercase form so indexed links
-// keep working. Runs before handleLocaleRedirect, which would otherwise treat
-// /zh-TW as un-prefixed and send it to the visitor's preferred locale instead of
-// Chinese. Matched case-insensitively; the already-canonical form is skipped to
-// avoid a redirect loop, and the lookahead keeps /zh-tw from matching.
+// Legacy /zh-TW -> /zh-tw. Must run before handleLocaleRedirect.
 const handleLegacyLocaleCasing: Handle = ({ event, resolve }) => {
 	const { pathname } = event.url;
 	const match = pathname.match(/^\/zh-tw(?=\/|$)/i);
@@ -77,11 +51,6 @@ const handleLegacyLocaleCasing: Handle = ({ event, resolve }) => {
 	return resolve(event);
 };
 
-// Every locale now carries a path prefix (/en, /ja, /zh-tw), so an un-prefixed
-// path matches no localized pattern — extractLocaleFromUrl returns undefined.
-// Redirect those requests to the canonical, prefixed URL for the visitor's
-// preferred locale (Accept-Language, falling back to the base locale). Explicit
-// /en, /ja and /zh-tw links already carry a locale and skip this entirely.
 const handleLocaleRedirect: Handle = ({ event, resolve }) => {
 	const wantsHtml = event.request.headers.get('accept')?.includes('text/html');
 
@@ -95,8 +64,7 @@ const handleLocaleRedirect: Handle = ({ event, resolve }) => {
 			'baseLocale'
 		]);
 
-		// localizeUrl("/") yields a trailing slash (e.g. "/en/"); strip it so the
-		// canonical target is "/en" and we avoid a second trailing-slash redirect.
+		// Strip the trailing slash to avoid a second redirect.
 		const path = localizeUrl(event.url, { locale: preferred }).pathname.replace(/\/$/, '');
 		redirect(307, path + event.url.search);
 	}
@@ -104,23 +72,10 @@ const handleLocaleRedirect: Handle = ({ event, resolve }) => {
 	return resolve(event);
 };
 
-// The game used to live in the URL — /{lang}/game, or a ?game flag that had to be
-// dragged along by every link. It lives in a signed cookie now, so the player can
-// wander anywhere and stay in it, and so their cleared stages survive a reload.
-//
-// /{lang}/game is still the front door, and still 404s: [slug] has no content for
-// it. That is the joke. The player arrives at an error page, assumes the path put
-// them there, and spends a while trying to leave by editing the path. The cookie
-// is already set; the only way out is Give Up.
-//
-// The token is minted here rather than in a load function so it is issued by the
-// same response that serves the error page, on the document request and on the
-// __data.json request the Konami-code goto() makes.
+// /{lang}/game 404s on purpose; the token is minted on that same response.
 const GAME_ENTRY = '/game';
 
-// Only navigations get bounced. Assets, the API and the edge worker's own routes
-// have to pass through, or the error page would come back without its stylesheet
-// and the give-up request would be redirected instead of answered.
+// Only navigations get bounced, or assets and the API would be redirected.
 const isNavigation = (event: RequestEvent) =>
 	event.isDataRequest || (event.request.headers.get('accept')?.includes('text/html') ?? false);
 
@@ -128,9 +83,7 @@ const handleGame: Handle = async ({ event, resolve }) => {
 	const state = await readGameState(event);
 	const path = deLocalizeUrl(event.url).pathname;
 
-	// The front door. No active run, and they knocked on /{lang}/game. A cleared run
-	// leaves its token parked rather than deleted (see the game-clear intent), so the
-	// abnormality collection it carries survives into the run minted here.
+	// Front door. A parked (cleared) token carries its collection into the new run.
 	if (!state.active && path === GAME_ENTRY) {
 		event.locals.game = {
 			active: true,
@@ -151,19 +104,7 @@ const handleGame: Handle = async ({ event, resolve }) => {
 
 	event.locals.game = state;
 
-	// Stage 0 is a locked room, and the lock is here rather than in the client, because
-	// the escape being attempted *is* a client bypass — typing a new path into the
-	// address bar. The player has not rewritten the status code yet, so as far as the
-	// game is concerned the site does not exist for them: every navigation lands back
-	// on the 404 they were trying to leave.
-	//
-	// Once stage 1 is banked the room unlocks and they can roam the site freely — that
-	// is the reward, and `state.stage === 0` is what draws the line.
-	//
-	// This response is a redirect, so it has no page on which to say it noticed. It
-	// leaves the note in a one-shot cookie instead, and the 404 it bounces them to eats
-	// the note and delivers the line. Nothing is written into the signed token: the
-	// player is caught *this once*, not branded for the rest of the run.
+	// Stage-0 lock lives server-side: the escape being attempted is a client bypass.
 	if (state.active && state.stage === 0 && path !== GAME_ENTRY && isNavigation(event)) {
 		markCaught(event.cookies);
 

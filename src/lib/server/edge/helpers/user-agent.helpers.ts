@@ -1,7 +1,5 @@
 // ─── User-Agent Detection ────────────────────────────────────────────────────
-//
-// Shared UA regexes and the CLI easter-egg messages, used by both the route
-// predicates (index.ts) and the IP lookup handler.
+// Shared UA regexes and the CLI easter-egg messages.
 
 export const NATIVE_UA =
 	/MSIE|WebKit|WKWebView|safari|edge|chrom(e|ium)|firefox|html|khtml|gecko|anthropic-ai|Slurp|spider|bot|crawler|facebook|meta|externalagent|WhatsApp/i;

@@ -21,9 +21,7 @@ const noop = () => {};
 let routines: Routines | null = null;
 let running = $state(false);
 
-// Screen-effect overlays that have to reach over a modal dialog, but stay under the
-// tube's glass. They live in the top layer with everything else, so ordering is a
-// matter of promotion order: layers first, tube last.
+// Overlays above modal dialogs but under the tube, ordered by promotion order.
 const layers = new SvelteSet<HTMLElement>();
 
 const repromote = (el: HTMLElement) => {
@@ -43,10 +41,7 @@ export const useCRT = () => {
 	const prefersReducedMotion = () =>
 		typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	// `exclusive` cycles take the tube for themselves: they swap the page underneath, so a
-	// second one must not start on top of them. A non-exclusive cycle is pure decoration —
-	// it neither takes the lock nor waits on it, so it can never hold the tube shut for a
-	// cycle that has somewhere to be.
+	// Exclusive cycles swap the page and take the lock; others are pure decoration.
 	const run = async (name: CycleName, swap: Swap, exclusive = true) => {
 		const routine = routines?.[name];
 
@@ -60,9 +55,7 @@ export const useCRT = () => {
 			return;
 		}
 
-		// The transition is decoration, the swap is not: whoever asked for the cycle is
-		// waiting on the page underneath to change. If the tube is already mid-cycle the
-		// swap still has to land — it just lands without the show.
+		// The swap must land even if the tube is mid-cycle; only the show is skipped.
 		if (running) {
 			await swap();
 			return;
@@ -76,8 +69,7 @@ export const useCRT = () => {
 		}
 	};
 
-	// An action for the overlays: promote the element on mount, keep the tube above it,
-	// and take it back out of the top layer when the effect goes away.
+	// Promote on mount, keep the tube above it, leave the top layer on destroy.
 	const underGlass = (el: HTMLElement) => {
 		layers.add(el);
 		el.showPopover();
@@ -98,10 +90,7 @@ export const useCRT = () => {
 		burnOut: (swap: Swap) => run('burnOut', swap),
 		interference: () => run('interference', noop, false),
 		underGlass,
-		// The tube is in the top layer, which paints in the order things were added to it —
-		// z-index buys nothing there. Anything promoted after it (a modal dialog) lands on
-		// top of the picture, so everything has to be put back up once that thing is in:
-		// the effect layers first, the tube last.
+		// Top layer paints in promotion order: re-promote layers first, the tube last.
 		promote: () => {
 			for (const el of layers) repromote(el);
 			routines?.promote();

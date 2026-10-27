@@ -1,5 +1,4 @@
 // ─── Social Redirects ────────────────────────────────────────────────────────
-//
 // /s/<brand>[.tld][/path] → that profile, with a GA4 hit fired alongside.
 
 import type { RequestEvent } from '@sveltejs/kit';

@@ -127,8 +127,7 @@
 
 	function handleGameButtonClick() {
 		if (gameDescription.isTyping) {
-			// Only skip the typing effect if the user has clicked the back button 3 or more times
-			// (Stage performing necessary)
+			// Only skip the typing effect after 3+ back-button clicks (stage performing)
 			if ($backButtonClickedTimes >= 3) {
 				gameDescription.skip();
 			}

@@ -1,8 +1,5 @@
 // ─── GA4 Reporting ───────────────────────────────────────────────────────────
-//
-// Server-side Measurement Protocol reporting for the social-redirect flow —
-// client ID resolution/minting, device/geo enrichment, and the fire-and-forget
-// hit itself.
+// Server-side Measurement Protocol reporting for social redirects.
 
 import type { RequestEvent } from '@sveltejs/kit';
 
@@ -17,10 +14,7 @@ const GA_COOKIE_NAME = '_ga';
 const GA_COOKIE_MAX_AGE = 60 * 60 * 24 * 730; // ~2 years, GA's own default
 const encoder = new TextEncoder();
 
-// UN M49 continent groupings (developers.google.com/analytics/devguides/collection/protocol/ga4/reference#payload_geo_info).
-// Only the continent level: M49 splits the Americas into Northern/Latin
-// America+Caribbean at the sub-region level, which needs a per-country lookup
-// Cloudflare's continent code alone can't provide, so subcontinent_id is left unset.
+// UN M49 continent codes; subcontinent needs per-country data, so it's unset.
 const UN_M49_CONTINENT: Partial<Record<ContinentCode, string>> = {
 	AF: '002',
 	AS: '142',
@@ -39,8 +33,7 @@ function getGA4Credentials(): { measurementId: string; apiSecret: string } | nul
 	return { measurementId, apiSecret };
 }
 
-// Reuses the existing `_ga` cookie's client_id when present; otherwise mints
-// one and writes it back as `_ga`, so a later real pageview inherits it too.
+// Reuse the `_ga` client_id, or mint one and write it back as `_ga`.
 export async function resolveGA4ClientId(
 	event: RequestEvent,
 	clientIP: string | null
