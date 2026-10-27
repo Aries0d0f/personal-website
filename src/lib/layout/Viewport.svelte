@@ -319,6 +319,8 @@
 			],
 			{ duration: 500, easing: EASE.power3Out }
 		);
+
+		if (!$isGameMode) observer?.enable();
 		pageAnimation.onfinish = () => {
 			transitioning = false;
 			observer?.enable();
