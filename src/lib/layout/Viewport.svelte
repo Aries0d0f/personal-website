@@ -111,6 +111,29 @@
 		}
 	}
 
+	const WHEEL_GESTURE_GAP = 200;
+	let lastWheelAt = 0;
+	let wheelLocked = false;
+	let wheelPeak = 0;
+	let wheelTrough = Infinity;
+
+	// Momentum only decays; a pause, or a rise after decaying past half the peak, is a new gesture.
+	function trackWheel(event: WheelEvent) {
+		const delta = Math.max(Math.abs(event.deltaX), Math.abs(event.deltaY));
+		const paused = event.timeStamp - lastWheelAt > WHEEL_GESTURE_GAP;
+		const surged =
+			wheelTrough < wheelPeak / 2 && delta > wheelTrough * 2 && delta - wheelTrough > 8;
+		lastWheelAt = event.timeStamp;
+
+		if (paused || surged || delta >= wheelPeak) {
+			if (paused || surged) wheelLocked = false;
+			wheelPeak = delta;
+			wheelTrough = Infinity;
+		} else {
+			wheelTrough = Math.min(wheelTrough, delta);
+		}
+	}
+
 	let pinching = false;
 	const startPinch = () => (pinching = true);
 	const endPinch = () => (pinching = false);
@@ -118,6 +141,7 @@
 	function performPageSwitch(direction: 1 | -1, key: PageKey) {
 		lastDirection = direction;
 		transitioning = true;
+		wheelLocked = true;
 
 		observer?.disable();
 
@@ -514,7 +538,8 @@
 				tolerance: $isGameMode ? 100 : 10,
 				preventDefault: true,
 				// Pinch-zoom: ctrl+wheel on touchpads, gesture events on Safari.
-				ignoreCheck: (event) => pinching || (event as WheelEvent).ctrlKey,
+				ignoreCheck: (event) =>
+					pinching || (event.type === 'wheel' && (wheelLocked || (event as WheelEvent).ctrlKey)),
 				onUp: () => switchPage(1),
 				onDown: () => switchPage(-1)
 			});
@@ -581,6 +606,7 @@
 		mounted = true;
 
 		document.addEventListener('toggle', syncDialogState, true);
+		window.addEventListener('wheel', trackWheel, { capture: true, passive: true });
 		window.addEventListener('gesturestart', startPinch);
 		window.addEventListener('gestureend', endPinch);
 
@@ -599,6 +625,7 @@
 
 		return () => {
 			document.removeEventListener('toggle', syncDialogState, true);
+			window.removeEventListener('wheel', trackWheel, { capture: true });
 			window.removeEventListener('gesturestart', startPinch);
 			window.removeEventListener('gestureend', endPinch);
 			observer?.kill();
