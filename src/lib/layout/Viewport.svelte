@@ -145,11 +145,15 @@
 
 		observer?.disable();
 
+		const isSafari = /^((?!chrome|chromium|android|crios|fxios|edgios).)*safari/i.test(
+			navigator.userAgent
+		);
+
 		gsap.to('.intro-content', {
 			opacity: 0,
 			y: direction * -60,
-			duration: 0.33,
-			ease: 'power3.in',
+			duration: isSafari ? 0.33 : 0.4,
+			ease: isSafari ? 'power3.in' : 'power2.in',
 			onComplete: () => afterTouchRelease(() => goto(resolve(pagePath(key, getLocale()))))
 		});
 	}
