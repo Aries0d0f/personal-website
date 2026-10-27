@@ -44,6 +44,8 @@
 	let width = $state(0);
 	let height = $state(0);
 	let mounted = $state(false);
+	// Hands the CSS first frame over to GSAP.
+	let introPending = $state(true);
 	let sequence: string[] = $state([]);
 	let konamiTimer = $state<ReturnType<typeof setTimeout>>();
 
@@ -231,16 +233,18 @@
 		tl.set('.intro-content', {
 			opacity: HIDDEN_OPACITY,
 			translateX: -200
-		}).set('menu', {
-			opacity: 0,
-			translateX: '100%'
-		});
+		})
+			.set('menu', {
+				opacity: 0,
+				translateX: '100%'
+			})
+			.call(() => (introPending = false));
 
 		if (width > 840) {
 			// Transforms over the final layout instead of a negative margin, to avoid repaints.
 			const MARGIN = 320;
 
-			// Offset rather than `display: none`: re-showing the content would restart LCP.
+			// Not `display: none`, which restarts LCP.
 			tl.set('.intro-content', { x: -MARGIN / 2 - 200 })
 				.set('.intro-avatar', { x: MARGIN / 2 })
 				.to('.intro-content', { x: 0, duration: 1, ease: 'power3.out' }, '+=2.2')
@@ -252,7 +256,7 @@
 		} else {
 			tl.fromTo(
 				'.intro-content',
-				// Transform, not margin: a margin animation shifts layout every frame (CLS).
+				// Transform, not margin, to avoid CLS.
 				{ y: -240, display: 'flex', translateX: 0 },
 				{ y: 0, translateX: 0, duration: 1, ease: 'power3.out' },
 				'<+=2.2'
@@ -545,6 +549,7 @@
 			} else {
 				gsap.set('.intro-content', { opacity: 1, display: 'flex', clearProps: 'transform' });
 				gsap.set('menu', { opacity: 1, translateX: '0%' });
+				introPending = false;
 				scrollToSection(page.url.pathname);
 			}
 		} else {
@@ -567,6 +572,7 @@
 		{showInvertScreen && 'invert-screen'}
 		{showMonochromeScreen && 'monochrome-screen'}
 	"
+	class:intro-pending={introPending}
 >
 	<main class="intro-container" class:combined={showCombined}>
 		<div class="intro-avatar">
@@ -630,6 +636,28 @@
 			place-items: start;
 			place-content: start;
 			overflow: visible;
+		}
+
+		// startAnimation()'s first frame.
+		&.intro-pending {
+			:global(menu) {
+				opacity: 0;
+				transform: translateX(100%);
+			}
+
+			.intro-content {
+				transform: translate(-200px, -240px);
+			}
+
+			@media (width > 840px) {
+				.intro-avatar {
+					transform: translateX(160px);
+				}
+
+				.intro-content {
+					transform: translateX(-360px);
+				}
+			}
 		}
 
 		// Promoted so the compositor runs the filter instead of repainting the viewport.

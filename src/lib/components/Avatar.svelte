@@ -45,14 +45,19 @@
 
 	const BASE_IMG_WIDTH = 423;
 
-	const avatarImgWidth = $derived(width > BASE_IMG_WIDTH ? BASE_IMG_WIDTH : width);
+	// Width is 0 before it's measured (SSR): use full size.
+	const avatarImgWidth = $derived(width > 0 && width < BASE_IMG_WIDTH ? width : BASE_IMG_WIDTH);
 	const currentLang = $derived(getLocale());
+
+	// Hands the CSS first frame over to GSAP.
+	let introPending = $state(true);
 
 	function startAnimation() {
 		const tl = gsap.timeline();
-		tl.set('#mask-title-text-clipping-circle', {
-			r: 10
-		})
+		tl.call(() => (introPending = false))
+			.set('#mask-title-text-clipping-circle', {
+				r: 10
+			})
 			.set('#mask-top-hemisphere-circle', {
 				r: 10
 			})
@@ -281,9 +286,11 @@
 {#snippet avatar()}
 	<svg
 		class="avatar-instance"
+		class:intro-pending={introPending}
 		width={avatarImgWidth}
 		height="531"
 		viewBox="0 0 {avatarImgWidth} 531"
+		preserveAspectRatio="xMidYMid slice"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
 		xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -322,7 +329,7 @@
 				<textPath
 					id="avatar-slogan-text"
 					href="#avatar-slogan-text-path"
-					startOffset={width >= 320 ? '49%' : '35.75%'}
+					startOffset={width === 0 || width >= 320 ? '49%' : '35.75%'}
 					text-anchor="left"
 				>
 					{#if $isGameMode && $abnormality === Abnormality.AN15}
@@ -614,6 +621,8 @@
 		> svg {
 			width: 100%;
 			height: 100%;
+			// With `slice`, crops like the JS does.
+			min-height: 531px;
 
 			text {
 				font-size: 1.25rem;
@@ -687,5 +696,31 @@
 				color: unset !important;
 			}
 		}
+	}
+
+	// startAnimation()'s first frame.
+	#intro-in-decorate {
+		cy: -10px;
+		r: 0;
+		opacity: 0;
+	}
+
+	#mask-whole-circle,
+	#mask-bottom-hemisphere-circle {
+		r: 0;
+	}
+
+	#mask-top-hemisphere-circle,
+	#mask-title-text-clipping-circle {
+		r: 10px;
+	}
+
+	// Not a transform: it breaks GSAP's origin maths.
+	.intro-pending #mask-bottom-hemisphere-rect {
+		opacity: 0;
+	}
+
+	#mask-bottom-hemisphere-group {
+		opacity: 0;
 	}
 </style>
