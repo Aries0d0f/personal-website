@@ -30,6 +30,22 @@ const LOCALIZED_LLMS_TXT_PATHS = new Set(locales.map((locale) => `/${locale}/llm
 const isNonLocalizedPath = (pathname: string) =>
 	NON_LOCALIZED_PATHS.has(pathname) || LOCALIZED_LLMS_TXT_PATHS.has(pathname);
 
+// HTTP2Shell (CVE-2026-111497) is an out-of-bounds write in the Brotli decoder,
+// reachable by anything that inflates an attacker-supplied `br` body. Nothing on
+// this site accepts a compressed request body — the only body reader is the
+// game API's request.json() — so refuse any request that declares a content
+// coding before it gets near a decoder. This is defense in depth: the runtime
+// itself (workerd, or Node/Bun in dev) still has to be on a patched Brotli.
+const handleRequestEncoding: Handle = ({ event, resolve }) => {
+	const encoding = event.request.headers.get('content-encoding')?.trim().toLowerCase();
+
+	if (encoding && encoding !== 'identity') {
+		return new Response('Unsupported Content-Encoding', { status: 415 });
+	}
+
+	return resolve(event);
+};
+
 // Ported Cloudflare Worker logic (social redirects + IP lookup). Runs first so
 // it can short-circuit the request before routing/i18n; falls through to
 // SvelteKit when it returns null. Reserved paths skip the worker so they reach
@@ -172,6 +188,7 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 	});
 
 export const handle: Handle = sequence(
+	handleRequestEncoding,
 	handleWorker,
 	handleLegacyLocaleCasing,
 	handleLocaleRedirect,
