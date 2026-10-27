@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { reveal } from '#lib/helpers/reveal.js';
+
 	let { data, children } = $props();
 </script>
 
 <article class="timeline-container">
 	<h1>{data.metadata?.title}</h1>
-	<div class="timeline-content">
+	<div class="timeline-content" use:reveal>
 		{@render children?.()}
 	</div>
 </article>
@@ -90,13 +92,11 @@
 							width: 100%;
 							height: 100%;
 							background-color: #000;
-							transform: scaleX(0);
+							transform: scale3d(0, 1, 1);
 							transform-origin: left;
 							position: absolute;
 							left: 0;
 							bottom: 50%;
-							animation-delay: 2s;
-							animation: strikeThrough 0.5s ease forwards;
 						}
 					}
 
@@ -132,34 +132,37 @@
 					color: #4d4d4d;
 				}
 
-				@for $i from 1 through 10 {
-					animation-delay: 0.5s;
-					animation: fadeInUp 0.5s ease forwards;
+				&.reveal {
 					opacity: 0;
-					transform: translateY(10px);
+					transform: translate3d(0, 10px, 0);
+					will-change: opacity, transform;
+				}
 
-					&:nth-of-type(#{$i}) {
-						animation-delay: ($i - 1) * 0.05s;
+				&.revealed {
+					animation: fadeInUp 0.5s ease forwards;
+
+					> hgroup s::before {
+						animation: strikeThrough 0.5s ease forwards;
 					}
 				}
 
 				@keyframes fadeInUp {
 					from {
 						opacity: 0;
-						transform: translateY(10px);
+						transform: translate3d(0, 10px, 0);
 					}
 					to {
 						opacity: 1;
-						transform: translateY(0);
+						transform: translate3d(0, 0, 0);
 					}
 				}
 
 				@keyframes strikeThrough {
 					from {
-						transform: scaleX(0);
+						transform: scale3d(0, 1, 1);
 					}
 					to {
-						transform: scaleX(1);
+						transform: scale3d(1, 1, 1);
 					}
 				}
 			}

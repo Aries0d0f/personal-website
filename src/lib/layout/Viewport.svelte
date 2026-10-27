@@ -115,10 +115,27 @@
 		gsap.to('.intro-content', {
 			opacity: 0,
 			y: direction * -60,
-			duration: 0.4,
+			duration: 0.3,
 			ease: 'power2.in',
-			onComplete: () => goto(resolve(pagePath(key, getLocale())))
+			onComplete: () => afterTouchRelease(() => goto(resolve(pagePath(key, getLocale()))))
 		});
+	}
+
+	let touching = false;
+	let onTouchRelease: (() => void) | undefined;
+
+	function afterTouchRelease(run: () => void) {
+		if (touching) onTouchRelease = run;
+		else run();
+	}
+
+	function handleTouchEnd(event: TouchEvent) {
+		touching = event.touches.length > 0;
+		if (touching) return;
+
+		const run = onTouchRelease;
+		onTouchRelease = undefined;
+		run?.();
 	}
 
 	async function handleGameStageSwitch(direction: 1 | -1, onFinish: () => void) {
@@ -563,7 +580,14 @@
 	});
 </script>
 
-<svelte:window bind:innerWidth={width} bind:innerHeight={height} onkeydown={handleKeyNavigation} />
+<svelte:window
+	bind:innerWidth={width}
+	bind:innerHeight={height}
+	onkeydown={handleKeyNavigation}
+	ontouchstart={() => (touching = true)}
+	ontouchend={handleTouchEnd}
+	ontouchcancel={handleTouchEnd}
+/>
 
 <div
 	class="
