@@ -1,13 +1,13 @@
 <script lang="ts">
 	import gsap from 'gsap';
-	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale, locales, localizeHref } from '$lib/paraglide/runtime';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getLocale, locales, localizeHref } from '#lib/paraglide/runtime.js';
 
-	import type { Locale } from '$lib/paraglide/runtime';
+	import type { Locale } from '#lib/paraglide/runtime.js';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Abnormality } from '$lib/game/abnoramlity';
+	import { Abnormality } from '#lib/game/abnoramlity.js';
 
 	import type { ResolvedPathname } from '$app/types';
 
@@ -65,7 +65,7 @@
 				await gsap.to(menu, { opacity: 0, duration: 0.25, ease: 'power2.in' });
 			}
 
-			await goto(target, { keepFocus: true, noScroll: true });
+			await goto(target, { reset: false });
 
 			if (menu) {
 				gsap.to(menu, { opacity: 1, duration: 0.4, ease: 'power3.out' });

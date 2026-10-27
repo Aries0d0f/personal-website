@@ -4,25 +4,29 @@
 	import { onMount } from 'svelte';
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
-	import { browser } from '$app/environment';
-	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { useGameStore } from '$lib/store/game';
-	import { useCRT } from '$lib/helpers/crt.svelte';
-	import avatarImgNoBg from '$lib/assets/avatar-nbg.png';
-	import avatarImgGameMode from '$lib/assets/avatar-nbg-gamemode.png';
-	import avatarImgGameModeCreepy from '$lib/assets/avatar-nbg-gamemode-creepy.png';
-	import avatarImg from '$lib/assets/avatar.jpg';
-	import { Abnormality } from '$lib/game/abnoramlity';
-	import { useInteractiveBobble } from '$lib/helpers/interactive-bobble.svelte';
+	import { browser } from '$app/env';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { useGameStore } from '#lib/store/game.js';
+	import { useCRT } from '#lib/helpers/crt.svelte.js';
+	import avatarImgNoBg from '#lib/assets/avatar-nbg.png';
+	import avatarImgGameMode from '#lib/assets/avatar-nbg-gamemode.png';
+	import avatarImgGameModeCreepy from '#lib/assets/avatar-nbg-gamemode-creepy.png';
+	import avatarImg from '#lib/assets/avatar.jpg';
+	import { Abnormality } from '#lib/game/abnoramlity.js';
+	import { useInteractiveBobble } from '#lib/helpers/interactive-bobble.svelte.js';
 	import Icon from '@iconify/svelte';
-	import { useTypewriter } from '$lib/helpers/typewriter.svelte';
+	import { useTypewriter } from '#lib/helpers/typewriter.svelte.js';
 
-	let { width, height, showCombined } = $props<{
+	let {
+		width,
+		height,
+		showCombined
+	}: {
 		width: number;
 		height: number;
 		showCombined: boolean;
-	}>();
+	} = $props();
 
 	const { isGameMode, abnormality } = useGameStore();
 	const interactiveBobble = useInteractiveBobble(() => $isGameMode || showCombined);
@@ -292,31 +296,25 @@
 								width="330"
 								height="489.766"
 								fill="url(#pattern-image-source)"
-							/>
-							<rect
-								x="51.0884"
-								y="4"
-								width="320"
-								height="479.766"
-								fill="url(#pattern-image-source)"
-							/>
+							></rect>
+							<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-source)"
+							></rect>
 						</g>
 					</g>
 					<g id="morphing-group" transform="translate(0, 0)" transform-origin="center">
 						<g filter="url(#filter-soften-boundary)" style="mix-blend-mode:darken">
-							<rect
-								x="51.0884"
-								y="4"
-								width="320"
-								height="479.766"
-								fill="url(#pattern-image-no-bg)"
-							/>
+							<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-no-bg)"
+							></rect>
 						</g>
-						<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-no-bg)" />
+
+						<rect x="51.0884" y="4" width="320" height="479.766" fill="url(#pattern-image-no-bg)"
+						></rect>
 					</g>
 				</g>
 			</g>
-			<path id="avatar-slogan-text-path" fill="#none" d="M 26,320 A 185,185 0 0,0 396,320" />
+
+			<path id="avatar-slogan-text-path" fill="#none" d="M 26,320 A 185,185 0 0,0 396,320"></path>
+
 			<text>
 				<textPath
 					id="avatar-slogan-text"
@@ -340,7 +338,7 @@
 				r="0"
 				fill="var(--accent-fill)"
 				opacity="0"
-			/>
+			></circle>
 			<g id="interactive-point-map">
 				<circle
 					cx="240"
@@ -348,14 +346,14 @@
 					r="5"
 					fill="rgba(0,0,0,0)"
 					data-bobble-msg={m.hover_bobble_avatar_achoo()}
-				/>
+				></circle>
 				<circle
 					cx="230"
 					cy="140"
 					r="2"
 					fill="rgba(0,0,0,0)"
 					data-bobble-msg={m.hover_bobble_avatar_achoo()}
-				/>
+				></circle>
 			</g>
 		</g>
 		<defs>
@@ -368,7 +366,7 @@
 				width="423"
 				height="531"
 			>
-				<circle id="mask-whole-circle" cx="211.088" cy="320" r="10000" fill="#000" />
+				<circle id="mask-whole-circle" cx="211.088" cy="320" r="10000" fill="#000"></circle>
 			</mask>
 			<mask
 				id="mask-top-hemisphere"
@@ -379,7 +377,7 @@
 				width="423"
 				height="531"
 			>
-				<circle id="mask-top-hemisphere-circle" cx="211.088" cy="320" r="160" fill="#000" />
+				<circle id="mask-top-hemisphere-circle" cx="211.088" cy="320" r="160" fill="#000"></circle>
 			</mask>
 			<mask
 				id="mask-bottom-hemisphere"
@@ -390,20 +388,16 @@
 				width="423"
 				height="531"
 			>
-				<circle id="mask-bottom-hemisphere-circle" cx="211.088" cy="320" r="160" fill="#000" />
-				<rect
-					id="mask-bottom-hemisphere-rect"
-					x="51.088"
-					y="0"
-					width="320"
-					height="320"
-					fill="#fff"
-				/>
+				<circle id="mask-bottom-hemisphere-circle" cx="211.088" cy="320" r="160" fill="#000"
+				></circle>
+
+				<rect id="mask-bottom-hemisphere-rect" x="51.088" y="0" width="320" height="320" fill="#fff"
+				></rect>
 				<g id="mask-bottom-hemisphere-group">
 					<path
 						d="M347.588 300L347.588 300L349.088 400.5L334.088 427L253.088 478L239.588 466L247.588 400Z"
 						fill="#fff"
-					/>
+					></path>
 				</g>
 			</mask>
 			<mask
@@ -421,7 +415,7 @@
 					cy="320"
 					r="160"
 					fill="#fff"
-				/>
+				></circle>
 			</mask>
 			<pattern
 				id="pattern-image-source"
@@ -429,7 +423,7 @@
 				width="1"
 				height="1"
 			>
-				<use xlink:href="#image-source" transform="scale(0.000366032 0.000244141)" />
+				<use xlink:href="#image-source" transform="scale(0.000366032 0.000244141)"></use>
 			</pattern>
 			<pattern
 				id="pattern-image-no-bg"
@@ -437,7 +431,7 @@
 				width="1"
 				height="1"
 			>
-				<use xlink:href="#image-source-no-bg" transform="scale(0.000366032 0.000244141)" />
+				<use xlink:href="#image-source-no-bg" transform="scale(0.000366032 0.000244141)"></use>
 			</pattern>
 			<filter
 				id="filter-soften-boundary"
@@ -448,9 +442,11 @@
 				filterUnits="userSpaceOnUse"
 				color-interpolation-filters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
-				<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-				<feGaussianBlur stdDeviation="1" result="softenBoundaryImage" />
+				<feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+
+				<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+
+				<feGaussianBlur stdDeviation="1" result="softenBoundaryImage"></feGaussianBlur>
 			</filter>
 			<image
 				id="image-source"
@@ -458,14 +454,14 @@
 				height="4096"
 				preserveAspectRatio="none"
 				xlink:href={avatarImg}
-			/>
+			></image>
 			<image
 				id="image-source-no-bg"
 				width="2732"
 				height="4096"
 				preserveAspectRatio="none"
 				xlink:href={$isGameMode ? avatarImgGameMode : avatarImgNoBg}
-			/>
+			></image>
 		</defs>
 	</svg>
 {/snippet}

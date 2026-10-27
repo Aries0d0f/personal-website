@@ -2,13 +2,13 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { getLocale } from '$lib/paraglide/runtime';
+	import { getLocale } from '#lib/paraglide/runtime.js';
 
 	let { data } = $props();
 
 	onMount(() => {
 		if (!data?.game?.active) {
-			goto(resolve(`/${getLocale()}`));
+			goto(resolve(getLocale()));
 		}
 	});
 </script>

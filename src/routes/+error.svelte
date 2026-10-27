@@ -2,11 +2,11 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { useCRT } from '$lib/helpers/crt.svelte';
-	import { useGameScript } from '$lib/helpers/game-script.svelte';
-	import { useGameStore } from '$lib/store/game';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { useCRT } from '#lib/helpers/crt.svelte.js';
+	import { useGameScript } from '#lib/helpers/game-script.svelte.js';
+	import { useGameStore } from '#lib/store/game.js';
 
 	const { isGameMode, isCaught, backButtonClickedTimes, clearStage, markClicked } = useGameStore();
 	const { interference } = useCRT();
@@ -143,7 +143,7 @@
 	async function nextGameStage() {
 		await clearStage(1);
 
-		goto(resolve(`/${currentLang}`), { replaceState: true });
+		goto(resolve(currentLang), { replace: true });
 	}
 
 	$effect(() => {

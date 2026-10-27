@@ -1,5 +1,5 @@
-import { redirect, type Handle, type RequestEvent } from '@sveltejs/kit';
-import { sequence } from '@sveltejs/kit/hooks';
+import { redirect, type RequestEvent } from '@sveltejs/kit';
+import { sequence, type Handle } from '@sveltejs/kit/hooks';
 import {
 	baseLocale,
 	deLocalizeUrl,
@@ -8,10 +8,10 @@ import {
 	getTextDirection,
 	locales,
 	localizeUrl
-} from '$lib/paraglide/runtime';
-import { paraglideMiddleware } from '$lib/paraglide/server';
-import { handleEdge } from '$lib/server/edge';
-import { markCaught, readGameState, writeGameState } from '$lib/server/game';
+} from '#lib/paraglide/runtime.js';
+import { paraglideMiddleware } from '#lib/paraglide/server.js';
+import { handleEdge } from '#lib/server/edge/index.js';
+import { markCaught, readGameState, writeGameState } from '#lib/server/game.js';
 
 // Routes that exist outside the i18n tree and must be served verbatim by
 // SvelteKit. They have no locale-prefixed variant, and they must bypass the
@@ -128,11 +128,7 @@ const handleGame: Handle = async ({ event, resolve }) => {
 			cleared: false,
 			clearTimes: state.clearTimes
 		};
-		event.locals.game.proofSeed = await writeGameState(
-			event.cookies,
-			event.platform,
-			event.locals.game
-		);
+		event.locals.game.proofSeed = await writeGameState(event.cookies, event.locals.game);
 
 		return resolve(event);
 	}
@@ -164,14 +160,15 @@ const handleGame: Handle = async ({ event, resolve }) => {
 
 const handleParaglide: Handle = ({ event, resolve }) =>
 	paraglideMiddleware(event.request, ({ request, locale }) => {
-		event.request = request;
-
-		return resolve(event, {
-			transformPageChunk: ({ html }) =>
-				html
-					.replace('%paraglide.lang%', locale)
-					.replace('%paraglide.dir%', getTextDirection(locale))
-		});
+		return resolve(
+			{ ...event, request },
+			{
+				transformPageChunk: ({ html }) =>
+					html
+						.replace('%paraglide.lang%', locale)
+						.replace('%paraglide.dir%', getTextDirection(locale))
+			}
+		);
 	});
 
 export const handle: Handle = sequence(

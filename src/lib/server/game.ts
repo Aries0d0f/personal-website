@@ -1,7 +1,7 @@
 // Reading and writing the game cookie. The hook reads it on every request; the
 // API route is the only thing allowed to write it.
 
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 
 import {
 	GAME_CAUGHT_COOKIE,
@@ -9,13 +9,13 @@ import {
 	GAME_MAX_AGE_SECONDS,
 	IDLE_GAME_STATE,
 	type GameState
-} from '$lib/game/state';
+} from '#lib/game/state.js';
 import {
 	getGameSecret,
 	hashGameToken,
 	signGameToken,
 	verifyGameToken
-} from '$lib/server/game-token';
+} from '#lib/server/game-token.js';
 
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
 
@@ -63,7 +63,7 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 
 	if (!token) return IDLE_GAME_STATE;
 
-	const secret = getGameSecret(event.platform);
+	const secret = getGameSecret();
 	const result = await verifyGameToken(token, secret);
 
 	if (result.ok) {
@@ -109,7 +109,7 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
 		cleared: false,
 		clearTimes: 0
 	};
-	reset.proofSeed = await writeGameState(event.cookies, event.platform, reset);
+	reset.proofSeed = await writeGameState(event.cookies, reset);
 
 	return reset;
 }
@@ -119,11 +119,7 @@ export async function readGameState(event: RequestEvent): Promise<GameState> {
  * SHA-256 digest of the token just signed, for the caller to hand the client as its next
  * `proofSeed`.
  */
-export async function writeGameState(
-	cookies: Cookies,
-	platform: Readonly<App.Platform> | undefined,
-	state: GameState
-): Promise<string> {
+export async function writeGameState(cookies: Cookies, state: GameState): Promise<string> {
 	const token = await signGameToken(
 		{
 			stage: state.stage,
@@ -134,7 +130,7 @@ export async function writeGameState(
 			clearTimes: state.clearTimes,
 			issuedAt: state.startedAt ? Math.floor(state.startedAt / 1000) : undefined
 		},
-		getGameSecret(platform)
+		getGameSecret()
 	);
 
 	cookies.set(GAME_COOKIE, token, COOKIE_OPTIONS);

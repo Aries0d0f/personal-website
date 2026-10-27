@@ -12,13 +12,13 @@
 // which transparently re-runs every `m.*()` call and the `<ParaglideMessage>`
 // derivations in place.
 
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import {
 	getLocaleForUrl,
 	getTextDirection,
 	overwriteGetLocale,
 	type Locale
-} from '$lib/paraglide/runtime';
+} from '#lib/paraglide/runtime.js';
 
 // Seed from the current URL at module load so the first hydration render matches
 // what the server produced for this URL (avoids a hydration mismatch).
@@ -34,7 +34,7 @@ if (browser) {
  * `lang`/`dir` attributes in sync, since those are otherwise only set during
  * the server render.
  */
-export function syncLocale(url: URL): void {
+export function syncLocale(url: Pick<URL, 'href'>): void {
 	const locale = getLocaleForUrl(url.href);
 	current = locale;
 

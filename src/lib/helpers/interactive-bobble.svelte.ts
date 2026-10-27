@@ -46,7 +46,9 @@ export const useInteractiveBobble = (ignore: () => boolean) => {
 		return () => document.removeEventListener('mouseover', handler);
 	});
 
-	afterNavigate(() => {
+	afterNavigate(({ shallow, type }) => {
+		if (shallow && type === 'goto') return;
+
 		clearTimeout(bobbleClearTimeout);
 		bobble = undefined;
 	});

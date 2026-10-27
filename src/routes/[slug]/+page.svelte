@@ -4,8 +4,8 @@
 	import type { Component, Snippet } from 'svelte';
 	import type { PageData } from './$types';
 
-	import { useGameStore } from '$lib/store/game';
-	import { Abnormality } from '$lib/game/abnoramlity';
+	import { useGameStore } from '#lib/store/game.js';
+	import { Abnormality } from '#lib/game/abnoramlity.js';
 	import { dev } from '$app/env';
 
 	const { abnormality, isGameMode } = useGameStore();
@@ -16,9 +16,9 @@
 		string,
 		() => Promise<{ default: Component<{ data: PageData; children: Snippet }> }>
 	> = {
-		bento: () => import('$lib/layout/Bento.svelte'),
-		timeline: () => import('$lib/layout/Timeline.svelte'),
-		default: () => import('$lib/layout/General.svelte')
+		bento: () => import('#lib/layout/Bento.svelte'),
+		timeline: () => import('#lib/layout/Timeline.svelte'),
+		default: () => import('#lib/layout/General.svelte')
 	};
 
 	const ViewportLayout = $derived(

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { pageOrder, pageKeyFromHref } from '$lib/pages';
+	import { pageOrder, pageKeyFromHref } from '#lib/pages.js';
 
 	const BOW_TIGHT = 0.52;
 	const BOW_WIDE = 1.18;

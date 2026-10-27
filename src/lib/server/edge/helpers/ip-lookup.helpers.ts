@@ -3,7 +3,7 @@
 // curl the site and you get your IP back, like ifconfig.me, with optional
 // WHOIS / abuse intelligence and UA easter eggs.
 
-import { env } from '$env/dynamic/private';
+import { IPAPI_API_KEY } from '$app/env/private';
 import { renderScreen, useCuiHelper } from './cui.helpers';
 import { CLI_UA, NATIVE_UA } from './user-agent.helpers';
 
@@ -99,7 +99,7 @@ export async function handleIPLookup(
 	const needsGeo = query && /geo/i.test(query);
 
 	const [abuseData, whoisRaw, geoData] = await Promise.all([
-		needsAbuse ? fetchAbuse(clientIP, event) : null,
+		needsAbuse ? fetchAbuse(clientIP) : null,
 		needsWhois ? fetchWhois(clientIP) : null,
 		needsGeo ? fetchGeo(clientIP) : null
 	]);
@@ -118,7 +118,7 @@ export async function handleIPLookup(
 				...(whoisData && { whois: whoisData }),
 				...(geoData && { geo: geoData })
 			},
-			{ headers: headers }
+			{ headers }
 		);
 	}
 
@@ -156,8 +156,8 @@ export async function handleIPLookup(
 // ─── Fetch Helpers ───────────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fetchAbuse(ip: string | null, event: RequestEvent): Promise<any> {
-	const { apiKey } = getIpApiCredentials(event.platform) ?? {};
+function fetchAbuse(ip: string | null): Promise<any> {
+	const { apiKey } = getIpApiCredentials() ?? {};
 	return fetch(`https://api.ipapi.is/?q=${ip}&key=${apiKey ?? ''}`).then((r) => r.json());
 }
 
@@ -172,11 +172,8 @@ function fetchGeo(ip: string | null): Promise<GeoData> {
 	);
 }
 
-function getIpApiCredentials(
-	platform: Readonly<App.Platform> | undefined
-): { apiKey: string } | null {
-	const fromPlatform = platform?.env as Record<string, string | undefined> | undefined;
-	const apiKey = fromPlatform?.IPAPI_API_KEY ?? env.IPAPI_API_KEY;
+function getIpApiCredentials(): { apiKey: string } | null {
+	const apiKey = IPAPI_API_KEY;
 
 	if (!apiKey) return null;
 
@@ -376,22 +373,25 @@ function formatAbuse(data: any, wantsPlainText = false): string | null {
 		row('Calling Code', `+${location.calling_code}`);
 		row('Currency', location.currency_code);
 		row('EU Member', bool(location.is_eu_member));
-		row('Accuracy', custom(location.accuracy, (s, ANSI) => {
-			switch (s) {
-				case 'VERY_HIGH':
-					return ANSI.cyan.bold(s);
-				case 'HIGH':
-					return ANSI.green.bold(s);
-				case 'MEDIUM':
-					return ANSI.yellow.bold(s);
-				case 'LOW':
-					return ANSI.red.bold(s);
-				case 'VERY_LOW':
-					return ANSI.red.dim.bold(s);
-				default:
-					return s;
-			}
-		}));
+		row(
+			'Accuracy',
+			custom(location.accuracy, (s, ANSI) => {
+				switch (s) {
+					case 'VERY_HIGH':
+						return ANSI.cyan.bold(s);
+					case 'HIGH':
+						return ANSI.green.bold(s);
+					case 'MEDIUM':
+						return ANSI.yellow.bold(s);
+					case 'LOW':
+						return ANSI.red.bold(s);
+					case 'VERY_LOW':
+						return ANSI.red.dim.bold(s);
+					default:
+						return s;
+				}
+			})
+		);
 	}
 
 	footer(elapsed_ms == null ? 'Query completed' : `Query completed in ${elapsed_ms} ms`);

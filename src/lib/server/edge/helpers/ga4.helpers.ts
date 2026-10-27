@@ -7,9 +7,10 @@
 import type { RequestEvent } from '@sveltejs/kit';
 
 import { UAParser } from 'ua-parser-js';
+import { waitUntil } from 'cloudflare:workers';
 
-import { dev } from '$app/environment';
-import { env } from '$env/dynamic/private';
+import { dev } from '$app/env';
+import { GA4_MEASUREMENT_ID, GA4_API_SECRET } from '$app/env/private';
 
 const GA4_ENDPOINT = 'https://www.google-analytics.com/mp/collect';
 const GA_COOKIE_NAME = '_ga';
@@ -29,12 +30,9 @@ const UN_M49_CONTINENT: Partial<Record<ContinentCode, string>> = {
 	OC: '009'
 };
 
-function getGA4Credentials(
-	platform: Readonly<App.Platform> | undefined
-): { measurementId: string; apiSecret: string } | null {
-	const fromPlatform = platform?.env as Record<string, string | undefined> | undefined;
-	const measurementId = fromPlatform?.GA4_MEASUREMENT_ID ?? env.GA4_MEASUREMENT_ID;
-	const apiSecret = fromPlatform?.GA4_API_SECRET ?? env.GA4_API_SECRET;
+function getGA4Credentials(): { measurementId: string; apiSecret: string } | null {
+	const measurementId = GA4_MEASUREMENT_ID;
+	const apiSecret = GA4_API_SECRET;
 
 	if (!measurementId || !apiSecret) return null;
 
@@ -89,7 +87,7 @@ export function reportSocialRedirect(
 	}
 ): void {
 	// Skip if GA4 credentials are missing
-	const credentials = getGA4Credentials(event.platform);
+	const credentials = getGA4Credentials();
 	if (!credentials) return;
 
 	const endpoint = new URL(GA4_ENDPOINT);
@@ -97,7 +95,7 @@ export function reportSocialRedirect(
 	endpoint.searchParams.set('api_secret', credentials.apiSecret);
 
 	// Cloudflare already resolves the visitor's real geo per request.
-	const geo = event.platform?.cf;
+	const geo = event.request.cf;
 	const continent = geo?.continent as ContinentCode | undefined;
 	const referer = event.request.headers.get('Referer');
 	const { source, medium } = resolveReferralSource(referer);
@@ -122,7 +120,11 @@ export function reportSocialRedirect(
 				: undefined,
 			events: [
 				// Sets source/medium for this session; must precede social_redirect.
-				{ name: 'campaign_details', params: { session_id: sessionId, source, medium } },
+				{
+					name: 'campaign_details',
+					params: { session_id: sessionId, source, medium }
+				},
+
 				{
 					name: 'page_view',
 					params: {
@@ -150,7 +152,7 @@ export function reportSocialRedirect(
 		// Analytics must never surface as an error on the redirect it's reporting.
 	});
 
-	event.platform?.ctx.waitUntil(report);
+	waitUntil(report);
 }
 
 function resolveReferralSource(referer: string | null): { source: string; medium: string } {

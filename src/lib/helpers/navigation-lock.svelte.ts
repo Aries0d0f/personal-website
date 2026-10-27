@@ -30,6 +30,7 @@ export const useNavigationLock = (isLocked: () => boolean) => {
 	// Whatever the decoy fails to swallow still reaches the router. Refuse it there,
 	// while leaving `goto` alone so the game can still move the player itself.
 	beforeNavigate((navigation) => {
+		if (navigation.shallow && navigation.type === 'goto') return;
 		if (!isLocked() || navigation.type !== 'popstate') return;
 
 		navigation.cancel();

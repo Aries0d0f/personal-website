@@ -1,21 +1,21 @@
 import { error, json } from '@sveltejs/kit';
 
-import { IDLE_GAME_STATE, MAX_STAGE, type GameState } from '$lib/game/state';
-import { computeStageProof } from '$lib/game/proof';
-import { clearGameState, writeGameState } from '$lib/server/game';
+import { IDLE_GAME_STATE, MAX_STAGE, type GameState } from '#lib/game/state.js';
+import { computeStageProof } from '#lib/game/proof.js';
+import { clearGameState, writeGameState } from '#lib/server/game.js';
 import {
 	abnormalityCodeSet,
 	isGameOptionsAbnormality,
 	isScreenAbnormality
-} from '$lib/game/abnoramlity';
+} from '#lib/game/abnoramlity.js';
 
 import type { RequestHandler } from './$types';
-import type { AbnormalityCode } from '$lib/game/abnoramlity';
+import type { AbnormalityCode } from '#lib/game/abnoramlity.js';
 
 interface ClearStageRequest {
 	intent: 'clear-stage';
 	stage: number;
-	/** Proof code derived client-side from the current `proofSeed` (see `$lib/game/proof`). */
+	/** Proof code derived client-side from the current `proofSeed` (see `#lib/game/proof.js`). */
 	token: string;
 }
 
@@ -117,7 +117,7 @@ const abnormalityLottery = (
 	}
 };
 
-export const POST: RequestHandler = async ({ request, cookies, platform, locals }) => {
+export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 	let body: GameRequest;
 	try {
 		body = await request.json();
@@ -158,7 +158,7 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 			discoveredAbnormalities: locals.game.discoveredAbnormalities,
 			clearTimes: locals.game.clearTimes
 		};
-		next.proofSeed = await writeGameState(cookies, platform, next);
+		next.proofSeed = await writeGameState(cookies, next);
 
 		return json(next satisfies GameState);
 	}
@@ -176,7 +176,7 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 		}
 
 		const next: GameState = { ...locals.game, clicked: true, caught: false };
-		next.proofSeed = await writeGameState(cookies, platform, next);
+		next.proofSeed = await writeGameState(cookies, next);
 
 		return json(next satisfies GameState);
 	}
@@ -224,7 +224,7 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 			discoveredAbnormalities: current.discoveredAbnormalities ?? [],
 			clearTimes: (current.clearTimes ?? 0) + 1
 		};
-		next.proofSeed = await writeGameState(cookies, platform, next);
+		next.proofSeed = await writeGameState(cookies, next);
 
 		return json(next satisfies GameState);
 	}
@@ -247,7 +247,7 @@ export const POST: RequestHandler = async ({ request, cookies, platform, locals 
 				};
 
 	const next: GameState = { ...current, ...abnormals, stage, caught: false };
-	next.proofSeed = await writeGameState(cookies, platform, next);
+	next.proofSeed = await writeGameState(cookies, next);
 
 	return json(next satisfies GameState);
 };

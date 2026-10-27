@@ -3,8 +3,8 @@
 	import { RoughEase } from 'gsap/EasePack';
 	import { onMount, tick } from 'svelte';
 
-	import { dev } from '$app/environment';
-	import { useCRT } from '$lib/helpers/crt.svelte';
+	import { dev } from '$app/env';
+	import { useCRT } from '#lib/helpers/crt.svelte.js';
 
 	gsap.registerPlugin(RoughEase);
 
@@ -514,8 +514,10 @@
 			        0 0 0 0 0
 			        0 0 0 0 0
 			        0 0 0 1 0"
-		/>
-		<feOffset in="red" dx="0" dy="0" result="red-shifted" bind:this={redOffset} />
+		></feColorMatrix>
+
+		<feOffset in="red" dx="0" dy="0" result="red-shifted" bind:this={redOffset}></feOffset>
+
 		<feColorMatrix
 			in="SourceGraphic"
 			type="matrix"
@@ -524,9 +526,11 @@
 			        0 1 0 0 0
 			        0 0 1 0 0
 			        0 0 0 1 0"
-		/>
-		<feOffset in="cyan" dx="0" dy="0" result="cyan-shifted" bind:this={cyanOffset} />
-		<feBlend in="red-shifted" in2="cyan-shifted" mode="screen" />
+		></feColorMatrix>
+
+		<feOffset in="cyan" dx="0" dy="0" result="cyan-shifted" bind:this={cyanOffset}></feOffset>
+
+		<feBlend in="red-shifted" in2="cyan-shifted" mode="screen"></feBlend>
 	</filter>
 </svg>
 

@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
-import { baseLocale, extractLocaleFromUrl } from '$lib/paraglide/runtime';
-import { renderLlmsTxt } from '$lib/server/llms-txt';
+import { baseLocale, extractLocaleFromUrl } from '#lib/paraglide/runtime.js';
+import { renderLlmsTxt } from '#lib/server/llms-txt.js';
 
 // An explicit /{locale}/llms.txt prefix (e.g. /ja/llms.txt) already resolves
 // to this same route — Paraglide's URL matching applies to every path, not

@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { getLocaleForUrl } from '$lib/paraglide/runtime';
-import { loadContent } from '$lib/content';
+import { getLocaleForUrl } from '#lib/paraglide/runtime.js';
+import { loadContent } from '#lib/content.js';
 
 import type { PageLoad } from './$types';
 

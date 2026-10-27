@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages.js';
-	import { useCRT } from '$lib/helpers/crt.svelte';
-	import { useGameStore } from '$lib/store/game';
-	import { Abnormality, abnormalityCodeSet } from '$lib/game/abnoramlity';
+	import { m } from '#lib/paraglide/messages.js';
+	import { useCRT } from '#lib/helpers/crt.svelte.js';
+	import { useGameStore } from '#lib/store/game.js';
+	import { Abnormality, abnormalityCodeSet } from '#lib/game/abnoramlity.js';
 
 	const { promote } = useCRT();
 	const { abnormality, discoveredAbnormalities } = useGameStore();

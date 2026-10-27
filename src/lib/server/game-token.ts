@@ -10,13 +10,13 @@
 
 import * as semver from 'semver';
 
-import { dev } from '$app/environment';
-import { env } from '$env/dynamic/private';
+import { dev } from '$app/env';
+import { GAME_SECRET } from '$app/env/private';
 
-import { GAME_TOKEN_VERSION, GAME_MAX_AGE_SECONDS } from '$lib/game/state';
-import { abnormalityCodeSet } from '$lib/game/abnoramlity';
+import { GAME_TOKEN_VERSION, GAME_MAX_AGE_SECONDS } from '#lib/game/state.js';
+import { abnormalityCodeSet } from '#lib/game/abnoramlity.js';
 
-import type { AbnormalityCode } from '$lib/game/abnoramlity';
+import type { AbnormalityCode } from '#lib/game/abnoramlity.js';
 
 const encoder = new TextEncoder();
 
@@ -76,13 +76,11 @@ export type VerifyResult =
 const DEV_SECRET = 'dev-only-game-secret-not-used-in-production';
 
 /**
- * Resolve the signing key. Prefers the Workers binding; falls back to the
- * dynamic private env so `vite dev` and `wrangler dev` both work.
+ * Resolve the signing key from the private env, which reads the Workers binding in
+ * both `vite dev` and `wrangler dev`.
  */
-export function getGameSecret(platform: Readonly<App.Platform> | undefined): string {
-	const fromPlatform = (platform?.env as Record<string, string | undefined> | undefined)
-		?.GAME_SECRET;
-	const secret = fromPlatform ?? env.GAME_SECRET;
+export function getGameSecret(): string {
+	const secret = GAME_SECRET;
 
 	if (secret) return secret;
 	if (dev) return DEV_SECRET;
@@ -169,7 +167,7 @@ export async function signGameToken(
 /**
  * SHA-256 hex digest of a signed token, safe to hand to the client: it is one-way, so
  * it cannot be turned back into the token or the key that signed it. The client uses it
- * as the seed for its next stage-clear proof (see `$lib/game/proof`).
+ * as the seed for its next stage-clear proof (see `#lib/game/proof.js`).
  */
 export async function hashGameToken(token: string): Promise<string> {
 	const digest = await crypto.subtle.digest('SHA-256', bytes(token));

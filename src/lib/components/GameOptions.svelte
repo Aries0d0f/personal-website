@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { useCRT } from '$lib/helpers/crt.svelte';
-	import { useGameStore } from '$lib/store/game';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { useCRT } from '#lib/helpers/crt.svelte.js';
+	import { useGameStore } from '#lib/store/game.js';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import Codex from './Codex.svelte';
-	import { Abnormality } from '$lib/game/abnoramlity';
+	import { Abnormality } from '#lib/game/abnoramlity.js';
 
 	const ACCELERATOR = { giveUp: 'G', backToGame: 'B', yes: 'Y', no: 'N' };
 

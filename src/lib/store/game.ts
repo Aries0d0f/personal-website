@@ -4,12 +4,12 @@ import http from '@aries0d0f/fetch-worker';
 
 import type { Writable } from 'svelte/store';
 
-import { computeStageProof } from '$lib/game/proof';
-import { IDLE_GAME_STATE } from '$lib/game/state';
-import { castAbnormalityCodeToEnum } from '$lib/game/abnoramlity';
+import { computeStageProof } from '#lib/game/proof.js';
+import { IDLE_GAME_STATE } from '#lib/game/state.js';
+import { castAbnormalityCodeToEnum } from '#lib/game/abnoramlity.js';
 
-import type { GameState } from '$lib/game/state';
-import type { Abnormality, AbnormalityCode } from '$lib/game/abnoramlity';
+import type { GameState } from '#lib/game/state.js';
+import type { Abnormality, AbnormalityCode } from '#lib/game/abnoramlity.js';
 
 interface Model {
 	active: Writable<boolean>;

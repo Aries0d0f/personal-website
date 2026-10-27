@@ -1,6 +1,6 @@
-import { baseLocale, locales, localizeHref, type Locale } from '$lib/paraglide/runtime';
-import { m } from '$lib/paraglide/messages.js';
-import { pageOrder, pageHref, type PageKey } from '$lib/pages';
+import { baseLocale, locales, localizeHref, type Locale } from '#lib/paraglide/runtime.js';
+import { m } from '#lib/paraglide/messages.js';
+import { pageOrder, pageHref, type PageKey } from '#lib/pages.js';
 
 const ORIGIN = 'https://aries0d0f.me';
 

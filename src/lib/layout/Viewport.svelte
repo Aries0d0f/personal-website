@@ -3,21 +3,21 @@
 	import { Observer } from 'gsap/Observer';
 	import { onMount, tick } from 'svelte';
 
-	import { afterNavigate, goto, replaceState } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Menu from '$lib/components/Menu.svelte';
-	import AllSections from '$lib/layout/AllSections.svelte';
-	import { Abnormality } from '$lib/game/abnoramlity';
-	import { useGameStore } from '$lib/store/game';
-	import { useCRT } from '$lib/helpers/crt.svelte';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { pageOrder, pageHref } from '$lib/pages';
-	import ScrollIndicator from '$lib/components/ScrollIndicator.svelte';
+	import Avatar from '#lib/components/Avatar.svelte';
+	import Menu from '#lib/components/Menu.svelte';
+	import AllSections from '#lib/layout/AllSections.svelte';
+	import { Abnormality } from '#lib/game/abnoramlity.js';
+	import { useGameStore } from '#lib/store/game.js';
+	import { useCRT } from '#lib/helpers/crt.svelte.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { pageOrder, pageHref, pagePath } from '#lib/pages.js';
+	import ScrollIndicator from '#lib/components/ScrollIndicator.svelte';
 
-	import type { PageKey } from '$lib/pages';
+	import type { PageKey } from '#lib/pages.js';
 
 	gsap.registerPlugin(Observer);
 
@@ -67,49 +67,47 @@
 	let currentSectionKey: PageKey | null = null;
 
 	function resolveTarget(direction: 1 | -1) {
-		const hrefs = pageOrder
-			.filter((key) => $isGameMode || !key.includes('blank'))
-			.map((key) => pageHref(key, getLocale()));
-		const currentIndex = hrefs.findIndex((href) => href === page.url.pathname);
+		const keys = pageOrder.filter((key) => $isGameMode || !key.includes('blank'));
+		const currentIndex = keys.findIndex((key) => pageHref(key, getLocale()) === page.url.pathname);
 		if (currentIndex === -1) return null;
 
 		const targetIndex = currentIndex + direction;
-		if (targetIndex < 0 || targetIndex >= hrefs.length) return null;
+		if (targetIndex < 0 || targetIndex >= keys.length) return null;
 
-		return hrefs[targetIndex];
+		return keys[targetIndex];
 	}
 
 	function switchPage(direction: 1 | -1) {
-		const href = resolveTarget(direction);
+		const target = resolveTarget(direction);
 		if ($isGameMode) {
 			if ($isGameCleared || document.querySelector('dialog[open]')) {
 				observer?.disable();
 				return;
 			}
 
-			if (href && !href.includes('blank')) {
-				performPageSwitch(direction, href);
+			if (target && !target.includes('blank')) {
+				performPageSwitch(direction, target);
 			} else {
 				handleGameStageSwitch(direction, () => {
 					if (direction === 1) {
-						performPageSwitch(direction, `/${getLocale()}`);
+						performPageSwitch(direction, 'home');
 					} else {
 						setTimeout(() => {
-							performPageSwitch(direction, `/${getLocale()}`);
+							performPageSwitch(direction, 'home');
 						}, 400);
 					}
 				});
 			}
 		} else {
-			if (!href) {
+			if (!target) {
 				return;
 			}
 
-			performPageSwitch(direction, href);
+			performPageSwitch(direction, target);
 		}
 	}
 
-	function performPageSwitch(direction: 1 | -1, href: `/${string}`) {
+	function performPageSwitch(direction: 1 | -1, key: PageKey) {
 		lastDirection = direction;
 
 		observer?.disable();
@@ -119,20 +117,20 @@
 			y: direction * -60,
 			duration: 0.4,
 			ease: 'power2.in',
-			onComplete: () => goto(resolve(href))
+			onComplete: () => goto(resolve(pagePath(key, getLocale())))
 		});
 	}
 
 	async function handleGameStageSwitch(direction: 1 | -1, onFinish: () => void) {
 		if (direction === -1) {
 			observer?.disable();
-			performPageSwitch(direction, `/${getLocale()}/blank`);
+			performPageSwitch(direction, 'blank');
 			observer?.disable();
 			// sleep for 400ms to allow the page transition to complete before challenging the stage
 			await new Promise((resolve) => setTimeout(resolve, 400));
 		} else if (direction === 1) {
 			observer?.disable();
-			performPageSwitch(direction, `/${getLocale()}/blank-after`);
+			performPageSwitch(direction, 'blank-after');
 			observer?.disable();
 			// sleep for 400ms to allow the page transition to complete before challenging the stage
 			await new Promise((resolve) => setTimeout(resolve, 400));
@@ -211,7 +209,7 @@
 		observer?.disable();
 		gsap.killTweensOf('.intro-content');
 
-		void powerCycle(() => goto(resolve(`/${getLocale()}/game`)));
+		void powerCycle(() => goto(resolve(`${getLocale()}/game`)));
 	}
 
 	function animateIn() {
@@ -276,10 +274,7 @@
 			)
 			.fromTo(
 				'menu',
-				{
-					opacity: 0,
-					translateX: '100%'
-				},
+				{ opacity: 0, translateX: '100%' },
 				{
 					opacity: 1,
 					translateX: '0%',
@@ -295,7 +290,7 @@
 	}
 
 	function syncRouteToSection(key: PageKey) {
-		replaceState(resolve(pageHref(key, getLocale())), page.state);
+		goto(resolve(pagePath(key, getLocale())), { shallow: true, replace: true, state: page.state });
 	}
 
 	function activeSectionKey(): PageKey | null {
@@ -398,19 +393,15 @@
 	const showMonochromeScreen = $derived(
 		$isGameMode && $abnormality === Abnormality.AN19 && readyForScreenEffect
 	);
-
 	const showInvertScreen = $derived(
 		$isGameMode && $abnormality === Abnormality.AN20 && readyForScreenEffect
 	);
-
 	const showNoiseScreen = $derived(
 		$isGameMode && $abnormality === Abnormality.AN21 && readyForScreenEffect
 	);
-
 	const turnOffScreen = $derived(
 		$isGameMode && $abnormality === Abnormality.AN22 && readyForScreenEffect
 	);
-
 	const showBreakScreen = $derived(
 		$isGameMode && $abnormality === Abnormality.AN23 && readyForScreenEffect
 	);
@@ -436,7 +427,8 @@
 		}
 	});
 
-	afterNavigate(({ type }) => {
+	afterNavigate(({ type, shallow }) => {
+		if (shallow && type === 'goto') return;
 		if (type === 'enter') return;
 
 		if (isDesktop) {

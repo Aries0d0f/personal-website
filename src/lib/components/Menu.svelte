@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { pageOrder, pageHref } from '$lib/pages';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { pageOrder, pageHref, pagePath } from '#lib/pages.js';
 	import Footer from './Footer.svelte';
 
-	import type { PageKey } from '$lib/pages';
+	import type { PageKey } from '#lib/pages.js';
 
 	const titles: Record<Exclude<PageKey, 'blank' | 'blank-after'>, () => string> = {
 		home: m.pages_home_title,
@@ -22,7 +22,8 @@
 			.map((key) => ({
 				name: key,
 				title: titles[key](),
-				href: pageHref(key, currentLang)
+				href: pageHref(key, currentLang),
+				path: pagePath(key, currentLang)
 			}))
 	);
 </script>
@@ -32,7 +33,7 @@
 	<ul>
 		{#each menuItems as item (item.name)}
 			<li class:active={page.url.pathname === item.href}>
-				<a href={resolve(item.href)}>
+				<a href={resolve(item.path)}>
 					{item.title}
 				</a>
 			</li>

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { useCRT } from '$lib/helpers/crt.svelte';
-	import { useGameStore } from '$lib/store/game';
-	import { abnormalityCodeSet } from '$lib/game/abnoramlity';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { useCRT } from '#lib/helpers/crt.svelte.js';
+	import { useGameStore } from '#lib/store/game.js';
+	import { abnormalityCodeSet } from '#lib/game/abnoramlity.js';
 	import Codex from './Codex.svelte';
 
 	const ACCELERATOR = { continue: 'C', leave: 'B' };

@@ -68,7 +68,7 @@ export interface GameState {
 	startedAt: number | null;
 	/**
 	 * SHA-256 hex digest of the currently signed token, handed to the client so it can
-	 * derive the proof code for its next `clear-stage` request (see `$lib/game/proof`).
+	 * derive the proof code for its next `clear-stage` request (see `#lib/game/proof.js`).
 	 * One-way, so publishing it cannot leak the token or the key that signed it.
 	 */
 	proofSeed: string | null;

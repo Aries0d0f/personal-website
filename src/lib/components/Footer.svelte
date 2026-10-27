@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { readable } from 'svelte/store';
-	import { m } from '$lib/paraglide/messages.js';
+	import { m } from '#lib/paraglide/messages.js';
 
-	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
-	import { Abnormality } from '$lib/game/abnoramlity';
-	import { useGameStore } from '$lib/store/game';
+	import LanguageSwitcher from '#lib/components/LanguageSwitcher.svelte';
+	import { Abnormality } from '#lib/game/abnoramlity.js';
+	import { useGameStore } from '#lib/store/game.js';
 
 	let { sideMode, mobile }: { sideMode?: boolean; mobile?: boolean } = $props();
 

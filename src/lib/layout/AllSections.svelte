@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type { Component, Snippet } from 'svelte';
 
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { pageOrder } from '$lib/pages';
-	import { loadContent } from '$lib/content';
-	import { useGameStore } from '$lib/store/game';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { pageOrder } from '#lib/pages.js';
+	import { loadContent } from '#lib/content.js';
+	import { useGameStore } from '#lib/store/game.js';
 
-	import HomeContent from '$lib/components/HomeContent.svelte';
-	import Footer from '$lib/components/Footer.svelte';
+	import HomeContent from '#lib/components/HomeContent.svelte';
+	import Footer from '#lib/components/Footer.svelte';
 	import General from './General.svelte';
 	import Timeline from './Timeline.svelte';
 	import Bento from './Bento.svelte';

@@ -1,11 +1,11 @@
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { derived, fromStore, get, writable, type Readable } from 'svelte/store';
 
-import { useCRT } from '$lib/helpers/crt.svelte';
-import { useGlitch } from '$lib/helpers/glitch.svelte';
-import { useTypewriter } from '$lib/helpers/typewriter.svelte';
-import { m } from '$lib/paraglide/messages.js';
-import { useGameStore } from '$lib/store/game';
+import { useCRT } from '#lib/helpers/crt.svelte.js';
+import { useGlitch } from '#lib/helpers/glitch.svelte.js';
+import { useTypewriter } from '#lib/helpers/typewriter.svelte.js';
+import { m } from '#lib/paraglide/messages.js';
+import { useGameStore } from '#lib/store/game.js';
 
 interface Options {
 	gameStatus: () => number;

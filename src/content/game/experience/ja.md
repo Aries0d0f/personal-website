@@ -6,8 +6,8 @@ layout: timeline
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	
-	import { Abnormality } from '$lib/game/abnoramlity';
-	import { useTypewriter } from '$lib/helpers/typewriter.svelte';
+	import { Abnormality } from '#lib/game/abnoramlity.js';
+	import { useTypewriter } from '#lib/helpers/typewriter.svelte.js';
 
   	let { currentAbnormality, lookupInfo }: { currentAbnormality: Abnormality } = $props();
 

@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { syncLocale } from '$lib/i18n.svelte';
-	import { useNavigationLock } from '$lib/helpers/navigation-lock.svelte';
-	import { useGameStore } from '$lib/store/game';
-	import Viewport from '$lib/layout/Viewport.svelte';
-	import CrtScreen from '$lib/components/CrtScreen.svelte';
-	import GameOptions from '$lib/components/GameOptions.svelte';
-	import GameClear from '$lib/components/GameClear.svelte';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { syncLocale } from '#lib/i18n.svelte.js';
+	import { useNavigationLock } from '#lib/helpers/navigation-lock.svelte.js';
+	import { useGameStore } from '#lib/store/game.js';
+	import Viewport from '#lib/layout/Viewport.svelte';
+	import CrtScreen from '#lib/components/CrtScreen.svelte';
+	import GameOptions from '#lib/components/GameOptions.svelte';
+	import GameClear from '#lib/components/GameClear.svelte';
 	import { onMount } from 'svelte';
 
 	let { children, data } = $props();

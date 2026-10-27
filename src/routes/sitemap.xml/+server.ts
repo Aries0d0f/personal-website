@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { baseLocale, locales, localizeHref } from '$lib/paraglide/runtime';
+import { baseLocale, locales, localizeHref } from '#lib/paraglide/runtime.js';
 
 const ORIGIN = 'https://aries0d0f.me';
 

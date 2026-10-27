@@ -4,8 +4,8 @@ layout: timeline
 ---
 
 <script lang="ts">
-  import { Abnormality } from '$lib/game/abnoramlity';
-  import { useGlitch } from '$lib/helpers/glitch.svelte';
+  import { Abnormality } from '#lib/game/abnoramlity.js';
+  import { useGlitch } from '#lib/helpers/glitch.svelte.js';
 
   let { currentAbnormality }: { currentAbnormality: Abnormality } = $props();
 

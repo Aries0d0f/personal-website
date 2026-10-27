@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import { m } from '#lib/paraglide/messages.js';
 
-	import { useGameStore } from '$lib/store/game';
+	import { useGameStore } from '#lib/store/game.js';
 
 	const { isGameMode } = useGameStore();
 </script>

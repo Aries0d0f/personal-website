@@ -4,8 +4,8 @@ layout: bento
 ---
 
 <script lang="ts">
-  import { Abnormality } from '$lib/game/abnoramlity';
-  import { zalgoGeneration } from '$lib/shared/zalgo';
+  import { Abnormality } from '#lib/game/abnoramlity.js';
+  import { zalgoGeneration } from '#lib/shared/zalgo.js';
   
   let { currentAbnormality }: { currentAbnormality: Abnormality } = $props();
 

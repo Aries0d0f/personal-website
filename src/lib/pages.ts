@@ -11,8 +11,14 @@ export const pageOrder = [
 
 export type PageKey = (typeof pageOrder)[number];
 
+/** Path for `resolve()` from `$app/paths`, which takes pathnames without a leading `/`. */
+export function pagePath(key: PageKey, locale: string): string {
+	return key === 'home' ? locale : `${locale}/${key}`;
+}
+
+/** Pathname as it appears in `page.url.pathname`. */
 export function pageHref(key: PageKey, locale: string): `/${string}` {
-	return key === 'home' ? `/${locale}` : `/${locale}/${key}`;
+	return `/${pagePath(key, locale)}`;
 }
 
 export function pageKeyFromHref(href: string): PageKey | undefined {
