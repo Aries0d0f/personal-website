@@ -2,6 +2,7 @@
 	import gsap from 'gsap';
 	import { Observer } from 'gsap/Observer';
 	import { onMount, tick } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	import { afterNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -50,7 +51,9 @@
 	let sequence: string[] = $state([]);
 	let konamiTimer = $state<ReturnType<typeof setTimeout>>();
 
-	const isDesktop = $derived(width > MOBILE_BREAKPOINT);
+	// Media queries and clientWidth track the layout viewport, which pinch-zoom leaves alone.
+	const desktopQuery = new MediaQuery(`(width > ${MOBILE_BREAKPOINT}px)`, false);
+	const isDesktop = $derived(desktopQuery.current);
 	const showCombined = $derived(mounted && !isDesktop);
 
 	let observer: Observer | undefined;
@@ -268,7 +271,7 @@
 			})
 			.call(() => (introPending = false));
 
-		if (width > 840) {
+		if (isDesktop) {
 			// Transforms over the final layout instead of a negative margin, to avoid repaints.
 			const MARGIN = 320;
 
@@ -568,7 +571,13 @@
 		}
 	});
 
+	function measureViewport() {
+		width = document.documentElement.clientWidth;
+		height = document.documentElement.clientHeight;
+	}
+
 	onMount(() => {
+		measureViewport();
 		mounted = true;
 
 		document.addEventListener('toggle', syncDialogState, true);
@@ -598,8 +607,7 @@
 </script>
 
 <svelte:window
-	bind:innerWidth={width}
-	bind:innerHeight={height}
+	onresize={measureViewport}
 	onkeydown={handleKeyNavigation}
 	ontouchstart={() => (touching = true)}
 	ontouchend={handleTouchEnd}
