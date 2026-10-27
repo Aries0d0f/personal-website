@@ -148,7 +148,7 @@
 		gsap.to('.intro-content', {
 			opacity: 0,
 			y: direction * -60,
-			duration: 0.4,
+			duration: 0.33,
 			ease: 'power3.in',
 			onComplete: () => afterTouchRelease(() => goto(resolve(pagePath(key, getLocale()))))
 		});
