@@ -4,7 +4,7 @@
 	import { onMount, tick } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
 
-	import { afterNavigate, goto } from '$app/navigation';
+	import { afterNavigate, goto, preloadCode } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 
@@ -15,6 +15,7 @@
 	import { useGameStore } from '#lib/store/game.js';
 	import { useCRT } from '#lib/helpers/crt.svelte.js';
 	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { loadContent } from '#lib/content.js';
 	import { pageOrder, pageHref, pagePath } from '#lib/pages.js';
 	import ScrollIndicator from '#lib/components/ScrollIndicator.svelte';
 
@@ -48,6 +49,7 @@
 	// Hands the CSS first frame over to GSAP.
 	let introPending = $state(true);
 	let transitioning = $state(false);
+	let introDone = $state(false);
 	let sequence: string[] = $state([]);
 	let konamiTimer = $state<ReturnType<typeof setTimeout>>();
 
@@ -290,7 +292,12 @@
 	function startAnimation() {
 		transitioning = true;
 
-		const tl = gsap.timeline({ onComplete: () => (transitioning = false) });
+		const tl = gsap.timeline({
+			onComplete: () => {
+				transitioning = false;
+				introDone = true;
+			}
+		});
 		tl.set('.intro-content', {
 			opacity: HIDDEN_OPACITY,
 			translateX: -200
@@ -499,6 +506,22 @@
 		} else {
 			scrollToSection(page.url.pathname);
 		}
+	});
+
+	// Warms route code, markdown and layout chunks so page switches don't flash blank.
+	$effect(() => {
+		if (!introDone || !isDesktop || $isGameMode) return;
+
+		const locale = getLocale();
+
+		for (const route of ['/', '/[slug]', '/blank', '/blank-after'] as const) void preloadCode(route);
+		for (const key of pageOrder) {
+			if (key !== 'home' && !key.includes('blank')) void loadContent(key, locale);
+		}
+
+		void import('#lib/layout/Bento.svelte');
+		void import('#lib/layout/Timeline.svelte');
+		void import('#lib/layout/General.svelte');
 	});
 
 	function redScreenEffect() {
