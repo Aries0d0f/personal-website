@@ -123,7 +123,7 @@
 				href="https://github.com/Aries0d0f/personal-website/blob/main/LICENSE"
 				target="_blank"
 				rel="external noopener noreferrer"
-				aria-label="Creative Commons Attribution-ShareAlike 4.0 International License"
+				aria-label="CC BY-SA 4.0: Creative Commons Attribution-ShareAlike 4.0 International License"
 			>
 				<span data-bobble-msg={m.hover_bobble_home_license()}>CC BY-SA 4.0</span>
 			</a>
