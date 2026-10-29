@@ -20,6 +20,24 @@ const LOCALIZED_LLMS_TXT_PATHS = new Set(locales.map((locale) => `/${locale}/llm
 const isNonLocalizedPath = (pathname: string) =>
 	NON_LOCALIZED_PATHS.has(pathname) || LOCALIZED_LLMS_TXT_PATHS.has(pathname);
 
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+
+// Browsers only HTTPS redirect
+const handleHttpsRedirect: Handle = ({ event, resolve }) => {
+	const { url, request } = event;
+
+	if (
+		url.protocol === 'http:' &&
+		!LOCAL_HOSTS.has(url.hostname) &&
+		request.headers.get('upgrade-insecure-requests') === '1'
+	) {
+		url.protocol = 'https:';
+		return new Response(null, { status: 308, headers: { location: url.href } });
+	}
+
+	return resolve(event);
+};
+
 // CVE-2026-111497 (Brotli OOB write): refuse compressed request bodies.
 const handleRequestEncoding: Handle = ({ event, resolve }) => {
 	const encoding = event.request.headers.get('content-encoding')?.trim().toLowerCase();
@@ -131,6 +149,7 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 	});
 
 export const handle: Handle = sequence(
+	handleHttpsRedirect,
 	handleRequestEncoding,
 	handleWorker,
 	handleLegacyLocaleCasing,
