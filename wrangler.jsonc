@@ -27,7 +27,7 @@
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
 	 */
-	"placement": { "mode": "smart" }
+	"placement": { "mode": "smart" },
 	/**
 	 * Bindings
 	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
@@ -40,7 +40,18 @@
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
 	 */
-	// "vars": {  "MY_VARIABLE": "production_value" }
+	"vars": {
+		// Cache TTL in seconds for upstream IP lookups.
+		"IP_LOOKUP_CACHE_TTL": "3600"
+	},
+	"d1_databases": [
+		{
+			// No database_id: `wrangler deploy` auto-provisions it.
+			"binding": "IP_LOOKUP_DB",
+			"database_name": "ip-lookup-cache",
+			"migrations_dir": "migrations"
+		}
+	]
 	/**
 	 * Service Bindings (communicate between multiple Workers)
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
