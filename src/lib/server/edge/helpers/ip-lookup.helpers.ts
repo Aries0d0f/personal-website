@@ -520,7 +520,7 @@ function formatFailure(title: string, { error }: Failed, wantsPlainText = false)
 }
 
 function withCacheNote(note: string, cachedAt?: string | null): string {
-	return cachedAt ? `${note} (Cached. Last update: ${cachedAt})` : note;
+	return cachedAt ? `${note} (cached since ${cachedAt})` : note;
 }
 
 function localTime(secs: number | null, timeZone = 'UTC'): string | null {
@@ -543,7 +543,7 @@ function localTime(secs: number | null, timeZone = 'UTC'): string | null {
 	}
 
 	const p = Object.fromEntries(fmt.formatToParts(secs * 1000).map((x) => [x.type, x.value]));
-	return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`;
+	return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second} ${timeZone}`;
 }
 
 function pair(a: unknown, b: unknown): string | null {
