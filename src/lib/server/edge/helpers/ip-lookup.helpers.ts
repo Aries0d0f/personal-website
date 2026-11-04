@@ -3,8 +3,11 @@
 
 import { IPAPI_API_KEY } from '$app/env/private';
 import { renderScreen, useCuiHelper } from './cui.helpers';
+import { withIPCache } from './ip-cache.helpers';
 
 import type { RequestEvent } from '@sveltejs/kit';
+
+import type { Cached } from './ip-cache.helpers';
 
 const GEOIP_FIELDS = [
 	'status',
@@ -81,18 +84,22 @@ export async function handleIPLookup(
 	const wantsJSON = /json/i.test(event.request.headers.get('Accept') ?? '');
 	const wantsPlainText = /text\/(plain|html)/i.test(event.request.headers.get('Accept') ?? '');
 	const protocol = clientIP?.includes(':') ? 'IPv6' : 'IPv4';
+	const timeZone = event.request.cf?.timezone as string | undefined;
 
 	const needsAbuse = query && /abuse/i.test(query);
 	const needsWhois = query && /whois/i.test(query);
 	const needsGeo = query && /geo/i.test(query);
 
-	const [abuseData, whoisRaw, geoData] = await Promise.all([
+	const [abuse, whois, geo] = await Promise.all([
 		needsAbuse ? fetchAbuse(clientIP) : null,
 		needsWhois ? fetchWhois(clientIP) : null,
 		needsGeo ? fetchGeo(clientIP) : null
 	]);
-
-	const whoisData = whoisRaw ? (isFailed(whoisRaw) ? whoisRaw : parseWhois(whoisRaw)) : null;
+	const whoisData = whois?.data
+		? isFailed(whois.data)
+			? whois.data
+			: parseWhois(whois.data)
+		: null;
 
 	if (wantsJSON) {
 		return Response.json(
@@ -102,9 +109,9 @@ export async function handleIPLookup(
 				}),
 				ip: clientIP,
 				protocol,
-				...(abuseData && { abuse: abuseData }),
+				...(abuse?.data && { abuse: abuse.data }),
 				...(whoisData && { whois: whoisData }),
-				...(geoData && { geo: geoData })
+				...(geo?.data && { geo: geo.data })
 			},
 			{ headers }
 		);
@@ -119,22 +126,22 @@ export async function handleIPLookup(
 
 	const reports = [
 		...lines,
-		abuseData || whoisData || geoData ? '\r' : null,
+		abuse?.data || whoisData || geo?.data ? '\r' : null,
 		[
-			abuseData
-				? isFailed(abuseData)
-					? formatFailure('IP Intelligence Report', abuseData, wantsPlainText)
-					: formatAbuse(abuseData, wantsPlainText)
+			abuse?.data
+				? isFailed(abuse.data)
+					? formatFailure('IP Intelligence Report', abuse.data, wantsPlainText)
+					: formatAbuse(abuse.data, wantsPlainText, localTime(abuse.cachedAt, timeZone))
 				: null,
-			whoisRaw
-				? isFailed(whoisRaw)
-					? formatFailure('WHOIS Report', whoisRaw, wantsPlainText)
-					: formatWhois(whoisRaw, wantsPlainText)
+			whois?.data
+				? isFailed(whois.data)
+					? formatFailure('WHOIS Report', whois.data, wantsPlainText)
+					: formatWhois(whois.data, wantsPlainText, localTime(whois.cachedAt, timeZone))
 				: null,
-			geoData
-				? isFailed(geoData)
-					? formatFailure('GeoIP Report', geoData, wantsPlainText)
-					: formatGeo(geoData, wantsPlainText)
+			geo?.data
+				? isFailed(geo.data)
+					? formatFailure('GeoIP Report', geo.data, wantsPlainText)
+					: formatGeo(geo.data, wantsPlainText, localTime(geo.cachedAt, timeZone))
 				: null,
 			easterEggMessage ? formatEasterEgg(easterEggMessage, wantsPlainText) : null
 		]
@@ -182,18 +189,33 @@ async function fetchJSON<T>(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fetchAbuse(ip: string | null): Promise<any> {
+function fetchAbuse(ip: string | null): Promise<Cached<any>> {
 	const { apiKey } = getIpApiCredentials() ?? {};
-	return fetchJSON(`https://api.ipapi.is/?q=${ip}&key=${apiKey ?? ''}`);
+	return withIPCache(
+		'abuse',
+		ip,
+		() => fetchJSON(`https://api.ipapi.is/?q=${ip}&key=${apiKey ?? ''}`),
+		(v) => !isFailed(v)
+	);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fetchWhois(ip: string | null): Promise<any[] | Failed> {
-	return fetchJSON(`https://wq.apnic.net/query?searchtext=${ip}`, Array.isArray);
+function fetchWhois(ip: string | null): Promise<Cached<any[] | Failed>> {
+	return withIPCache(
+		'whois',
+		ip,
+		() => fetchJSON(`https://wq.apnic.net/query?searchtext=${ip}`, Array.isArray),
+		(v) => !isFailed(v)
+	);
 }
 
-function fetchGeo(ip: string | null): Promise<GeoData | Failed> {
-	return fetchJSON(`http://ip-api.com/json/${ip}?fields=${GEOIP_FIELDS.join(',')}`);
+function fetchGeo(ip: string | null): Promise<Cached<GeoData | Failed>> {
+	return withIPCache(
+		'geo',
+		ip,
+		() => fetchJSON<GeoData>(`http://ip-api.com/json/${ip}?fields=${GEOIP_FIELDS.join(',')}`),
+		(v) => !isFailed(v) && v.status === 'success'
+	);
 }
 
 function getIpApiCredentials(): { apiKey: string } | null {
@@ -249,7 +271,7 @@ function parseWhois(entries: any[]): Record<string, any>[] {
 // ─── Formatters ──────────────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatWhois(entries: any[], wantsPlainText = false): string {
+function formatWhois(entries: any[], wantsPlainText = false, cachedAt?: string | null): string {
 	const ATTR_PAD = 20;
 
 	const lines: string[] = [];
@@ -280,12 +302,16 @@ function formatWhois(entries: any[], wantsPlainText = false): string {
 		}
 	}
 
-	footer();
+	footer(cachedAt ? withCacheNote('Query completed', cachedAt) : undefined);
 	return lines.join('\n');
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatAbuse(data: any, wantsPlainText = false): string | null {
+function formatAbuse(
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	data: any,
+	wantsPlainText = false,
+	cachedAt?: string | null
+): string | null {
 	if (!data) return null;
 
 	const {
@@ -422,12 +448,17 @@ function formatAbuse(data: any, wantsPlainText = false): string | null {
 		);
 	}
 
-	footer(elapsed_ms == null ? 'Query completed' : `Query completed in ${elapsed_ms} ms`);
+	footer(
+		withCacheNote(
+			elapsed_ms == null ? 'Query completed' : `Query completed in ${elapsed_ms} ms`,
+			cachedAt
+		)
+	);
 
 	return lines.join('\n');
 }
 
-function formatGeo(data: GeoData, wantsPlainText = false): string | null {
+function formatGeo(data: GeoData, wantsPlainText = false, cachedAt?: string | null): string | null {
 	if (!data) return null;
 
 	const lines: string[] = [];
@@ -466,7 +497,7 @@ function formatGeo(data: GeoData, wantsPlainText = false): string | null {
 	row('Hosting', bool(data.hosting));
 	row('Query IP', data.query);
 
-	footer('Query completed');
+	footer(withCacheNote('Query completed', cachedAt));
 
 	return lines.join('\n');
 }
@@ -486,6 +517,33 @@ function formatFailure(title: string, { error }: Failed, wantsPlainText = false)
 	footer(`Query failed: ${error}`);
 
 	return lines.join('\n');
+}
+
+function withCacheNote(note: string, cachedAt?: string | null): string {
+	return cachedAt ? `${note} (Cached. Last update: ${cachedAt})` : note;
+}
+
+function localTime(secs: number | null, timeZone = 'UTC'): string | null {
+	if (!secs) return null;
+
+	let fmt: Intl.DateTimeFormat;
+	try {
+		fmt = new Intl.DateTimeFormat('en-CA', {
+			timeZone,
+			hourCycle: 'h23',
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit'
+		});
+	} catch {
+		return localTime(secs, 'UTC');
+	}
+
+	const p = Object.fromEntries(fmt.formatToParts(secs * 1000).map((x) => [x.type, x.value]));
+	return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`;
 }
 
 function pair(a: unknown, b: unknown): string | null {
