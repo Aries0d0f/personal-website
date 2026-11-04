@@ -92,7 +92,7 @@ export async function handleIPLookup(
 		needsGeo ? fetchGeo(clientIP) : null
 	]);
 
-	const whoisData = whoisRaw ? parseWhois(whoisRaw) : null;
+	const whoisData = whoisRaw ? (isFailed(whoisRaw) ? whoisRaw : parseWhois(whoisRaw)) : null;
 
 	if (wantsJSON) {
 		return Response.json(
@@ -121,9 +121,21 @@ export async function handleIPLookup(
 		...lines,
 		abuseData || whoisData || geoData ? '\r' : null,
 		[
-			abuseData ? formatAbuse(abuseData, wantsPlainText) : null,
-			whoisData ? formatWhois(whoisRaw, wantsPlainText) : null,
-			geoData ? formatGeo(geoData, wantsPlainText) : null,
+			abuseData
+				? isFailed(abuseData)
+					? formatFailure('IP Intelligence Report', abuseData, wantsPlainText)
+					: formatAbuse(abuseData, wantsPlainText)
+				: null,
+			whoisRaw
+				? isFailed(whoisRaw)
+					? formatFailure('WHOIS Report', whoisRaw, wantsPlainText)
+					: formatWhois(whoisRaw, wantsPlainText)
+				: null,
+			geoData
+				? isFailed(geoData)
+					? formatFailure('GeoIP Report', geoData, wantsPlainText)
+					: formatGeo(geoData, wantsPlainText)
+				: null,
 			easterEggMessage ? formatEasterEgg(easterEggMessage, wantsPlainText) : null
 		]
 			.filter(Boolean)
@@ -143,21 +155,45 @@ export async function handleIPLookup(
 
 // ─── Fetch Helpers ───────────────────────────────────────────────────────────
 
+const UPSTREAM_TIMEOUT_MS = 5000;
+
+type Failed = { error: string };
+
+function isFailed(v: unknown): v is Failed {
+	return typeof v === 'object' && v !== null && typeof (v as Failed).error === 'string';
+}
+
+async function fetchJSON<T>(
+	url: string,
+	validate: (v: unknown) => boolean = (v) => typeof v === 'object' && v !== null
+): Promise<T | Failed> {
+	try {
+		const r = await fetch(url, { signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) });
+		if (!r.ok) return { error: `Upstream responded ${r.status} ${r.statusText}`.trim() };
+
+		const data: unknown = await r.json().catch(() => undefined);
+		if (!validate(data)) return { error: 'Upstream returned an invalid response' };
+
+		return data as T;
+	} catch (e) {
+		const timedOut = e instanceof Error && e.name === 'TimeoutError';
+		return { error: timedOut ? 'Upstream timed out' : 'Upstream unreachable' };
+	}
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function fetchAbuse(ip: string | null): Promise<any> {
 	const { apiKey } = getIpApiCredentials() ?? {};
-	return fetch(`https://api.ipapi.is/?q=${ip}&key=${apiKey ?? ''}`).then((r) => r.json());
+	return fetchJSON(`https://api.ipapi.is/?q=${ip}&key=${apiKey ?? ''}`);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fetchWhois(ip: string | null): Promise<any> {
-	return fetch(`https://wq.apnic.net/query?searchtext=${ip}`).then((r) => r.json());
+function fetchWhois(ip: string | null): Promise<any[] | Failed> {
+	return fetchJSON(`https://wq.apnic.net/query?searchtext=${ip}`, Array.isArray);
 }
 
-function fetchGeo(ip: string | null): Promise<GeoData> {
-	return fetch(`http://ip-api.com/json/${ip}?fields=${GEOIP_FIELDS.join(',')}`).then((r) =>
-		r.json()
-	);
+function fetchGeo(ip: string | null): Promise<GeoData | Failed> {
+	return fetchJSON(`http://ip-api.com/json/${ip}?fields=${GEOIP_FIELDS.join(',')}`);
 }
 
 function getIpApiCredentials(): { apiKey: string } | null {
@@ -192,7 +228,7 @@ function parseWhois(entries: any[]): Record<string, any>[] {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const obj: Record<string, any> = { _type: entry.objectType, _key: entry.primaryKey };
 
-		for (const attr of entry.attributes) {
+		for (const attr of entry.attributes ?? []) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const vals = attr.values ?? attr.links?.map((l: any) => l.text) ?? [];
 			if (!vals.length) continue;
@@ -226,14 +262,14 @@ function formatWhois(entries: any[], wantsPlainText = false): string {
 
 	for (const entry of entries) {
 		if (entry.type === 'comments') {
-			text(...entry.comments);
+			text(...(entry.comments ?? []));
 			continue;
 		}
 
 		if (entry.type === 'object') {
 			head(`[${entry.objectType}]  ${entry.primaryKey}`);
 
-			for (const attribute of entry.attributes) {
+			for (const attribute of entry.attributes ?? []) {
 				const vals =
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					attribute.values ?? attribute.links?.map((l: any) => l.text) ?? [];
@@ -292,24 +328,26 @@ function formatAbuse(data: any, wantsPlainText = false): string | null {
 	row('VPN', flag(is_vpn));
 	row('Known Abuser', flag(is_abuser));
 
-	const abuseScoreFormat = (score: string): string =>
-		custom(score, (s, ANSI) => {
-			switch (s.match(/\(([\w\s]+)\)/)?.[1].toLowerCase()) {
-				case 'very high':
-					return ANSI.red.dim.bold(s);
-				case 'high':
-					return ANSI.red.bold(s);
-				case 'medium':
-				case 'elevated':
-					return ANSI.yellow.bold(s);
-				case 'low':
-					return ANSI.green.bold(s);
-				case 'very low':
-					return ANSI.cyan.bold(s);
-				default:
-					return ANSI.white.bold(s);
-			}
-		});
+	const abuseScoreFormat = (score?: string): string | null =>
+		score == null
+			? null
+			: custom(score, (s, ANSI) => {
+					switch (s.match(/\(([\w\s]+)\)/)?.[1].toLowerCase()) {
+						case 'very high':
+							return ANSI.red.dim.bold(s);
+						case 'high':
+							return ANSI.red.bold(s);
+						case 'medium':
+						case 'elevated':
+							return ANSI.yellow.bold(s);
+						case 'low':
+							return ANSI.green.bold(s);
+						case 'very low':
+							return ANSI.cyan.bold(s);
+						default:
+							return ANSI.white.bold(s);
+					}
+				});
 
 	if (company) {
 		head('Company');
@@ -331,7 +369,7 @@ function formatAbuse(data: any, wantsPlainText = false): string | null {
 
 	if (asn) {
 		head('ASN');
-		row('ASN', `AS${asn.asn}`);
+		row('ASN', asn.asn == null ? null : `AS${asn.asn}`);
 		row('Abuse Score', abuseScoreFormat(asn.abuser_score));
 		row('Route', asn.route);
 		row('Description', asn.descr);
@@ -348,37 +386,39 @@ function formatAbuse(data: any, wantsPlainText = false): string | null {
 
 	if (location) {
 		head('Location');
-		row('Country', `${location.country} (${location.country_code})`);
+		row('Country', pair(location.country, location.country_code));
 		row('State', location.state);
 		row('City', location.city);
 		row('Continent', location.continent);
-		row('Coordinates', `${location.latitude}, ${location.longitude}`);
+		row('Coordinates', coords(location.latitude, location.longitude));
 		row('ZIP', location.zip);
 		row('Timezone', location.timezone);
 		row('UTC Offset', location.utcoffset);
 		row('DST', bool(location.is_dst));
 		row('Local Time', location.local_time);
-		row('Calling Code', `+${location.calling_code}`);
+		row('Calling Code', location.calling_code == null ? null : `+${location.calling_code}`);
 		row('Currency', location.currency_code);
 		row('EU Member', bool(location.is_eu_member));
 		row(
 			'Accuracy',
-			custom(location.accuracy, (s, ANSI) => {
-				switch (s) {
-					case 'VERY_HIGH':
-						return ANSI.cyan.bold(s);
-					case 'HIGH':
-						return ANSI.green.bold(s);
-					case 'MEDIUM':
-						return ANSI.yellow.bold(s);
-					case 'LOW':
-						return ANSI.red.bold(s);
-					case 'VERY_LOW':
-						return ANSI.red.dim.bold(s);
-					default:
-						return s;
-				}
-			})
+			location.accuracy == null
+				? null
+				: custom(location.accuracy, (s, ANSI) => {
+						switch (s) {
+							case 'VERY_HIGH':
+								return ANSI.cyan.bold(s);
+							case 'HIGH':
+								return ANSI.green.bold(s);
+							case 'MEDIUM':
+								return ANSI.yellow.bold(s);
+							case 'LOW':
+								return ANSI.red.bold(s);
+							case 'VERY_LOW':
+								return ANSI.red.dim.bold(s);
+							default:
+								return s;
+						}
+					})
 		);
 	}
 
@@ -401,18 +441,18 @@ function formatGeo(data: GeoData, wantsPlainText = false): string | null {
 	head('Location');
 	row(
 		'Status',
-		custom(data.status.toUpperCase(), (s, ANSI) =>
+		custom((data.status ?? 'unknown').toUpperCase(), (s, ANSI) =>
 			s === 'SUCCESS' ? ANSI.green.bold(s) : ANSI.red.bold(s)
 		)
 	);
 	row('Message', data.message);
-	row('Continent', `${data.continent} (${data.continentCode})`);
-	row('Country', `${data.country} (${data.countryCode})`);
-	row('Region', `${data.region} (${data.regionName})`);
+	row('Continent', pair(data.continent, data.continentCode));
+	row('Country', pair(data.country, data.countryCode));
+	row('Region', pair(data.region, data.regionName));
 	row('City', data.city);
 	row('District', data.district);
 	row('ZIP', data.zip);
-	row('Coordinates', `${data.lat}, ${data.lon}`);
+	row('Coordinates', coords(data.lat, data.lon));
 	row('Timezone', data.timezone);
 	row('UTC Offset', data.offset);
 
@@ -429,6 +469,32 @@ function formatGeo(data: GeoData, wantsPlainText = false): string | null {
 	footer('Query completed');
 
 	return lines.join('\n');
+}
+
+function formatFailure(title: string, { error }: Failed, wantsPlainText = false): string {
+	const lines: string[] = [];
+	const { banner, head, row, footer, custom } = useCuiHelper(lines, {
+		plainText: wantsPlainText
+	});
+
+	banner(title);
+	head('Status');
+	row(
+		'Status',
+		custom('UNAVAILABLE', (s, ANSI) => ANSI.red.bold(s))
+	);
+	footer(`Query failed: ${error}`);
+
+	return lines.join('\n');
+}
+
+function pair(a: unknown, b: unknown): string | null {
+	if (a == null || a === '') return b == null || b === '' ? null : String(b);
+	return b == null || b === '' ? String(a) : `${a} (${b})`;
+}
+
+function coords(lat: unknown, lon: unknown): string | null {
+	return lat == null || lon == null ? null : `${lat}, ${lon}`;
 }
 
 function formatEasterEgg(message: string, wantsPlainText = false): string {
