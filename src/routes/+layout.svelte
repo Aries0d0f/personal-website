@@ -109,6 +109,9 @@
 
 		html,
 		body {
+			background-color: #fff;
+			color: #000;
+
 			@media (width > 840px) {
 				// Kill the macOS/iOS rubber-band overscroll bounce at the edges.
 				overscroll-behavior: none;
@@ -116,6 +119,7 @@
 		}
 
 		:root {
+			color-scheme: light dark;
 			font-family:
 				'Zilla Slab',
 				'Kosugi Maru',
