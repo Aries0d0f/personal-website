@@ -3,13 +3,15 @@
 	import { getLocale } from '#lib/paraglide/runtime.js';
 	import { useCRT } from '#lib/helpers/crt.svelte.js';
 	import { useGameStore } from '#lib/store/game.js';
+	import { useGameActions } from '#lib/store/game-actions.js';
 	import { abnormalityCodeSet } from '#lib/game/abnoramlity.js';
 	import Codex from './Codex.svelte';
 
 	const ACCELERATOR = { continue: 'C', leave: 'B' };
 
 	const { promote } = useCRT();
-	const { discoveredAbnormalities, continueChallenge, leaveClearedGame } = useGameStore();
+	const { discoveredAbnormalities } = useGameStore();
+	const { continueChallenge, leaveClearedGame } = useGameActions();
 
 	let dialog = $state<HTMLDialogElement>();
 	let continueButton = $state<HTMLButtonElement>();

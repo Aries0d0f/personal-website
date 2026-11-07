@@ -1,55 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
-	import { goto } from '$app/navigation';
 	import { m } from '#lib/paraglide/messages.js';
 	import { getLocale } from '#lib/paraglide/runtime.js';
-	import { useCRT } from '#lib/helpers/crt.svelte.js';
-	import { useGameScript } from '#lib/helpers/game-script.svelte.js';
-	import { useGameStore } from '#lib/store/game.js';
+	import { errorTitleMap } from '#lib/error-titles.js';
+	import { useGameKit, useGameStore } from '#lib/store/game.js';
 
-	const { isGameMode, isCaught, backButtonClickedTimes, clearStage, markClicked } = useGameStore();
-	const { interference } = useCRT();
+	const { isGameMode } = useGameStore();
+	const gameKit = useGameKit();
 
-	const errorTitleMap: Record<number, () => string> = {
-		400: m.pages_error_400_title,
-		401: m.pages_error_401_title,
-		402: m.pages_error_402_title,
-		403: m.pages_error_403_title,
-		404: m.pages_error_404_title,
-		405: m.pages_error_405_title,
-		406: m.pages_error_406_title,
-		407: m.pages_error_407_title,
-		408: m.pages_error_408_title,
-		409: m.pages_error_409_title,
-		410: m.pages_error_410_title,
-		411: m.pages_error_411_title,
-		412: m.pages_error_412_title,
-		413: m.pages_error_413_title,
-		414: m.pages_error_414_title,
-		415: m.pages_error_415_title,
-		416: m.pages_error_416_title,
-		417: m.pages_error_417_title,
-		418: m.pages_error_418_title,
-		419: m.pages_error_419_title,
-		420: m.pages_error_420_title,
-		421: m.pages_error_421_title,
-		422: m.pages_error_422_title,
-		423: m.pages_error_423_title,
-		424: m.pages_error_424_title,
-		425: m.pages_error_425_title,
-		426: m.pages_error_426_title,
-		428: m.pages_error_428_title,
-		429: m.pages_error_429_title,
-		430: m.pages_error_430_title,
-		431: m.pages_error_431_title,
-		451: m.pages_error_451_title
-	};
+	const GameError = $derived(gameKit()?.GameError);
 
 	const currentLang = $derived(getLocale());
-	const headTitle = $derived(
-		$isGameMode ? m.game_mode_title() : [page.status, page.error?.message].filter(Boolean).join(' ')
-	);
+	const headTitle = $derived([page.status, page.error?.message].filter(Boolean).join(' '));
 	const title = $derived(
 		errorTitleMap[page.status]
 			? errorTitleMap[page.status]()
@@ -69,166 +31,27 @@
 			.map((s) => s.trim());
 		return messages[Math.floor(Math.random() * messages.length)];
 	});
-
-	//#region Game Mode Only Logic
-	let gameStatus = $state(page.status);
-	let sequence: string[] = $state([]);
-	let sequenceTimer = $state<ReturnType<typeof setTimeout>>();
-	const isFirstStageClear = $derived(gameStatus === 200);
-
-	const {
-		gameTitle,
-		gameDescription,
-		gameBackButton,
-		firstStageClearTitle,
-		firstStageClearDescription,
-		immediateFireMessage
-	} = useGameScript({
-		gameStatus: () => gameStatus,
-		isFirstStageClear: () => isFirstStageClear,
-		onFirstStageClear: nextGameStage
-	});
-
-	const VIM_EXIT_CODE = ['Escape', 'Shift', ':', 'q'];
-	const isPrefix = (keys: string[]) => keys.every((key, i) => key === VIM_EXIT_CODE[i]);
-
-	function vimExitConsumes(event: KeyboardEvent) {
-		const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
-
-		const next = [...sequence, key];
-		while (next.length && !isPrefix(next)) next.shift();
-		sequence = next;
-
-		if (sequenceTimer) clearTimeout(sequenceTimer);
-		sequenceTimer = setTimeout(() => {
-			sequence = [];
-		}, 1500);
-
-		if (sequence.length === VIM_EXIT_CODE.length) {
-			clearTimeout(sequenceTimer);
-			sequence = [];
-			return true;
-		}
-
-		return sequence.length >= 3;
-	}
-
-	function handleKeyEvent(event: KeyboardEvent) {
-		if (vimExitConsumes(event)) {
-			immediateFireMessage(m.game_mode_description_script_after_vim_quit);
-			return;
-		}
-
-		if (event.ctrlKey && event.key === 'c') {
-			immediateFireMessage(m.game_mode_description_script_after_ctrl_c);
-			return;
-		}
-	}
-
-	function handleGameButtonClick() {
-		if (gameDescription.isTyping) {
-			// Only skip the typing effect after 3+ back-button clicks (stage performing)
-			if ($backButtonClickedTimes >= 3) {
-				gameDescription.skip();
-			}
-			return;
-		} else {
-			backButtonClickedTimes.update((n) => n + 1);
-
-			markClicked();
-		}
-	}
-
-	async function nextGameStage() {
-		await clearStage(1);
-
-		goto(resolve(currentLang), { replace: true });
-	}
-
-	$effect(() => {
-		if (!$isCaught) return;
-
-		const twitch = setTimeout(() => interference(), 750);
-		return () => clearTimeout(twitch);
-	});
-	//#endregion
 </script>
 
-<svelte:window on:keydown={handleKeyEvent} />
-
 <svelte:head>
-	<title>{headTitle} | {m.noun_general_name()}</title>
+	{#if !($isGameMode && GameError)}
+		<title>{headTitle} | {m.noun_general_name()}</title>
+	{/if}
 </svelte:head>
 
-<div class="error-container">
-	<div class="error-wrapper" data-game-mode={$isGameMode}>
-		{#if $isGameMode && errorTitleMap[gameStatus] && gameStatus !== 404}
-			<img src="/favicon.gif" class="no-clip status-{gameStatus}" alt="Avatar" />
-		{:else}
+{#if $isGameMode && GameError}
+	<GameError />
+{:else}
+	<div class="error-container">
+		<div class="error-wrapper">
 			<img src="/avatar.gif" alt="Avatar" />
-		{/if}
-		<article>
-			{#if isFirstStageClear}
-				<h1>200</h1>
-				<h2>{firstStageClearTitle.current}</h2>
-				<p>{firstStageClearDescription.current}</p>
-			{:else}
-				{#if $isGameMode}
-					<input bind:value={gameStatus} type="number" step="1" />
-				{:else}
-					<h1>{page.status}</h1>
-				{/if}
-				<h2>
-					{#if $isGameMode}
-						{gameTitle.current}
-					{:else}
-						{title}
-					{/if}
-				</h2>
-				{#if $isGameMode}
-					<p>{gameDescription.current}</p>
-				{:else}
-					<p>{description}</p>
-				{/if}
-			{/if}
-		</article>
-	</div>
-	{#if $isGameMode}
-		<button class="link" onclick={handleGameButtonClick}>
-			<svg
-				class="deco-vertical"
-				width="10"
-				height="147"
-				viewBox="0 0 10 147"
-				fill="none"
-				xmlns="http://www.w3.org/2000/svg"
-			>
-				<path
-					d="M0.5 145.629V144.629M0.5 135.629L0.500488 0.129395L9.47679 33.6294"
-					stroke="white"
-					stroke-linecap="round"
-				/>
-			</svg>
-
-			<svg
-				class="deco-horizontal"
-				width="93"
-				height="10"
-				viewBox="0 0 93 10"
-				fill="none"
-				xmlns="http://www.w3.org/2000/svg"
-			>
-				<path
-					d="M92.3911 9.47656L91.3911 9.47656M82.3911 9.47656L0.129395 9.47654L33.6294 0.50024"
-					stroke="white"
-					stroke-linecap="round"
-				/>
-			</svg>
-
-			{gameBackButton.current}
-		</button>
-	{:else}
-		<a href="/{currentLang}" rel="external">
+			<article>
+				<h1>{page.status}</h1>
+				<h2>{title}</h2>
+				<p>{description}</p>
+			</article>
+		</div>
+		<a class="back" href="/{currentLang}" rel="external">
 			<svg
 				class="deco-vertical"
 				width="10"
@@ -261,217 +84,11 @@
 
 			{m.pages_error_back_to_home()}
 		</a>
-	{/if}
-</div>
+	</div>
+{/if}
 
 <style lang="scss">
-	:global {
-		body:has(.error-container) {
-			background-color: #000;
-		}
-	}
+	@use '../lib/styles/error-page' as *;
 
-	.error {
-		&-container {
-			display: flex;
-			place-items: center;
-			place-content: center;
-			width: 100%;
-			min-height: 100dvh;
-			background-color: #000;
-			color: #fff;
-			gap: 4rem;
-
-			> a,
-			> button {
-				display: flex;
-				flex-direction: row;
-				place-items: center;
-				place-content: center;
-				gap: 1rem;
-				color: #fff;
-				text-decoration: none;
-				writing-mode: vertical-rl;
-				text-orientation: mixed;
-				font-size: 0.8125rem;
-				padding: 2rem;
-				position: absolute;
-				opacity: 0.75;
-				right: 0;
-				white-space: nowrap;
-				transition:
-					gap 0.3s cubic-bezier(0.4, 0, 0.2, 1.9),
-					opacity 0.3s ease;
-
-				&:hover {
-					gap: 2rem;
-					opacity: 1;
-				}
-
-				> .deco-horizontal {
-					display: none;
-				}
-			}
-
-			> button {
-				appearance: none;
-				font-family: inherit;
-				cursor: pointer;
-				margin: 0;
-				background: none;
-				border: none;
-			}
-
-			@media (max-width: 700px) {
-				flex-direction: column;
-				gap: 0rem;
-
-				> a,
-				> button {
-					writing-mode: horizontal-tb;
-					text-orientation: initial;
-					position: relative;
-
-					> .deco-vertical {
-						display: none;
-					}
-
-					> .deco-horizontal {
-						display: block;
-					}
-				}
-			}
-
-			@media (max-width: 375px) {
-				height: 100%;
-				overflow: hidden;
-			}
-		}
-
-		&-wrapper {
-			display: flex;
-			flex-direction: row;
-			place-items: center;
-			place-content: center;
-			gap: 2rem;
-			padding: 2rem;
-
-			&[data-game-mode='true'] {
-				background-color: #000;
-				border-radius: 100rem;
-
-				> img {
-					&.status-410 {
-						opacity: 0.05;
-					}
-
-					&:not(.no-clip) {
-						border-radius: 100rem;
-					}
-				}
-
-				> article {
-					width: 40rem;
-					max-width: 100%;
-
-					> p {
-						font-family: 'Courier New', Courier, monospace;
-						white-space: pre-wrap;
-						height: 1rem;
-					}
-				}
-			}
-
-			> img {
-				filter: brightness(150%);
-				height: 16rem;
-				width: 16rem;
-
-				&::selection {
-					background: none !important;
-					color: unset !important;
-				}
-			}
-
-			article {
-				display: flex;
-				flex-direction: column;
-				gap: 1rem;
-				line-height: 1;
-				border-left: 1px solid rgba(255, 255, 255, 0.2);
-				padding: 0 4rem;
-
-				h1,
-				input {
-					font-size: 8rem;
-					font-weight: 500;
-					font-variant-numeric: tabular-nums;
-				}
-
-				input {
-					width: 40rem;
-					appearance: none;
-					background: none;
-					border: none;
-					padding: 0;
-					margin: 0;
-					outline: none;
-					color: inherit;
-					caret-color: rgba(255, 255, 255, 0.05);
-					font-family: inherit;
-					-moz-appearance: textfield;
-
-					&::-webkit-outer-spin-button,
-					&::-webkit-inner-spin-button {
-						appearance: none;
-						margin: 0;
-					}
-				}
-
-				h2 {
-					font-size: 2rem;
-					font-weight: 500;
-				}
-
-				p {
-					line-height: 1.6;
-					font-size: 1.2rem;
-					margin-bottom: 2rem;
-				}
-			}
-
-			@media (max-width: 700px) {
-				flex-direction: column;
-				gap: 0rem;
-
-				> article {
-					text-align: center;
-					border: none;
-					padding: 0;
-
-					input {
-						text-align: center;
-					}
-
-					> h2 {
-						font-size: 1.8rem;
-					}
-
-					> p {
-						font-size: 0.9rem;
-						margin-bottom: 0;
-					}
-				}
-			}
-
-			@media (max-width: 375px) {
-				padding: 0rem 1rem;
-
-				> img {
-					height: 12rem;
-					width: 12rem;
-				}
-			}
-		}
-	}
+	@include error-page;
 </style>

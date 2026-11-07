@@ -40,7 +40,7 @@
 
 	let { children } = $props();
 
-	const { isGameMode, isGameCleared, abnormality, challengeStage } = useGameStore();
+	const { isGameMode, isGameCleared, abnormality, loadActions } = useGameStore();
 	const { powerCycle, underGlass } = useCRT();
 
 	let width = $state(0);
@@ -226,7 +226,7 @@
 			// sleep for 400ms to allow the page transition to complete before challenging the stage
 			await new Promise((resolve) => setTimeout(resolve, 400));
 		}
-		await challengeStage(direction);
+		await (await loadActions()).challengeStage(direction);
 		onFinish();
 	}
 
@@ -299,7 +299,8 @@
 		observer?.disable();
 		pageAnimation?.pause();
 
-		void powerCycle(() => goto(resolve(`${getLocale()}/game`)));
+		// Server mints the token.
+		void powerCycle(() => goto(resolve(`${getLocale()}/game`), { refreshAll: true }));
 	}
 
 	function animateIn() {

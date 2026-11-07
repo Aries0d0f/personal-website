@@ -4,6 +4,7 @@
 	import { getLocale } from '#lib/paraglide/runtime.js';
 	import { useCRT } from '#lib/helpers/crt.svelte.js';
 	import { useGameStore } from '#lib/store/game.js';
+	import { useGameActions } from '#lib/store/game-actions.js';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import Codex from './Codex.svelte';
 	import { Abnormality } from '#lib/game/abnoramlity.js';
@@ -11,7 +12,8 @@
 	const ACCELERATOR = { giveUp: 'G', backToGame: 'B', yes: 'Y', no: 'N' };
 
 	const { promote } = useCRT();
-	const { stage, abnormality, discoveredAbnormalities, giveUp } = useGameStore();
+	const { stage, abnormality, discoveredAbnormalities } = useGameStore();
+	const { giveUp } = useGameActions();
 
 	let giveUpButton = $state<HTMLButtonElement>();
 	let backToGameButton = $state<HTMLButtonElement>();

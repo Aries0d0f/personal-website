@@ -3,25 +3,46 @@
 	import { m } from '#lib/paraglide/messages.js';
 	import { getLocale } from '#lib/paraglide/runtime.js';
 	import { syncLocale } from '#lib/i18n.svelte.js';
-	import { useNavigationLock } from '#lib/helpers/navigation-lock.svelte.js';
+	import { useCRT } from '#lib/helpers/crt.svelte.js';
 	import { localeFontHref } from '#lib/fonts.js';
-	import { useGameStore } from '#lib/store/game.js';
+	import { provideGameKit, useGameStore } from '#lib/store/game.js';
 	import Viewport from '#lib/layout/Viewport.svelte';
-	import CrtScreen from '#lib/components/CrtScreen.svelte';
-	import GameOptions from '#lib/components/GameOptions.svelte';
-	import GameClear from '#lib/components/GameClear.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, type Component } from 'svelte';
+	import type { GameKit } from '#lib/game/kit.js';
 
 	let { children, data } = $props();
 
 	let screenEl = $state<HTMLDivElement>();
 
 	const { isGameMode, isGameCleared, syncFromServer } = useGameStore();
+	const crt = useCRT();
 
 	syncFromServer(data?.game);
 
-	// No escaping the game through the browser chrome.
-	useNavigationLock(() => $isGameMode);
+	// Held until the player leaves.
+	let heldKit: GameKit | null = null;
+	const gameKit = $derived.by(() => {
+		if (data.gameKit) return (heldKit = data.gameKit);
+		if (!$isGameMode && !$isGameCleared) heldKit = null;
+		return heldKit;
+	});
+
+	provideGameKit(() => gameKit);
+
+	const GameLayer = $derived(gameKit?.GameLayer);
+
+	// Same module ref, no remount.
+	let summonedCrt = $state<Component<{ screen?: HTMLElement; active?: boolean }>>();
+	const CrtScreen = $derived(gameKit?.CrtScreen ?? summonedCrt);
+
+	const loadCrt = () => import('#lib/components/CrtScreen.svelte');
+
+	$effect(() => {
+		if (!crt.wanted || summonedCrt) return;
+
+		loadCrt().then((m) => (summonedCrt = m.default));
+	});
+
 	const currentLang = $derived(getLocale());
 	const accentFill = $derived.by(() => {
 		switch (currentLang) {
@@ -49,8 +70,14 @@
 	onMount(() => {
 		hydrated = true;
 
-		// Clear sessionStorage on page load to reset the game temporary data
-		sessionStorage.clear();
+		// Fetch only; mounted on demand.
+		const preload = () => void loadCrt().catch(() => {});
+		if ('requestIdleCallback' in window) {
+			const id = requestIdleCallback(preload, { timeout: 3000 });
+			return () => cancelIdleCallback(id);
+		}
+		const id = setTimeout(preload, 1000);
+		return () => clearTimeout(id);
 	});
 </script>
 
@@ -86,16 +113,15 @@
 			{@render children()}
 		</Viewport>
 	{/if}
-	{#if $isGameMode}
-		<GameOptions />
-	{/if}
-	{#if $isGameCleared}
-		<GameClear />
+	{#if GameLayer}
+		<GameLayer />
 	{/if}
 </div>
 
 <!-- Sibling, not child, so the overlay skips the collapse transform. -->
-<CrtScreen screen={screenEl} active={$isGameMode} />
+{#if CrtScreen}
+	<CrtScreen screen={screenEl} active={$isGameMode} />
+{/if}
 
 <style lang="scss">
 	:global {

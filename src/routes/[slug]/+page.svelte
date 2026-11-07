@@ -1,7 +1,5 @@
 <script lang="ts">
-	import http from '@aries0d0f/fetch-worker';
-
-	import type { Component, Snippet } from 'svelte';
+	import { onMount, type Component, type Snippet } from 'svelte';
 	import type { PageData } from './$types';
 
 	import { useGameStore } from '#lib/store/game.js';
@@ -30,8 +28,12 @@
 	// mdsvex's default export is a Svelte component — render it directly.
 	const Content = $derived(data.content);
 	const currentAbnormality = $derived($abnormality);
+
+	const loadHttp = () => import('@aries0d0f/fetch-worker');
+
 	const lookupInfo = $derived.by(async () => {
 		if (currentAbnormality === Abnormality.AN04) {
+			const { default: http } = await loadHttp();
 			return await http
 				.get('/ip?q=geo', {
 					headers: {
@@ -44,6 +46,17 @@
 				});
 		}
 		return null;
+	});
+
+	onMount(() => {
+		// Fetch only.
+		const preload = () => void loadHttp().catch(() => {});
+		if ('requestIdleCallback' in window) {
+			const id = requestIdleCallback(preload, { timeout: 3000 });
+			return () => cancelIdleCallback(id);
+		}
+		const id = setTimeout(preload, 1000);
+		return () => clearTimeout(id);
 	});
 </script>
 

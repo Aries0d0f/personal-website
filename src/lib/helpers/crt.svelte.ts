@@ -21,6 +21,19 @@ const noop = () => {};
 let routines: Routines | null = null;
 let running = $state(false);
 
+// Layout lazy-mounts the tube once set.
+let wanted = $state(false);
+let onRegister: (() => void) | null = null;
+
+const SUMMON_TIMEOUT_MS = 2000;
+
+const summon = () =>
+	new Promise<void>((resolve) => {
+		onRegister = resolve;
+		wanted = true;
+		setTimeout(resolve, SUMMON_TIMEOUT_MS);
+	});
+
 // Overlays above modal dialogs but under the tube, ordered by promotion order.
 const layers = new SvelteSet<HTMLElement>();
 
@@ -32,6 +45,8 @@ const repromote = (el: HTMLElement) => {
 export const useCRT = () => {
 	const register = (fns: Routines) => {
 		routines = fns;
+		onRegister?.();
+		onRegister = null;
 
 		return () => {
 			if (routines === fns) routines = null;
@@ -43,9 +58,16 @@ export const useCRT = () => {
 
 	// Exclusive cycles swap the page and take the lock; others are pure decoration.
 	const run = async (name: CycleName, swap: Swap, exclusive = true) => {
+		if (prefersReducedMotion()) {
+			await swap();
+			return;
+		}
+
+		if (!routines) await summon();
+
 		const routine = routines?.[name];
 
-		if (!routine || prefersReducedMotion()) {
+		if (!routine) {
 			await swap();
 			return;
 		}
@@ -97,6 +119,9 @@ export const useCRT = () => {
 		},
 		get isRunning() {
 			return running;
+		},
+		get wanted() {
+			return wanted;
 		}
 	};
 };

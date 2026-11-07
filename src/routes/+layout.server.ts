@@ -1,7 +1,8 @@
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = ({ locals, url }) => {
-	void url.pathname;
+	// Track URL only mid-game.
+	if (locals.game.active) void url.pathname;
 
 	return { game: locals.game };
 };
