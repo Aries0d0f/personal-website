@@ -14,7 +14,7 @@
 		"format": "prettier --write .",
 		"gen": "bun run clean && wrangler types",
 		"clean": "rm -rf .svelte-kit/cloudflare",
-		"deploy": "bun run gen && bun run build && wrangler d1 migrations apply ip-lookup-cache --remote && wrangler deploy"
+		"deploy": "bun run gen && bun run build && wrangler deploy"
 	},
 	"devDependencies": {
 		"@aries0d0f/fetch-worker": "^0.2.2",
@@ -29,7 +29,6 @@
 		"@sveltejs/vite-plugin-svelte-inspector": "^5.0.2",
 		"@types/node": "^26.6.5",
 		"@types/semver": "^7.8.0",
-		"ansis": "^4.4.0",
 		"eslint": "^10.13.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.23.1",
@@ -45,7 +44,6 @@
 		"svelte-check": "^4.7.7",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.72.1",
-		"ua-parser-js": "^2.0.10",
 		"vite": "^8.3.5",
 		"wrangler": "^4.153.0"
 	},

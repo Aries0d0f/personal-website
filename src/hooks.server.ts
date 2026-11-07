@@ -11,10 +11,9 @@ import {
 } from '#lib/paraglide/runtime.js';
 import { paraglideMiddleware } from '#lib/paraglide/server.js';
 import { renderFontLinks } from '#lib/fonts.js';
-import { handleEdge } from '#lib/server/edge/index.js';
 import { markCaught, readGameState, writeGameState } from '#lib/server/game.js';
 
-// Skip locale redirect and edge worker (isIPLookup matches any CLI/unknown UA).
+// Paths served as-is, without a locale prefix.
 const NON_LOCALIZED_PATHS = new Set(['/sitemap.xml', '/robots.txt', '/llms.txt', '/api/game']);
 const LOCALIZED_LLMS_TXT_PATHS = new Set(locales.map((locale) => `/${locale}/llms.txt`));
 const isNonLocalizedPath = (pathname: string) =>
@@ -45,15 +44,6 @@ const handleRequestEncoding: Handle = ({ event, resolve }) => {
 	if (encoding && encoding !== 'identity') {
 		return new Response('Unsupported Content-Encoding', { status: 415 });
 	}
-
-	return resolve(event);
-};
-
-const handleWorker: Handle = async ({ event, resolve }) => {
-	if (isNonLocalizedPath(event.url.pathname)) return resolve(event);
-
-	const response = await handleEdge(event);
-	if (response) return response;
 
 	return resolve(event);
 };
@@ -151,7 +141,6 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 export const handle: Handle = sequence(
 	handleHttpsRedirect,
 	handleRequestEncoding,
-	handleWorker,
 	handleLegacyLocaleCasing,
 	handleLocaleRedirect,
 	handleGame,
