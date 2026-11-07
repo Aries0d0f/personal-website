@@ -561,7 +561,8 @@
 
 		const locale = getLocale();
 
-		for (const route of ['/', '/[slug]', '/blank', '/blank-after'] as const) void preloadCode(route);
+		for (const route of ['/', '/[slug]', '/blank', '/blank-after'] as const)
+			void preloadCode(route);
 		for (const key of pageOrder) {
 			if (key !== 'home' && !key.includes('blank')) void loadContent(key, locale);
 		}
