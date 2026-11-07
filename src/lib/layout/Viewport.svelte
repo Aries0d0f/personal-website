@@ -156,7 +156,8 @@
 		return document.querySelector<HTMLElement>('.intro-content');
 	}
 
-	function performPageSwitch(direction: 1 | -1, key: PageKey) {
+	// Resolves once navigation lands.
+	function performPageSwitch(direction: 1 | -1, key: PageKey): Promise<void> {
 		lastDirection = direction;
 		transitioning = true;
 		wheelLocked = true;
@@ -173,10 +174,14 @@
 		const ease = EASE.power2In;
 
 		let navigated = false;
+		let landed!: () => void;
+		const done = new Promise<void>((r) => (landed = r));
 		const navigate = () => {
-			if (navigated) return;
-			navigated = true;
-			afterTouchRelease(() => goto(href));
+			if (!navigated) {
+				navigated = true;
+				afterTouchRelease(() => goto(href).finally(landed));
+			}
+			return done;
 		};
 
 		const el = contentEl();
@@ -193,6 +198,7 @@
 		);
 		pageAnimation.onfinish = navigate;
 		setTimeout(navigate, duration * Math.pow(1 - SWAP_OPACITY, 1 / ease.exp));
+		return done;
 	}
 
 	let touching = false;
@@ -215,16 +221,16 @@
 	async function handleGameStageSwitch(direction: 1 | -1, onFinish: () => void) {
 		if (direction === -1) {
 			observer?.disable();
-			performPageSwitch(direction, 'blank');
+			const landed = performPageSwitch(direction, 'blank');
 			observer?.disable();
-			// sleep for 400ms to allow the page transition to complete before challenging the stage
-			await new Promise((resolve) => setTimeout(resolve, 400));
+			// Roll the next stage only after the blank page is shown.
+			await landed;
 		} else if (direction === 1) {
 			observer?.disable();
-			performPageSwitch(direction, 'blank-after');
+			const landed = performPageSwitch(direction, 'blank-after');
 			observer?.disable();
-			// sleep for 400ms to allow the page transition to complete before challenging the stage
-			await new Promise((resolve) => setTimeout(resolve, 400));
+			// Roll the next stage only after the blank page is shown.
+			await landed;
 		}
 		await (await loadActions()).challengeStage(direction);
 		onFinish();
